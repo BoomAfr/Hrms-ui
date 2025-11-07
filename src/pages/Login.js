@@ -70,7 +70,7 @@ const Login = () => {
 
         <Form name="login" onFinish={onFinish} autoComplete="off" layout="vertical">
           <Form.Item
-            label={<span style={{ fontWeight: 600, color: '#333' }}>Regitered Email</span>}
+            label={<span style={{ fontWeight: 600, color: '#333' }}>Registered Email</span>}
             name="email"
             rules={[
               { required: true, message: 'Please input your email!' },

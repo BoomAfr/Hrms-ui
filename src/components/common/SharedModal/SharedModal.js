@@ -1,13 +1,22 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import { Modal, Form, Input, Button, Card } from 'antd';
 import { SaveOutlined } from '@ant-design/icons';
 
-const AddDepartmentModal = ({ isModalOpen, setIsModalOpen }) => {
+const AddDepartmentModal = ({ isModalOpen, setIsModalOpen, onSubmit, editingDept }) => {
   const [form] = Form.useForm();
+
+  useEffect(() => {
+   if (editingDept) {
+      form.setFieldsValue({ name:editingDept.name });
+    } else {
+      form.resetFields();
+    }
+  }, [editingDept, form]);
 
   const handleSubmit = (values) => {
     console.log('Form values:', values);
-    setIsModalOpen(false);
+    //setIsModalOpen(false);
+    onSubmit(values)
     form.resetFields();
   };
 
@@ -44,7 +53,7 @@ const AddDepartmentModal = ({ isModalOpen, setIsModalOpen }) => {
             label={
               "Department Name"
             }
-            name="departmentName"
+            name="name"
             rules={[
               { 
                 required: true, 
