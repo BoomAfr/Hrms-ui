@@ -1,28 +1,16 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { authAPI } from '../../services/authServices';
 
-// Mock login function
 export const login = createAsyncThunk(
   'auth/login',
   async (credentials, { rejectWithValue }) => {
     try {
-      // Temporary mock API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      if (credentials.email === 'admin@hrms.com' && credentials.password === 'password') {
-        return {
-          user: { 
-            id: 1, 
-            name: 'Admin User', 
-            email: 'admin@hrms.com',
-            role: 'admin'
-          },
-          token: 'mock-jwt-token-12345'
-        };
-      } else {
-        throw new Error('Invalid email or password');
-      }
+      const response = await authAPI.login(credentials);
+      return response.data; 
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(
+        error.response?.data?.message || 'Login failed'
+      );
     }
   }
 );
@@ -31,20 +19,33 @@ const authSlice = createSlice({
   name: 'auth',
   initialState: {
     user: null,
-    token: localStorage.getItem('hrms_token'),
-    isAuthenticated: !!localStorage.getItem('hrms_token'),
+    accessToken: localStorage.getItem('hrms_access_token'),
+    refreshToken: localStorage.getItem('hrms_refresh_token'),
+    isAuthenticated: !!localStorage.getItem('hrms_access_token'),
     loading: false,
     error: null
   },
   reducers: {
     logout: (state) => {
       state.user = null;
-      state.token = null;
+      state.accessToken = null;
+      state.refreshToken = null;
       state.isAuthenticated = false;
-      localStorage.removeItem('hrms_token');
+      localStorage.removeItem('hrms_access_token');
+      localStorage.removeItem('hrms_refresh_token');
     },
     clearError: (state) => {
       state.error = null;
+    },
+    updateTokens: (state, action) => {
+      state.accessToken = action.payload.access;
+      if (action.payload.refresh) {
+        state.refreshToken = action.payload.refresh;
+      }
+      localStorage.setItem('hrms_access_token', action.payload.access);
+      if (action.payload.refresh) {
+        localStorage.setItem('hrms_refresh_token', action.payload.refresh);
+      }
     }
   },
   extraReducers: (builder) => {
@@ -56,9 +57,11 @@ const authSlice = createSlice({
       .addCase(login.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload.user;
-        state.token = action.payload.token;
+        state.accessToken = action.payload.access;
+        state.refreshToken = action.payload.refresh;
         state.isAuthenticated = true;
-        localStorage.setItem('hrms_token', action.payload.token);
+        localStorage.setItem('hrms_access_token', action.payload.access);
+        localStorage.setItem('hrms_refresh_token', action.payload.refresh);
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
@@ -67,5 +70,5 @@ const authSlice = createSlice({
   }
 });
 
-export const { logout, clearError } = authSlice.actions;
+export const { logout, clearError, updateTokens } = authSlice.actions;
 export default authSlice.reducer;

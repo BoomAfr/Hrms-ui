@@ -7,7 +7,7 @@ export const APP_CONFIG = {
 
 // Local Storage Keys
 export const STORAGE_KEYS = {
-  AUTH_TOKEN: 'hrms_token',
+  AUTH_TOKEN: 'hrms_access_token',
   USER_DATA: 'hrms_user',
   THEME: 'hrms_theme',
   LANGUAGE: 'hrms_language',

@@ -1,7 +1,8 @@
 import API from './api';
 
 export const authAPI = {
-  login: (credentials) => API.post('/auth/login', credentials),
-  logout: () => API.post('/auth/logout'),
+  login: (credentials) => API.post('/login/', credentials),
+  logout: () => API.post('/logout/'),
+  departmentList : () => API.get('/company/departments/')
   
 };
