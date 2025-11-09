@@ -14,6 +14,11 @@ import Termination from './pages/Termination';
 import Promotion from './pages/Promotion';
 import EmployeePermanent from './pages/EmployeePermanent';
 import Warning from './pages/Warning';
+import ManageHoliday from './pages/leaveManagement/ManageHoliday';
+import LeaveType from './pages/leaveManagement/LeaveType';
+import PublicHoliday from './pages/leaveManagement/PublicHoliday';
+import EarnLeaveConfigure from './pages/leaveManagement/EarnLeaveConfigure';
+import WeeklyHoliday from './pages/leaveManagement/WeeklyHoliday';
 
 function App() {
   return (
@@ -45,11 +50,21 @@ function App() {
               
 
              </Route>
+             <Route path='leave-management'>
+              <Route path='setup'>
+                <Route path='manage-holiday' element={<ManageHoliday/>}/>
+                <Route path='public-holiday' element={<PublicHoliday/>}/>
+                <Route path='weekly-holiday' element={<WeeklyHoliday/>}/>
+                <Route path='leave-type' element={<LeaveType/>}/>
+                <Route path='earn-leave-configure' element={<EarnLeaveConfigure/>}/>
+              </Route>
+             </Route>
           </Route>
         </Routes>
       </Router>
     </ConfigProvider>
   );
 }
+
 
 export default App;
