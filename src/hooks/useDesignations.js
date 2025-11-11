@@ -11,7 +11,7 @@ export const useDesignations = () => {
       setLoading(true);
       setError(null);
       const response = await designationAPI.getAll();
-      setDesignations(response.data);
+      setDesignations(response.data.results);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to fetch designations');
     } finally {

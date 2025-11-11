@@ -12,7 +12,7 @@ export const useBranches = () => {
       setLoading(true);
       setError(null);
       const response = await branchAPI.getAll();
-      setBranches(response.data);
+      setBranches(response.data.results);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to fetch branches');
     } finally {

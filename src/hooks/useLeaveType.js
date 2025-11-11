@@ -11,7 +11,7 @@ export const useLeaveTypes = () => {
       setLoading(true);
       setError(null);
       const response = await leaveTypeAPI.getAll();
-      setLeaveTypes(response.data);
+      setLeaveTypes(response.data.results);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to fetch leave types');
     } finally {

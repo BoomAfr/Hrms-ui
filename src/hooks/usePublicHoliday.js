@@ -13,7 +13,7 @@ export const usePublicHoliday = () => {
       const response = await publicHolidayAPI.getAll();
       console.log("Public Holidays API response:", response.data);
 
-      setPublicHolidays(response.data);
+      setPublicHolidays(response.data.results);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to fetch public holidays');
     } finally {
