@@ -11,7 +11,7 @@ export const useManageHoliday = () => {
       setLoading(true);
       setError(null);
       const response = await manageHolidayAPI.getAll();
-      setManageHoliday(response.data);
+      setManageHoliday(response.data.results);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to fetch holidays');
     } finally {

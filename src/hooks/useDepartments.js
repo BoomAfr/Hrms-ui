@@ -13,7 +13,7 @@ export const useDepartments = () => {
       setLoading(true);
       setError(null);
       const response = await departmentAPI.getAll();
-      setDepartments(response.data);
+      setDepartments(response.data.results);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to fetch departments');
     } finally {

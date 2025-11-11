@@ -12,7 +12,7 @@ export const useWeeklyHoliday = () => {
       setError(null);
       const response = await weeklyHolidayAPI.getAll();
       // Expect response.data to be array of objects like { id, day, status, ... }
-      setWeeklyHolidays(response.data);
+      setWeeklyHolidays(response.data.results);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to fetch weekly holidays');
     } finally {

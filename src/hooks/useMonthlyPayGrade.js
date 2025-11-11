@@ -10,7 +10,7 @@ export const useMonthlyPayGrades = () => {
     try {
       setLoading(true);
       const response = await monthlyPayGradeAPI.getAll();
-      setPaygrades(response.data);
+      setPaygrades(response.data.results);
     } catch (err) {
       setError(err);
     } finally {

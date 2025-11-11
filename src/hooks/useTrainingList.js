@@ -10,7 +10,7 @@ export const useEmployeeTrainings = () => {
     try {
       setLoading(true);
       const response = await employeeTrainingAPI.getAll();
-      setTrainings(response.data);
+      setTrainings(response.data.results);
     } catch (err) {
       setError(err);
     } finally {

@@ -10,7 +10,7 @@ export const useNotices = () => {
     try {
       setLoading(true);
       const res = await noticeAPI.getAll();
-      setNotices(res.data);
+      setNotices(res.data.results);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to fetch notices');
     } finally {

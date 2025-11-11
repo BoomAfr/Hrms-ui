@@ -11,7 +11,7 @@ export const useAwards = () => {
       setLoading(true);
       setError(null);
       const response = await awardAPI.getAll();
-      setAwards(response.data);
+      setAwards(response.data.results);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to fetch awards');
     } finally {
