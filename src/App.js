@@ -28,6 +28,10 @@ import TrainingList from './pages/Training/TrainingList';
 import TrainingReport from './pages/Training/TrainingReport';
 import ManageWorkShift from './pages/Attendance/ManageWorkShift';
 import MonthlyPayGrade from './pages/Payroll/MonthlyPayGrade';
+import PerfomanceCategory from './pages/Perfomance/PerfomanceCategory';
+import PerfomanceCriteria from './pages/Perfomance/PerfomanceCriteria';
+import EmployeePerfomance from './pages/Perfomance/EmployeePerfomance';
+import SummaryReport from './pages/Perfomance/SummaryReport';
 
 function App() {
   return (
@@ -81,6 +85,12 @@ function App() {
              <Route path='payroll'>
               <Route path='monthly-pay-grade' element={<MonthlyPayGrade/>}/>
              </Route>
+             
+              <Route path='performance-category' element={<PerfomanceCategory/>}/>
+              <Route path='performance-criteria' element={<PerfomanceCriteria/>}/>
+              <Route path='employee-performance' element={<EmployeePerfomance/>}/>
+              <Route path='performance-summary-report' element={<SummaryReport/>}/>
+             
 
              <Route path='training-type' element={<TrainingType/>}/>
              <Route path='training-list' element={<TrainingList/>}/>
