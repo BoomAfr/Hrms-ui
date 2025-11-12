@@ -361,8 +361,7 @@ const MainLayout = () => {
   label: 'Performance',
   children: [
     { key: '/performance-category', label: 'Performance Category' },
-    { key: '/performance', label: 'Performance' },
-    { key: '/criteria', label: 'Criteria' },
+    { key: '/performance-criteria', label: 'Performance Criteria' },
     { key: '/employee-performance', label: 'Employee Performance' },
     {
       key: 'performance-report',
