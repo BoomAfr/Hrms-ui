@@ -1,18 +1,121 @@
-import React from 'react';
-import { Card, Descriptions, Table, Divider, Tag, Avatar, Row, Col } from 'antd';
-import { UserOutlined, MailOutlined, PhoneOutlined, EnvironmentOutlined, CalendarOutlined } from '@ant-design/icons';
+import React, { useEffect } from 'react';
+import { 
+  Card, 
+  Descriptions, 
+  Table, 
+  Divider, 
+  Tag, 
+  Avatar, 
+  Row, 
+  Col, 
+  Skeleton 
+} from 'antd';
+import { 
+  UserOutlined, 
+  MailOutlined, 
+  PhoneOutlined, 
+  EnvironmentOutlined, 
+  CalendarOutlined 
+} from '@ant-design/icons';
+import { useManageEmployee } from '../hooks/useManageEmployee';
+import { useParams } from 'react-router-dom';
 
 const Profile = () => {
-  // Sample data
+  const { 
+    employee, 
+    loading, 
+    error, 
+    fetchEmployeeById 
+  } = useManageEmployee();
+  
+  const { id } = useParams();
+
+  console.log(id, 'id');
+  
+  useEffect(() => {
+    if (id) {
+      fetchEmployeeById(id); // Directly call fetch function
+    }
+  }, [id]);
+
+  console.log(employee,error, 'employee');
+
+  // Skeleton Components
+  const ProfileSkeleton = () => (
+    <div style={{ padding: '24px' }}>
+      {/* Profile Header Skeleton */}
+      <Card style={{ marginBottom: '24px' }}>
+        <Row gutter={16} align="middle">
+          <Col>
+            <Skeleton.Avatar active size={80} />
+          </Col>
+          <Col flex={1}>
+            <Skeleton active paragraph={{ rows: 3 }} title={false} />
+          </Col>
+        </Row>
+      </Card>
+
+      <Divider />
+
+      {/* Educational Qualification Skeleton */}
+      <Card title="EDUCATIONAL QUALIFICATION" style={{ marginBottom: '24px' }}>
+        <Skeleton active paragraph={{ rows: 4 }} title={false} />
+      </Card>
+
+      <Divider />
+
+      {/* Professional Experience Skeleton */}
+      <Card title="PROFESSIONAL EXPERIENCE" style={{ marginBottom: '24px' }}>
+        <Skeleton active paragraph={{ rows: 4 }} title={false} />
+      </Card>
+
+      <Divider />
+
+      {/* Personal Information Skeleton */}
+      <Card title="PERSONAL INFORMATION">
+        <Skeleton active paragraph={{ rows: 8 }} title={false} />
+      </Card>
+    </div>
+  );
+
+  if (loading) {
+    return <ProfileSkeleton />;
+  }
+
+  if (error) {
+    return (
+      <div style={{ padding: '24px', textAlign: 'center' }}>
+        <Card>
+          <h2>Error Loading Profile</h2>
+          <p>{error}</p>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!employee || Object.keys(employee).length === 0) {
+    return (
+      <div style={{ padding: '24px', textAlign: 'center' }}>
+        <Card>
+          <h2>No Employee Data Found</h2>
+          <p>Please check if the employee ID is correct.</p>
+        </Card>
+      </div>
+    );
+  }
+
+  // Actual employee data - aapke API response ke according adjust karein
   const profileData = {
-    name: 'sujit waqh',
-    email: '',
-    address: '',
-    phone: '0',
-    dateOfJoining: '04/11/2025',
-    dateOfBirth: '04/11/2025',
-    gender: 'Male',
-    religion: ''
+    name: employee[0].name || '--',
+    email: employee[0].email || '--',
+    address: employee[0].address || '--',
+    phone: employee[0].phone || '--',
+    dateOfJoining: employee[0].date_of_joining || '--',
+    dateOfBirth: employee[0].dateOfBirth || employee[0].dob || '--',
+    gender: employee[0].gender || '--',
+    religion: employee[0].religion || '--',
+    position: employee[0].position || '--',
+    department: employee[0].department || '--'
   };
 
   // Educational Qualification Data
@@ -55,7 +158,7 @@ const Profile = () => {
     },
   ];
 
-  const educationData = [
+  const educationData = employee.education || [
     {
       key: '1',
       institute: '--',
@@ -111,7 +214,7 @@ const Profile = () => {
     },
   ];
 
-  const experienceData = [
+  const experienceData = employee.experience || [
     {
       key: '1',
       organization: '--',
@@ -132,22 +235,26 @@ const Profile = () => {
               size={80} 
               icon={<UserOutlined />} 
               style={{ backgroundColor: '#1890ff' }}
+              src={employee.avatar || employee.profile_picture}
             />
           </Col>
           <Col flex={1}>
             <h2 style={{ margin: 0, marginBottom: '8px' }}>{profileData.name}</h2>
+            <p style={{ margin: 0, marginBottom: '8px', color: '#666' }}>
+              {profileData.position} - {profileData.department}
+            </p>
             <div style={{ color: '#666' }}>
               <div>
                 <MailOutlined style={{ marginRight: '8px' }} />
-                Email: {profileData.email || '--'}
+                Email: {profileData.email}
               </div>
               <div>
                 <EnvironmentOutlined style={{ marginRight: '8px' }} />
-                Address: {profileData.address || '--'}
+                Address: {profileData.address}
               </div>
               <div>
                 <PhoneOutlined style={{ marginRight: '8px' }} />
-                Phone: {profileData.phone || '--'}
+                Phone: {profileData.phone}
               </div>
             </div>
           </Col>
@@ -167,12 +274,12 @@ const Profile = () => {
           pagination={false}
           bordered
           size="middle"
+          loading={loading}
         />
       </Card>
 
       <Divider />
 
-      {/* Professional Experience Section */}
       <Card 
         title="PROFESSIONAL EXPERIENCE" 
         style={{ marginBottom: '24px' }}
@@ -183,6 +290,7 @@ const Profile = () => {
           pagination={false}
           bordered
           size="middle"
+          loading={loading}
         />
       </Card>
 
@@ -195,13 +303,13 @@ const Profile = () => {
             {profileData.name}
           </Descriptions.Item>
           <Descriptions.Item label="Email">
-            {profileData.email || '--'}
+            {profileData.email}
           </Descriptions.Item>
           <Descriptions.Item label="Address">
-            {profileData.address || '--'}
+            {profileData.address}
           </Descriptions.Item>
           <Descriptions.Item label="Phone">
-            {profileData.phone || '--'}
+            {profileData.phone}
           </Descriptions.Item>
           <Descriptions.Item label="Date of Joining">
             <CalendarOutlined style={{ marginRight: '8px' }} />
@@ -215,7 +323,7 @@ const Profile = () => {
             {profileData.gender}
           </Descriptions.Item>
           <Descriptions.Item label="Religion">
-            {profileData.religion || '--'}
+            {profileData.religion}
           </Descriptions.Item>
         </Descriptions>
       </Card>

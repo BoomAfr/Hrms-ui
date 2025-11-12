@@ -11,41 +11,7 @@ const ManageEmployee = () => {
 
     const { employee,
         loading,
-        error } = useManageEmployee();
-    // Employee data
-    const employeeData = [
-        {
-            key: '1',
-            name: 'sujit wagh',
-            department: 'Engineering',
-            designation: 'Software Engineer',
-            role: 'Employee',
-            branchName: 'Main Branch',
-            fingerprintEmpNo: '4S',
-            payGradeName: 'CC (Monthly)',
-            dateOfJoining: '06/11/2025',
-            joiningDuration: '2 days ago',
-            jobStatus: 'Probation Period',
-            phone: 'N/A',
-            supervisor: 'N/A'
-        },
-        {
-            key: '2',
-            name: 'John Doe',
-            department: 'Human Resource',
-            designation: 'Director',
-            role: 'Employee',
-            branchName: 'Main Branch',
-            fingerprintEmpNo: '9000',
-            payGradeName: 'Intern (Monthly)',
-            dateOfJoining: '06/10/2025',
-            joiningDuration: '1 month ago',
-            jobStatus: 'Probation Period',
-            phone: '9699009989',
-            supervisor: 'jhon hally'
-        }
-    ];
-
+        error} = useManageEmployee();
     // Job status color mapping
     const getStatusColor = (status) => {
         const statusColors = {
@@ -56,31 +22,32 @@ const ManageEmployee = () => {
         return statusColors[status] || 'default';
     };
     const handleEdit = (prop) => {
-        const {key} = prop;
-    navigate(`edit/${key}`)
+    const {user_id} = prop;
+    navigate(`edit/${user_id}`)
   };
   const handleDelete = (record) => {
     setIsOpenModal(true);
   };
   const handleView = (prop) =>{
-    const {key} = prop;
-    navigate(`profile/${key}`)
+    const {user_id} = prop;
+    navigate(`profile/${user_id}`)
   }
 const handleEmptyData = (data) => (data || "--")
+
     // Employee columns
     const employeeColumns = [
          {
             title: 'Serial',
-            dataIndex: 'serial',
-            key: 'serial',
+            dataIndex: 'user_id',
+            key: 'user_id',
             render : (text,record) =>(
-                <span>{handleEmptyData(record.key)}</span>
+                <span>{handleEmptyData(record.user_id)}</span>
             )
         },
         {
             title: 'Employee',
             dataIndex: 'name',
-            key: 'employeeInfo',
+            key: 'name',
             render: (text, record) => (
                 <Space>
                     <Avatar
@@ -129,26 +96,26 @@ const handleEmptyData = (data) => (data || "--")
         },
         {
             title: 'Fingerprint/Emp No.',
-            dataIndex: 'fingerprintEmpNo',
-            key: 'fingerprintEmpNo',
+            dataIndex: 'employee_id',
+            key: 'employee_id',
         },
         {
             title: 'Pay Grade',
-            dataIndex: 'payGradeName',
-            key: 'payGradeName',
+            dataIndex: 'pay_grade',
+            key: 'pay_grade',
         },
         {
             title: 'Date of Joining',
-            dataIndex: 'dateOfJoining',
-            key: 'dateOfJoining',
+            dataIndex: 'date_of_joining',
+            key: 'date_of_joining',
             render: (text, record) => (
                 <Space direction="vertical">
                     <div>{text}</div>
-                    <div style={{ color: '#666', fontSize: '12px' }}>
+                    {/* <div style={{ color: '#666', fontSize: '12px' }}>
                         {record.joiningDuration}
-                    </div>
+                    </div> */}
                     <div style={{ color: '#666', fontSize: '12px' }}>
-                        Job Status: {handleEmptyData(record.jobStatus)}
+                        Job Status: {handleEmptyData(record.job_status)}
                     </div>
                 </Space>
             ),
@@ -253,10 +220,12 @@ const deleteModal = {
     onOk:handleDeleteConfirm,
     onCancel:handleDeleteCancel,
 }
+console.log(employee,'employee');
+
     return (
         <CommonTable
             title="Employee List"
-            data={employeeData}
+            data={employee}
             columns={employeeColumns}
             showSearch={true}
             showFilters={true}

@@ -1,25 +1,78 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Form, Input, Select, DatePicker, Button, Card, Row, Col, Checkbox, Divider, Radio, Upload, Space, Collapse } from 'antd';
 import { UserOutlined, MailOutlined, PhoneOutlined, LockOutlined, UploadOutlined, PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useManageEmployee } from '../hooks/useManageEmployee';
 import { useDepartments } from '../hooks/useDepartments';
 import { useDesignations } from '../hooks/useDesignations';
 import { useBranches } from '../hooks/useBranches';
+import { useWorkShifts } from '../hooks/useManageWorkShift';
+import { useMonthlyPayGrades } from '../hooks/useMonthlyPayGrade';
+import moment from 'moment';
 
 const { Option } = Select;
 const { TextArea } = Input;
 
-const AddEmployeeForm = () => {
+const AddEmployeeForm = ({ employeeData, isEdit = false }) => {
     const [form] = Form.useForm();
-    const {addEmployee} = useManageEmployee();
-    // const {} = 
+    const {addEmployee,updateEmployee} = useManageEmployee();
+    const {shifts} = useWorkShifts();
+    const {paygrades} =useMonthlyPayGrades();
     const {departments} = useDepartments();
     const {designations} = useDesignations();
     const {branches} = useBranches();
 console.log(designations,'departments')
+
+
+
+useEffect(() => {
+        if (isEdit && employeeData) {
+            formatAndSetFormData(employeeData);
+        }
+    }, [isEdit, employeeData]);
+ const formatAndSetFormData = (data) => {
+        const formattedData = {
+            ...data,
+            
+            // Date fields ko moment object me convert karein
+            date_of_birth: data.date_of_birth ? moment(data.date_of_birth) : null,
+            date_of_joining: data.date_of_joining ? moment(data.date_of_joining) : null,
+            date_of_leaving: data.date_of_leaving ? moment(data.date_of_leaving) : null,
+            
+            // Experiences dates
+            experiences: data.experiences ? data.experiences.map(exp => ({
+                ...exp,
+                fromDate: exp.fromDate ? moment(exp.fromDate) : null,
+                toDate: exp.toDate ? moment(exp.toDate) : null
+            })) : [],
+            
+            // Qualifications
+            qualifications: data.qualifications || []
+        };
+        
+        form.setFieldsValue(formattedData);
+    };
+
     const onFinish = (values) => {
-        console.log('Form values:', values);
-        addEmployee(values)
+        const formattedValues = {
+            ...values,
+            date_of_birth: values.date_of_birth ? values.date_of_birth.format('YYYY-MM-DD') : null,
+            date_of_joining: values.date_of_joining ? values.date_of_joining.format('YYYY-MM-DD') : null,
+            date_of_leaving: values.date_of_leaving ? values.date_of_leaving.format('YYYY-MM-DD') : null,
+            
+            // Professional Experience dates
+            experiences: values.experiences ? values.experiences.map(exp => ({
+                ...exp,
+                fromDate: exp.fromDate ? exp.fromDate.format('YYYY-MM-DD') : null,
+                toDate: exp.toDate ? exp.toDate.format('YYYY-MM-DD') : null
+            })) : []
+        };
+        if (isEdit && employeeData) {
+                // Edit mode - update employee
+                updateEmployee(employeeData.id, formattedValues);
+            } else {
+                // Add mode - new employee
+                addEmployee(formattedValues);
+            }
     };
 
     const uploadProps = {
@@ -33,7 +86,6 @@ console.log(designations,'departments')
         maxCount: 1,
     };
     const [activePanels, setActivePanels] = useState([1, 2, 3, 4])
-
     return (
         <div style={{ padding: '24px' }}>
             <Card title="Add Employee" style={{ marginBottom: '24px' }}>
@@ -52,11 +104,11 @@ console.log(designations,'departments')
                                     <Form.Item
                                         label="Role"
                                         name="role"
-                                        rules={[{ required: true, message: 'Please select role' }]}
+                                        // rules={[{ required: true, message: 'Please select role' }]}
                                     >
                                         <Select placeholder="--- Please Select ---">
                                             <Option value="admin">Admin</Option>
-                                            <Option value="employee">Employee</Option>
+                                            <Option value="Employee">Employee</Option>
                                             <Option value="manager">Manager</Option>
                                             <Option value="supervisor">Supervisor</Option>
                                         </Select>
@@ -153,7 +205,7 @@ console.log(designations,'departments')
                                     >
                                         <Select placeholder="--- Please Select ---">
                                             {Array.isArray(departments) && departments?.map((department) =>(
-                                                <Option value={department?.name} key={department?.id}>{department?.name}</Option>                                            ))}
+                                                <Option value={department?.id} key={department?.id}>{department?.name}</Option>                                            ))}
                     
                                         </Select>
                                     </Form.Item>
@@ -166,7 +218,7 @@ console.log(designations,'departments')
                                     >
                                         <Select placeholder="--- Please Select ---">
                                             {Array.isArray(designations) && designations.map((designation) =>(
-                                                <Option value={designation?.name} key={designation?.id}>{designation?.name}</Option>
+                                                <Option value={designation?.id} key={designation?.id}>{designation?.name}</Option>
                                             ))}
             
                                         </Select>
@@ -181,7 +233,7 @@ console.log(designations,'departments')
                                             {
                                                 Array.isArray(branches)
                                                 && branches?.map((branch) =>(
-                                                    <Option value={branch?.name} key={branch?.id}>{branch?.name}</Option>
+                                                    <Option value={branch?.id} key={branch?.id}>{branch?.name}</Option>
                                                 ))
                                             }
         
@@ -195,9 +247,13 @@ console.log(designations,'departments')
                                         rules={[{ required: true, message: 'Please select work shift' }]}
                                     >
                                         <Select placeholder="--- Please Select ---">
-                                            <Option value="morning">Morning Shift</Option>
-                                            <Option value="evening">Evening Shift</Option>
-                                            <Option value="night">Night Shift</Option>
+                                            {Array.isArray(shifts) &&
+
+                                            shifts.map((shift)=>(
+                                                <Option key={shift.id} value={shift.id}>{shift.shift_name}</Option>
+                                            ))
+                                            
+                                            }
                                         </Select>
                                     </Form.Item>
                                 </Col>
@@ -209,9 +265,11 @@ console.log(designations,'departments')
                                         name="monthly_pay_grade"
                                     >
                                         <Select placeholder="--- Please Select ---">
-                                            <Option value="grade_a">Grade A</Option>
-                                            <Option value="grade_b">Grade B</Option>
-                                            <Option value="grade_c">Grade C</Option>
+                                            {Array.isArray(paygrades) && 
+                                            paygrades.map((paygrade)=>(
+                                                <Option key={paygrade.id} value={paygrade.id}>{paygrade.grade_name}</Option>
+                                            ))
+                                            }
                                         </Select>
                                     </Form.Item>
                                 </Col>
@@ -221,7 +279,7 @@ console.log(designations,'departments')
                                         name="hourly_pay_grade"
                                     >
                                         <Select placeholder="--- Please Select ---">
-                                            <Option value="hourly_1">Hourly Grade 1</Option>
+                                            <Option value="1">Hourly Grade 1</Option>
                                             <Option value="hourly_2">Hourly Grade 2</Option>
                                             <Option value="hourly_3">Hourly Grade 3</Option>
                                         </Select>
@@ -282,7 +340,7 @@ console.log(designations,'departments')
                                         name="date_of_birth"
                                         rules={[{ required: true, message: 'Please select date of birth' }]}
                                     >
-                                        <DatePicker style={{ width: '100%' }} placeholder="Date of Birth" />
+                                        <DatePicker format="YYYY-MM-DD"  style={{ width: '100%' }} placeholder="Date of Birth" />
                                     </Form.Item>
                                 </Col>
                                 <Col xs={24} sm={6}>
@@ -291,7 +349,7 @@ console.log(designations,'departments')
                                         name="date_of_joining"
                                         rules={[{ required: true, message: 'Please select date of joining' }]}
                                     >
-                                        <DatePicker style={{ width: '100%' }} placeholder="Date of Joining" />
+                                        <DatePicker format="YYYY-MM-DD" style={{ width: '100%' }} placeholder="Date of Joining" />
                                     </Form.Item>
                                 </Col>
                             </Row>
@@ -301,7 +359,7 @@ console.log(designations,'departments')
                                         label="Date of Leaving"
                                         name="date_of_leaving"
                                     >
-                                        <DatePicker style={{ width: '100%' }} placeholder="Date of Leaving" />
+                                        <DatePicker format="YYYY-MM-DD" style={{ width: '100%' }} placeholder="Date of Leaving" />
                                     </Form.Item>
                                 </Col>
                                 <Col xs={24} sm={6}>
@@ -324,8 +382,8 @@ console.log(designations,'departments')
                                         rules={[{ required: true, message: 'Please select status' }]}
                                     >
                                         <Radio.Group>
-                                            <Radio value="active">Active</Radio>
-                                            <Radio value="inactive">Inactive</Radio>
+                                            <Radio value="Active" >Active</Radio>
+                                            <Radio value="Inactive">Inactive</Radio>
                                         </Radio.Group>
                                     </Form.Item>
                                 </Col>

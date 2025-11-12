@@ -14,9 +14,22 @@ export const useManageEmployee = () => {
       setLoading(true);
       setError(null);
       const response = await manageEmployeeApi.getAll();
-      setEmployee(response.data);
+      setEmployee(response.data.results);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to fetch departments');
+      setError(err.response?.data?.results.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchEmployeeById = async (id) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await manageEmployeeApi.getById(id);
+      setEmployee(response.data.results);
+    } catch (err) {
+      setError(err.response?.data?.results.message);
     } finally {
       setLoading(false);
     }
@@ -36,10 +49,10 @@ export const useManageEmployee = () => {
   };
 
   // Update department (PUT/PATCH)
-  const updateDepartment = async (id, data) => {
+  const updateEmployee = async (id, data) => {
     try {
       setLoading(true);
-      await departmentAPI.update(id, data); // PUT /company/departments/<id>/
+      await manageEmployeeApi.update(id, data); // PUT /company/departments/<id>/
       await fetchEmployee();
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to update department');
@@ -73,6 +86,8 @@ export const useManageEmployee = () => {
     loading,
     error,
     addEmployee,
+    updateEmployee,
+    fetchEmployeeById,
     // refetch: fetchDepartments,
     // addDepartment,
     // updateDepartment,
