@@ -3,9 +3,11 @@ import { authAPI } from '../services/authServices';
 import { departmentAPI } from '../services/departmentServices';
 import { data } from 'react-router-dom';
 import { manageEmployeeApi } from '../services/manageEmployeeServices';
+import {workShiftAPI, WorkShiftAPI} from '../services/manageWorkShiftServices'
 
 export const useManageEmployee = () => {
   const [employee, setEmployee] = useState([]);
+  const [supervisors, setSupervisors] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -15,6 +17,7 @@ export const useManageEmployee = () => {
       setError(null);
       const response = await manageEmployeeApi.getAll();
       setEmployee(response.data);
+      setSupervisors(response.data?.results || response.data || []);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to fetch departments');
     } finally {
@@ -34,6 +37,7 @@ export const useManageEmployee = () => {
       setLoading(false);
     }
   };
+
 
   // Update department (PUT/PATCH)
   const updateDepartment = async (id, data) => {
@@ -73,9 +77,29 @@ export const useManageEmployee = () => {
     loading,
     error,
     addEmployee,
+    supervisors
     // refetch: fetchDepartments,
     // addDepartment,
     // updateDepartment,
     // deleteDepartment,
   };
+};
+
+export const useShift = () => {
+  const [shifts, setShifts] = useState([]);
+
+  const fetchShifts = async () => {
+    try {
+      const response = await workShiftAPI.getAllActive();
+      setShifts(response?.data?.results || response?.data || []);
+    } catch (err) {
+      console.error("Failed to fetch working shifts", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchShifts();
+  }, []);
+
+  return { shifts };
 };

@@ -4,6 +4,8 @@ import CommonTable from '../components/common/SharedTable/CommonTable';
 import { useManageEmployee } from '../hooks/useManageEmployee';
 import {  useNavigate } from 'react-router-dom';
 import { EditOutlined, DeleteOutlined, PlusOutlined, EyeOutlined } from '@ant-design/icons';
+import { Select } from 'antd';
+const { Option } = Select;
 
 const ManageEmployee = () => {
      const navigate = useNavigate();
@@ -11,7 +13,7 @@ const ManageEmployee = () => {
 
     const { employee,
         loading,
-        error } = useManageEmployee();
+        error,supervisors } = useManageEmployee();
     // Employee data
     const employeeData = [
         {

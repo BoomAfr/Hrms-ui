@@ -2,6 +2,7 @@ import API from './api';
 
 export const awardAPI = {
   getAll: () => API.get('/company/employee-awards/'),
+  getAllActive: () => API.get('/company/employee-awards/'),
   create: (data) => API.post('/company/employee-awards/', data),
   getById: (id) => API.get(`/company/employee-awards/${id}/`),
   update: (id, data) => API.put(`/company/employee-awards/${id}/`, data),

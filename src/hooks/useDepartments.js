@@ -8,12 +8,17 @@ export const useDepartments = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const fetchDepartments = async () => {
+  const fetchDepartments = async (page = 1, pageSize = 10, search = '') => {
     try {
       setLoading(true);
       setError(null);
-      const response = await departmentAPI.getAll();
-      setDepartments(response.data.results);
+       const response = await departmentAPI.getAll({
+      page,
+      page_size: pageSize,
+      search,
+    });
+    setDepartments(response.data.results || []);
+    return response.data;
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to fetch departments');
     } finally {

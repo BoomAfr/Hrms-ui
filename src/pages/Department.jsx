@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Table, Button, Space, Card, Row, Col, Select, message, Input } from 'antd';
 import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import SharedModal from '../components/common/SharedModal/SharedModal';
 import { useDepartments } from '../hooks/useDepartments';
 import ConfirmModal from '../components/common/SharedModal/ConfirmModal';
 const { Option } = Select;
+
 
 const Department = () => {
   const [pageSize, setPageSize] = useState(10);
@@ -19,11 +20,11 @@ const Department = () => {
 
   const [searchText, setSearchText] = useState('');
 
+  
+
   const { departments, loading, error, refetch, addDepartment, updateDepartment, deleteDepartment} = useDepartments();
 
-     //console.log(departments, loading, error, refetch);
-     
-    // ✅ handle form submit (called from SharedModal)
+  
   const handleAddDepartment = async (values) => {
     try {
       const payload = {name: values.name };
@@ -45,8 +46,21 @@ const Department = () => {
        message.error(err.response?.data?.message || 'Operation failed');
     }
   };
+
+  const loadDepartments = async (page = currentPage, size = pageSize, search = searchText) => {
+  const data = await refetch(page, size, search);
+  if (data && data.count !== undefined) setTotal(data.count);
+};
+const [total, setTotal] = useState(0);
+
+// Fetch when page, size, or search changes
+useEffect(() => {
+  loadDepartments(currentPage, pageSize, searchText);
+}, [currentPage, pageSize, searchText]);
+
   const handleSearch = (value) => {
   setSearchText(value.toLowerCase());
+  setCurrentPage(1); // reset to page 1
   };
 
 
@@ -128,18 +142,17 @@ const Department = () => {
   };
 
   const pagination = {
-    current: currentPage,
-    pageSize: pageSize,
-    total: 74, 
-    showSizeChanger: true,
-    showQuickJumper: true,
-    showTotal: (total, range) => 
-      `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-    pageSizeOptions: ['10', '20', '50', '100'],
-    onChange: (page, size) => {
-      setCurrentPage(page);
-      setPageSize(size);
-    },
+  current: currentPage,
+  pageSize: pageSize,
+  total: total,
+  showSizeChanger: true,
+  showQuickJumper: true,
+  showTotal: (total, range) => `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+  pageSizeOptions: ['10', '20', '50', '100'],
+  onChange: (page, size) => {
+    setCurrentPage(page);
+    setPageSize(size);
+  },
   };
 
   return (
@@ -206,6 +219,14 @@ const Department = () => {
           setIsModalOpen={setIsModalOpen}
           onSubmit={handleAddDepartment} //  pass the handler
           editingDept={editingDept} // pass for prefill in modal
+          fieldLabel={[
+    {
+      label: 'Department Name',
+      name: 'name',
+      isRequired: true,
+      component: <Input placeholder="Enter Department Name" size="large" />,
+    },
+  ]}
         />
       )}
       <ConfirmModal

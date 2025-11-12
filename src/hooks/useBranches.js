@@ -7,12 +7,17 @@ export const useBranches = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const fetchBranches = async () => {
+  const fetchBranches = async (page = 1, pageSize = 10, search = '') => {
     try {
       setLoading(true);
       setError(null);
-      const response = await branchAPI.getAll();
-      setBranches(response.data.results);
+      const response = await branchAPI.getAll({
+            page,
+            page_size: pageSize,
+            search,
+          });
+      setBranches(response.data.results || []);
+       return response.data;
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to fetch branches');
     } finally {
@@ -73,4 +78,3 @@ export const useBranches = () => {
     deleteBranch,
   };
 };
-

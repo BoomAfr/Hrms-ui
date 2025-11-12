@@ -1,14 +1,16 @@
 import { warningApi } from "../services/warningService";
+import {manageEmployeeApi} from "../services/manageEmployeeServices";
 import {useState,useEffect} from 'react';
 
 export const useWarning = ()=>{
-    const [warnings,setWarnings] = useState([])
+    const [warnings,setWarnings] = useState([]);
+    const [employees, setEmployees] = useState([]);
 
     const fetchAllWarnings = async()=>{
         try{
             const response = await warningApi.getAll();
             console.log(response,'response')
-            setWarnings(response?.data?.results);
+            setWarnings(response?.data?.results || []);
         }
         catch(error){
             console.error("Error");
@@ -16,7 +18,16 @@ export const useWarning = ()=>{
         finally{
 
         }
+
     }
+    const fetchEmployees = async () => {   // ⬅ added
+    try {
+      const response = await manageEmployeeApi.getAll();
+      setEmployees(response?.data?.results || []);
+    } catch (error) {
+      console.error("Error fetching employees");
+    }
+  };
 
    const addWarning = (data) =>{
     console.log("addWarningdata",data)
@@ -31,12 +42,15 @@ export const useWarning = ()=>{
 
     useEffect(()=>{
         fetchAllWarnings();
+        fetchEmployees();   // ⬅ added
        },[])
 
        return(
         
            { warnings,
-            addWarning}
+            addWarning,
+            employees  // ⬅ added
+        }
         
        )
 }

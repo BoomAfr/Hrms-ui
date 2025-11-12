@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import CommonTable from '../components/common/SharedTable/CommonTable';
 import { useWarning } from '../hooks/useWarning';
 import { Button, DatePicker, Input } from 'antd';
+import { Select } from 'antd';
+const { Option } = Select;
 
 const Warning = () => {
-    const {warnings,addWarning} = useWarning();
+    const {warnings,addWarning,employees} = useWarning();
     const [isModalOpen,setIsModalOpen] = useState(false)
     const tableColumns =[
         {
@@ -70,11 +72,19 @@ isModalOpen,
 //   editingDept,
   title:'Add Warning',
  fieldLabel:[
-    {
+     {
     name:'employee_name',
     isRequired:true,
     label:"Employee Name",
-    component : <Input/>
+    component : (
+      <Select placeholder="Select Employee">
+        {employees.map((emp) => (
+          <Option key={emp.id} value={emp.id}>
+            {emp.name || emp.employee_name}
+          </Option>
+        ))}
+      </Select>
+    )
   },
    {
     name:'warning_type',

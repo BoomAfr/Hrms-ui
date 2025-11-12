@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Form, Input, Select, DatePicker, Button, Card, Row, Col, Checkbox, Divider, Radio, Upload, Space, Collapse } from 'antd';
 import { UserOutlined, MailOutlined, PhoneOutlined, LockOutlined, UploadOutlined, PlusOutlined, DeleteOutlined } from '@ant-design/icons';
-import { useManageEmployee } from '../hooks/useManageEmployee';
+import { useManageEmployee, useShift } from '../hooks/useManageEmployee';
 import { useDepartments } from '../hooks/useDepartments';
 import { useDesignations } from '../hooks/useDesignations';
 import { useBranches } from '../hooks/useBranches';
@@ -9,14 +9,17 @@ import { useBranches } from '../hooks/useBranches';
 const { Option } = Select;
 const { TextArea } = Input;
 
+
 const AddEmployeeForm = () => {
     const [form] = Form.useForm();
-    const {addEmployee} = useManageEmployee();
+    const {addEmployee,supervisors} = useManageEmployee();
+    const { shifts } = useShift();
     // const {} = 
+
     const {departments} = useDepartments();
     const {designations} = useDesignations();
     const {branches} = useBranches();
-console.log(designations,'departments')
+    console.log(designations,'departments')
     const onFinish = (values) => {
         console.log('Form values:', values);
         addEmployee(values)
@@ -137,9 +140,15 @@ console.log(designations,'departments')
                                         name="supervisor"
                                     >
                                         <Select placeholder="--- Please Select ---">
-                                            <Option value="supervisor1">Supervisor 1</Option>
-                                            <Option value="supervisor2">Supervisor 2</Option>
-                                            <Option value="supervisor3">Supervisor 3</Option>
+                                            {Array.isArray(supervisors) && supervisors.length > 0 ? (
+                                            supervisors.map((supervisor) => (
+                                         <Option key={supervisor.id} value={supervisor.id}>
+                                         {supervisor.name}
+                                         </Option>
+                                          ))
+                                         ) : (
+                                         <Option disabled>No Supervisors Found</Option>
+                                         )}
                                         </Select>
                                     </Form.Item>
                                 </Col>
@@ -194,12 +203,20 @@ console.log(designations,'departments')
                                         name="work_shift"
                                         rules={[{ required: true, message: 'Please select work shift' }]}
                                     >
-                                        <Select placeholder="--- Please Select ---">
-                                            <Option value="morning">Morning Shift</Option>
-                                            <Option value="evening">Evening Shift</Option>
-                                            <Option value="night">Night Shift</Option>
-                                        </Select>
+                                    <Select placeholder="--- Please Select ---" allowClear>
+                                            {Array.isArray(shifts) && shifts.length > 0 ? (
+                                                shifts.map((shift) => (
+                                                    <Option key={shift.id} value={shift.id}>
+                                                        {shift.name || shift.shift_name}
+                                                    </Option>
+                                                ))
+                                            ) : (
+                                            <Option disabled>No Shifts Found</Option>
+                                        )}
+                                    </Select>
                                     </Form.Item>
+
+                                    
                                 </Col>
                             </Row>
                             <Row gutter={16}>
@@ -232,7 +249,7 @@ console.log(designations,'departments')
                                         label="Email"
                                         name="email"
                                         rules={[
-                                            { type: 'email', message: 'Please enter valid email' }
+                                            { required:true,type: 'email', message: 'Please enter valid email' }
                                         ]}
                                     >
                                         <Input placeholder="email" prefix={<MailOutlined />} />
