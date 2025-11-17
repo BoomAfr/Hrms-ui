@@ -36,6 +36,15 @@ import ApplyForLeave from './pages/leaveManagement/ApplyForLeave';
 import RequestedApplication from './pages/leaveManagement/RequestedApplication';
 import LeaveReport from './pages/leaveManagement/LeaveReport';
 import MyLeaveReport from './pages/leaveManagement/MyLeaveReport';
+import JobPost from './pages/Requirement/JobPost';
+import JobCandidate from './pages/Requirement/JobCandidate';
+import LeaveSummaryReport from './pages/leaveManagement/LeaveSummaryReport';
+import DashboardAttendance from './pages/Attendance/DashboardAttendance';
+import MannualAttendance from './pages/Attendance/MannualAttendance';
+import AttendanceSummaryReport from './pages/Attendance/AttendanceSummaryReport';
+import DailyAttendance from './pages/Attendance/DailyAttendance'; 
+import MonthlyAttendance from './pages/Attendance/MonthlyAttendance';
+import MyAttendanceReport from './pages/Attendance/MyAttendanceReport';
 
 function App() {
   return (
@@ -85,7 +94,7 @@ function App() {
               </Route>
               <Route path='report'>
                 <Route path='leave-report' element={<LeaveReport/>} />
-                <Route path='summary-report' element={<SummaryReport/>} />
+                <Route path='summary-report' element={<LeaveSummaryReport />} />
                 <Route path='my-leave-report' element={<MyLeaveReport/>} />
               </Route>
 
@@ -93,7 +102,15 @@ function App() {
              <Route path='attendance'>
                <Route path='setup'>
                   <Route path='manage-work-shift' element={<ManageWorkShift/>}/>
+                  <Route path='dashboard-attendance' element={<DashboardAttendance/>}/>
                 </Route>
+                <Route path='report' >
+                  <Route path='daily-attendance' element={<DailyAttendance/>}/>
+                  <Route path='monthly-attendance' element={<MonthlyAttendance/>}/>
+                  <Route path='my-attendance-report' element={<MyAttendanceReport/>}/>
+                  <Route path='summary-report' element={<AttendanceSummaryReport/>}/> 
+                </Route>
+                <Route path='manual-attendance' element={<MannualAttendance/>} />
              </Route>
 
              <Route path='payroll'>
@@ -104,7 +121,11 @@ function App() {
               <Route path='performance-criteria' element={<PerfomanceCriteria/>}/>
               <Route path='employee-performance' element={<EmployeePerfomance/>}/>
               <Route path='performance-summary-report' element={<SummaryReport/>}/>
-             
+
+              
+
+              <Route path='job-post' element={<JobPost/>}/>
+              <Route path='job-candidate' element={<JobCandidate/>}/>
 
              <Route path='training-type' element={<TrainingType/>}/>
              <Route path='training-list' element={<TrainingList/>}/>

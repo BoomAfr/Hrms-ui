@@ -79,7 +79,7 @@ export const useEmployees = () => {
 
   const fetchEmployees = async () => {
     try {
-      setLoading(true);
+      setLoading(true); 
       const res = await manageEmployeeApi.getAll();
       if (Array.isArray(res?.data?.results)) {
         setEmployees(res.data.results);
