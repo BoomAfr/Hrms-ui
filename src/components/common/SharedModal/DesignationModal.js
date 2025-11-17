@@ -17,7 +17,6 @@ const DesignationModal = ({
 
   useEffect(() => {
     if (editingDesignation) {
-      // Prepare initial values. department may be id or object.
       const initial = {
         name: editingDesignation.name ?? '',
       };
