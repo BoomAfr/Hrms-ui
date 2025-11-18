@@ -45,6 +45,10 @@ import AttendanceSummaryReport from './pages/Attendance/AttendanceSummaryReport'
 import DailyAttendance from './pages/Attendance/DailyAttendance'; 
 import MonthlyAttendance from './pages/Attendance/MonthlyAttendance';
 import MyAttendanceReport from './pages/Attendance/MyAttendanceReport';
+import ChangePassword from './pages/Administration/ChangePassword';
+import AddPermission from './pages/Administration/AddPermission';
+import AddRole from './pages/Administration/AddRole';
+import HourlyPayGrade from './pages/Payroll/HourlyPayGrade';
 
 function App() {
   return (
@@ -64,6 +68,13 @@ function App() {
             </ProtectedRoute>
           }>
             <Route index element={<Dashboard />} />
+            <Route path='administration'>
+              <Route path='manage-role' >
+               <Route path='add-role' element={<AddRole />} />
+               <Route path='add-role-permission' element={<AddPermission />} />
+              </Route>
+              <Route path='change-password' element={<ChangePassword/>} />
+            </Route>
             <Route path='employee-management'>
               <Route path='department' element={<Department />} />
               <Route path='designation' element={<Designation />} />
@@ -115,6 +126,7 @@ function App() {
 
              <Route path='payroll'>
               <Route path='monthly-pay-grade' element={<MonthlyPayGrade/>}/>
+              <Route path='hourly-pay-grade' element={<HourlyPayGrade/>} />
              </Route>
              
               <Route path='performance-category' element={<PerfomanceCategory/>}/>

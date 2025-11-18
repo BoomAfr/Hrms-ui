@@ -1,9 +1,14 @@
 import React from "react";
 import { Table, Button, Card, Space, Input } from "antd";
 import useEarnLeave from "../../hooks/useEarnLeaveConfigure";
+import {useToast} from "../../hooks/useToast";
 
 const EarnLeaveConfigure = () => {
-  const { days, setDays, loading, success, handleUpdate } = useEarnLeave();
+  const {Toast,contextHolder} = useToast();
+  
+  const { days, setDays, loading, success, handleUpdate } = useEarnLeave(Toast);
+  
+
 
   const columns = [
     {
@@ -60,6 +65,7 @@ const EarnLeaveConfigure = () => {
 
   return (
     <div style={{ padding: "24px" }}>
+      {contextHolder}
       <Card title="Earn Leave Configure">
         <Table
           columns={columns}

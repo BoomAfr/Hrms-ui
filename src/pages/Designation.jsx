@@ -1,284 +1,3 @@
-/*import React, { useState, useEffect } from 'react';
-import { Table, Button, Space, Card, Row, Col, Select, message, Input } from 'antd';
-import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
-import DesignationModal from '../components/common/SharedModal/DesignationModal';
-import { useDesignations } from '../hooks/useDesignations';
-import { departmentAPI } from '../services/departmentServices';
-import ConfirmModal from '../components/common/SharedModal/ConfirmModal';
-const { Option } = Select;
-
-const Designation = () => {
-  const [pageSize, setPageSize] = useState(10);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [selectedDesignation, setSelectedDesignation] = useState(null);
-
-  // editing state
-  const [editingDesignation, setEditingDesignation] = useState(null);
-
-  const [searchText, setSearchText] = useState('');
-
-  const { designations, loading, error, refetch, addDesignation, updateDesignation, deleteDesignation } = useDesignations();
-
-  // departments for dropdown in modal
-  const [departments, setDepartments] = useState([]);
-
-  useEffect(() => {
-    const loadDepartments = async () => {
-    try {
-      const res = await departmentAPI.getAllActive();
-
-      // ✅ Ensure we always store an array safely
-      const data = res.data;
-      //console.log('Departments API Response:', data);
-
-      if (Array.isArray(data)) {
-        setDepartments(data);
-      } else if (Array.isArray(data.results)) {
-        setDepartments(data.results);
-      } else {
-        setDepartments([]); // fallback to empty array
-      }
-    } catch (err) {
-      console.error('Failed to load departments', err);
-      setDepartments([]); // fallback to empty array on error
-    }
-  };
-  loadDepartments();
-}, []);
-
-  const handleAddDesignation = async (values) => {
-    try {
-      // values: { name: '...', department: <id> }
-      const payload = {
-        name: values.name,
-        department: values.department,
-      };
-
-      if (editingDesignation) {
-        await updateDesignation(editingDesignation.id, payload);
-        message.success('Designation updated successfully');
-      } else {
-        await addDesignation(payload);
-        message.success('Designation added successfully');
-      }
-
-      refetch();
-      setEditingDesignation(null);
-      setIsModalOpen(false);
-    } catch (err) {
-      message.error(err.response?.data?.message || 'Operation failed');
-    }
-  };
-
-  const handleSearch = (value) => {
-    setSearchText(value.toLowerCase());
-  };
-
-  const columns = [
-    {
-      title: 'S/L',
-      dataIndex: 'sl',
-      key: 'sl',
-      width: 80,
-      align: 'center',
-      render: (_, __, index) => index + 1,
-    },
-    {
-      title: 'Designation Name',
-      dataIndex: 'name',
-      key: 'name',
-      align: 'left',
-    },
-    {
-      title: 'Department',
-      dataIndex: 'department_name',
-      key: 'department',
-      align: 'left',
-    },
-    {
-      title: 'Action',
-      key: 'action',
-      width: 120,
-      align: 'center',
-      render: (_, record) => (
-        <Space size="small">
-          <Button
-            type="primary"
-            icon={<EditOutlined />}
-            size="small"
-            onClick={() => handleEdit(record)}
-          />
-          <Button
-            type="primary"
-            danger
-            icon={<DeleteOutlined />}
-            size="small"
-            onClick={() => handleDelete(record)}
-          />
-        </Space>
-      ),
-    },
-  ];
-
-  const handleEdit = (record) => {
-    // normalize department to id if backend gave object
-    const deptId =
-      record.department !== undefined
-        ? typeof record.department === 'object'
-          ? record.department.id
-          : record.department
-        : record.department_id ?? null;
-
-    setEditingDesignation({
-      id: record.id ?? record.key,
-      name: record.name,
-      department: deptId,
-    });
-    setIsModalOpen(true);
-  };
-
-  const handleDelete = (record) => {
-    console.log('Delete clicked for:', record);
-    setSelectedDesignation(record);
-    setIsConfirmOpen(true);
-  };
-
-  const handleConfirmDelete = async () => {
-    if (!selectedDesignation) return;
-    try {
-      await deleteDesignation(selectedDesignation.id);
-      message.success(`Deleted: ${selectedDesignation.name}`);
-      refetch();
-    } catch (error) {
-      message.error('Failed to delete designation');
-      console.error(error);
-    } finally {
-      setIsConfirmOpen(false);
-      setSelectedDesignation(null);
-    }
-  };
-
-  const handleCancelDelete = () => {
-    setIsConfirmOpen(false);
-    setSelectedDesignation(null);
-  };
-
-  const handleAddNew = () => {
-    setEditingDesignation(null);
-    setIsModalOpen(true);
-  };
-
-  const pagination = {
-    current: currentPage,
-    pageSize: pageSize,
-    total: 74,
-    showSizeChanger: true,
-    showQuickJumper: true,
-    showTotal: (total, range) =>
-      `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-    pageSizeOptions: ['10', '20', '50', '100'],
-    onChange: (page, size) => {
-      setCurrentPage(page);
-      setPageSize(size);
-    },
-  };
-
-  return (
-    <div style={{ padding: '24px' }}>
-      <Card
-        title="Designation List"
-        extra={
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={handleAddNew}
-          >
-            Add New Designation
-          </Button>
-        }
-      >
-        <Row style={{ marginBottom: 16 }} align="middle" justify="space-between">
-          <Col>
-            <span style={{ marginRight: 8 }}>Show</span>
-            <Select
-              value={pageSize}
-              onChange={(value) => setPageSize(value)}
-              style={{ width: 80, marginRight: 8 }}
-            >
-              <Option value={10}>10</Option>
-              <Option value={20}>20</Option>
-              <Option value={50}>50</Option>
-              <Option value={100}>100</Option>
-            </Select>
-            <span>entries</span>
-          </Col>
-          <Col>
-            <Input.Search
-              placeholder="Search designation..."
-              allowClear
-              onChange={(e) => handleSearch(e.target.value)}
-              style={{ width: 250 }}
-            />
-          </Col>
-        </Row>
-
-        <Table
-          columns={columns}
-          dataSource={designations
-            .filter((d) => {
-              const deptName = (d.department?.name ?? d.department_name ?? '') + '';
-              const searchable = (d.name + ' ' + deptName).toLowerCase();
-              return searchable.includes(searchText);
-            })
-            .map((d, i) => ({
-              key: d.id ?? i,
-              id: d.id,
-              sl: i + 1,
-              name: d.name,
-              department:
-                typeof d.department === 'object' && d.department !== null
-                  ? d.department.id
-                  : d.department,
-              department_name:
-                typeof d.department === 'object' && d.department !== null
-                  ? d.department.name
-                  : d.department_name ?? '',
-            }))}
-          loading={loading}
-          pagination={pagination}
-          size="middle"
-          bordered
-          scroll={{ x: 600 }}
-        />
-      </Card>
-
-      {isModalOpen && (
-        <DesignationModal
-          isModalOpen={isModalOpen}
-          setIsModalOpen={setIsModalOpen}
-          onSubmit={handleAddDesignation}
-          editingDesignation={editingDesignation}
-          title={editingDesignation ? 'Edit Designation' : 'Add Designation'}
-          fieldLabel="Designation Name"
-          departments={departments}
-        />
-      )}
-
-      <ConfirmModal
-        isOpen={isConfirmOpen}
-        title="Delete Designation"
-        message={`Are you sure you want to delete "${selectedDesignation?.name}"?`}
-        onOk={handleConfirmDelete}
-        onCancel={handleCancelDelete}
-      />
-    </div>
-  );
-};
-
-export default Designation;*/
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Space, Card, Row, Col, Select, message, Input } from 'antd';
 import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
@@ -286,6 +5,7 @@ import DesignationModal from '../components/common/SharedModal/DesignationModal'
 import { useDesignations } from '../hooks/useDesignations';
 import { departmentAPI } from '../services/departmentServices';
 import ConfirmModal from '../components/common/SharedModal/ConfirmModal';
+import {useToast} from '../hooks/useToast'
 
 const { Option } = Select;
 
@@ -310,10 +30,12 @@ const Designation = () => {
     deleteDesignation,
   } = useDesignations();
 
+  const {Toast, contextHolder} = useToast();
+
   useEffect(() => {
     const loadDepartments = async () => {
       try {
-        const res = await departmentAPI.getAllActive();
+        const res = await departmentAPI.getAll({ page: 1, page_size: 1000 });
         const data = res.data;
         if (Array.isArray(data)) setDepartments(data);
         else if (Array.isArray(data.results)) setDepartments(data.results);
@@ -337,17 +59,17 @@ const Designation = () => {
 
       if (editingDesignation) {
         await updateDesignation(editingDesignation.id, payload);
-        message.success('Designation updated successfully');
+        Toast.success('Designation updated successfully');
       } else {
         await addDesignation(payload);
-        message.success('Designation added successfully');
+        Toast.success('Designation added successfully');
       }
 
       fetchDesignations(currentPage, pageSize, searchText);
       setEditingDesignation(null);
       setIsModalOpen(false);
     } catch (err) {
-      message.error(err.response?.data?.message || 'Operation failed');
+      Toast.error(err.response?.data?.message || 'Operation failed');
     }
   };
 
@@ -376,10 +98,10 @@ const Designation = () => {
     if (!selectedDesignation) return;
     try {
       await deleteDesignation(selectedDesignation.id);
-      message.success(`Deleted: ${selectedDesignation.name}`);
+      Toast.success(`Deleted: ${selectedDesignation.name}`);
       fetchDesignations(currentPage, pageSize, searchText);
     } catch (error) {
-      message.error('Failed to delete designation');
+      Toast.error('Failed to delete designation');
       console.error(error);
     } finally {
       setIsConfirmOpen(false);
@@ -465,6 +187,7 @@ const Designation = () => {
 
   return (
     <div style={{ padding: '24px' }}>
+      {contextHolder}
       <Card
         title="Designation List"
         extra={

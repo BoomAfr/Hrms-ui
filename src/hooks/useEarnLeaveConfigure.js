@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { earnLeaveAPI } from "..//services/earnLeaveConfigureServices";
 
-const useEarnLeave = () => {
+const useEarnLeave = (Toast) => {
   const [days, setDays] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [ruleId, setRuleId] = useState(null);
+
 
   useEffect(() => {
     const fetchRule = async () => {
@@ -42,10 +43,12 @@ const useEarnLeave = () => {
     setLoading(true);
     try {
       const res = await earnLeaveAPI.put(ruleId, { day_of_earn_leave: Number(days) });
+      Toast.success("Earn Leave Updated Successfully");
       console.log("Update response:", res.data);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 2000);
     } catch (err) {
+      Toast.error("Failed to update Earn Leave");
       console.error("Put error:", err.response || err);
     } finally {
       setLoading(false);

@@ -5,6 +5,7 @@ import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import SharedModal from '../../components/common/SharedModal/ManageHolidayModal';
 import ConfirmModal from '../../components/common/SharedModal/ConfirmModal';
 import { useManageHoliday } from '../../hooks/useManageHoliday';
+import {useToast} from '../../hooks/useToast';
 
 const { Option } = Select;
 
@@ -27,21 +28,26 @@ const ManageHoliday = () => {
     deleteManageHoliday,
   } = useManageHoliday();
 
+  const {Toast, contextHolder} = useToast();
+
   const handleAddManageHoliday = async (values) => {
     try {
       const payload = { name: values.name };
       if (editingHoliday) {
         await updateManageHoliday(editingHoliday.id, payload);
-        message.success('Holiday updated successfully');
+        Toast.success('Holiday updated successfully');
+       // message.success('Holiday updated successfully');
       } else {
         await addManageHoliday(payload);
-        message.success('Holiday added successfully');
+        Toast.success('Holiday added successfully');
+        //message.success('Holiday added successfully');
       }
       refetch();
       setEditingHoliday(null);
       setIsModalOpen(false);
     } catch (err) {
-      message.error(err.response?.data?.message || 'Operation failed');
+      Toast.error(err.response?.data?.message || 'Operation failed');
+     // message.error(err.response?.data?.message || 'Operation failed');
     }
   };
 
@@ -75,10 +81,12 @@ const ManageHoliday = () => {
     if (!selectedHoliday) return;
     try {
       await deleteManageHoliday(selectedHoliday.id);
-      message.success(`Deleted: ${selectedHoliday.name}`);
+      Toast.success(`Deleted: ${selectedHoliday.name}`);
+     // message.success(`Deleted: ${selectedHoliday.name}`);
       refetch();
     } catch (error) {
-      message.error('Failed to delete holiday');
+      Toast.error('Failed to delete holiday');
+     // message.error('Failed to delete holiday');
     } finally {
       setIsConfirmOpen(false);
       setSelectedHoliday(null);
@@ -152,6 +160,7 @@ const ManageHoliday = () => {
 
   return (
     <div style={{ padding: '24px' }}>
+      {contextHolder}
       <Card
         title="Manage Holiday"
         extra={

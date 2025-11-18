@@ -4,6 +4,7 @@ import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import WorkShiftModal from "../../components/common/SharedModal/ManageWorkShiftModal";
 import ConfirmModal from "../../components/common/SharedModal/ConfirmModal";
 import { useWorkShifts } from "../../hooks/useManageWorkShift";
+import {useToast} from "../../hooks/useToast";
 
 const { Option } = Select;
 
@@ -17,6 +18,7 @@ const WorkShift = () => {
   const [searchText, setSearchText] = useState("");
 
   const { shifts, loading, refetch, addShift, updateShift, deleteShift } = useWorkShifts();
+  const {Toast,contextHolder} = useToast();
 
   const handleAddNew = () => {
     setEditingShift(null);
@@ -37,10 +39,12 @@ const WorkShift = () => {
     if (!selectedShift) return;
     try {
       await deleteShift(selectedShift.id);
-      message.success("Deleted successfully");
+      Toast.success("Deleted successfully")
+     // message.success("Work Shift Deleted successfully");
       refetch();
     } catch (err) {
-      message.error("Delete failed");
+      Toast.error("Delete failed")
+      //message.error("Work Shift Delete failed");
     } finally {
       setIsConfirmOpen(false);
       setSelectedShift(null);
@@ -51,16 +55,19 @@ const WorkShift = () => {
     try {
       if (editingShift) {
         await updateShift(editingShift.id, formData);
-        message.success("Work Shift updated successfully");
+        Toast.success("Work Shift updated successfully")
+       // message.success("Work Shift updated successfully");
       } else {
         await addShift(formData);
-        message.success("Work Shift added successfully");
+        Toast.success("Work Shift added successfully")
+       // message.success("Work Shift added successfully");
       }
       setIsModalOpen(false);
       setEditingShift(null);
       refetch();
     } catch (err) {
-      message.error("Operation failed");
+      Toast.error("Operation failed")
+      //message.error("Operation failed");
     }
   };
 
@@ -127,6 +134,7 @@ const WorkShift = () => {
 
   return (
     <div style={{ padding: 24 }}>
+      {contextHolder}
       <Card
         title="Manage Work Shift"
         extra={

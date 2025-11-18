@@ -5,6 +5,7 @@ import PublicHolidayModal from '../../components/common/SharedModal/PublicHolida
 import ConfirmModal from '../../components/common/SharedModal/ConfirmModal';
 import { usePublicHoliday } from '../../hooks/usePublicHoliday';
 import { manageHolidayAPI } from '../../services/manageHolidayServices';
+import {useToast} from '../../hooks/useToast';
 const { Option } = Select;
 
 const PublicHoliday = () => {
@@ -19,11 +20,12 @@ const PublicHoliday = () => {
 
   const { publicHolidays, loading, error, refetch, addPublicHoliday, updatePublicHoliday, deletePublicHoliday } = usePublicHoliday();
 
+  const {Toast,contextHolder}=useToast();
+
   useEffect(() => {
-    // fetch manageHoliday list to populate dropdown
     const loadHolidays = async () => {
       try {
-        const res = await manageHolidayAPI.getAll();
+        const res = await manageHolidayAPI.getALLPage({ page: 1, page_size: 2000 });
         setHolidaysOptions(res.data);
       } catch (err) {
         console.error('Failed to load manage holidays', err);
@@ -34,7 +36,6 @@ const PublicHoliday = () => {
 
   const handleAddPublicHoliday = async (values) => {
     try {
-      // payload: { holiday: id, start_date: 'YYYY-MM-DD', end_date: 'YYYY-MM-DD', comment }
       const payload = {
         holiday: values.holiday,
         start_date: values.start_date,
@@ -44,17 +45,19 @@ const PublicHoliday = () => {
 
       if (editingPublicHoliday) {
         await updatePublicHoliday(editingPublicHoliday.id, payload);
-        message.success('Public holiday updated successfully');
+        Toast.success('Public holiday updated successfully');
+       
       } else {
         await addPublicHoliday(payload);
-        message.success('Public holiday added successfully');
+        Toast.success('Public holiday added successfully');
+    
       }
 
       refetch();
       setEditingPublicHoliday(null);
       setIsModalOpen(false);
     } catch (err) {
-      message.error(err.response?.data?.message || 'Operation failed');
+      Toast.error(err.response?.data?.message || 'Operation failed');
     }
   };
   const loadDepartments = async (page = currentPage, size = pageSize, search = searchText) => {
@@ -63,7 +66,6 @@ const PublicHoliday = () => {
   };
   const [total, setTotal] = useState(0);
   
-  // Fetch when page, size, or search changes
   useEffect(() => {
     loadDepartments(currentPage, pageSize, searchText);
   }, [currentPage, pageSize, searchText]);
@@ -99,11 +101,12 @@ const PublicHoliday = () => {
     if (!selectedPublicHoliday) return;
     try {
       await deletePublicHoliday(selectedPublicHoliday.id);
-      message.success(`Deleted: ${selectedPublicHoliday.id}`);
+      Toast.success(`Public holiday deleted successfully`);
+     // Toast.success(`Deleted: ${selectedPublicHoliday.id}`);
       refetch();
     } catch (err) {
-      message.error('Failed to delete public holiday');
-      console.error(err);
+      Toast.error('Failed to delete public holiday')
+     // message.error('Failed to delete public holiday');
     } finally {
       setIsConfirmOpen(false);
       setSelectedPublicHoliday(null);
@@ -196,6 +199,7 @@ const PublicHoliday = () => {
 
   return (
     <div style={{ padding: '24px' }}>
+      {contextHolder}
       <Card
         title="Public Holiday List"
         extra={

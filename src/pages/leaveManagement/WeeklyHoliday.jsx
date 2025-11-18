@@ -4,6 +4,7 @@ import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import WeeklyHolidayModal from '../../components/common/SharedModal/WeeklyHolidayModal';
 import ConfirmModal from '../../components/common/SharedModal/ConfirmModal';
 import { useWeeklyHoliday } from '../../hooks/useWeeklyHoliday';
+import {useToast} from '../../hooks/useToast';
 const { Option } = Select;
 
 const WeeklyHoliday = () => {
@@ -17,21 +18,26 @@ const WeeklyHoliday = () => {
 
   const { weeklyHolidays, loading,  refetch, addWeeklyHoliday, updateWeeklyHoliday, deleteWeeklyHoliday } = useWeeklyHoliday();
 
+  const {Toast,contextHolder} = useToast();
+
   const handleAddWeeklyHoliday = async (payload) => {
     try {
       if (editingWeeklyHoliday) {
         await updateWeeklyHoliday(editingWeeklyHoliday.id, payload);
-        message.success('Weekly holiday updated successfully');
+        Toast.success('Weekly holiday updated successfully');
+       // message.success('Weekly holiday updated successfully');
       } else {
         await addWeeklyHoliday(payload);
-        message.success('Weekly holiday added successfully');
+        Toast.success('Weekly holiday added successfully');
+       // message.success('Weekly holiday added successfully');
       }
 
       refetch();
       setEditingWeeklyHoliday(null);
       setIsModalOpen(false);
     } catch (err) {
-      message.error(err.response?.data?.message || 'Operation failed');
+      Toast.error(err.response?.data?.message || 'Operation failed');
+    //  message.error(err.response?.data?.message || 'Operation failed');
     }
   };
   const loadWeeklyHoliday = async (page = currentPage, size = pageSize, search = searchText) => {
@@ -40,7 +46,6 @@ const WeeklyHoliday = () => {
   };
   const [total, setTotal] = useState(0);
   
-  // Fetch when page, size, or search changes
   useEffect(() => {
     loadWeeklyHoliday(currentPage, pageSize, searchText);
   }, [currentPage, pageSize, searchText]);
@@ -115,10 +120,12 @@ const WeeklyHoliday = () => {
     if (!selectedWeeklyHoliday) return;
     try {
       await deleteWeeklyHoliday(selectedWeeklyHoliday.id);
-      message.success(`Deleted: ${selectedWeeklyHoliday.day}`);
+      Toast.success(`Deleted: ${selectedWeeklyHoliday.day}`);
+     // message.success(`Deleted: ${selectedWeeklyHoliday.day}`);
       refetch();
     } catch (error) {
-      message.error('Failed to delete weekly holiday');
+      Toast.error('Failed to delete weekly holiday');
+     // message.error('Failed to delete weekly holiday');
     } finally {
       setIsConfirmOpen(false);
       setSelectedWeeklyHoliday(null);
@@ -152,6 +159,7 @@ const WeeklyHoliday = () => {
 
   return (
     <div style={{ padding: '24px' }}>
+      {contextHolder}
       <Card
         title="Weekly Holiday List"
         extra={

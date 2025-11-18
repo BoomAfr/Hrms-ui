@@ -10,15 +10,14 @@ const PublicHolidayModal = ({
   isModalOpen,
   setIsModalOpen,
   onSubmit,
-  editingPublicHoliday, // { id, holiday, start_date, end_date, comment }
+  editingPublicHoliday, 
   title = 'Add Public Holiday',
-  holidaysOptions = [], // list from manageHoliday: [{id, name}, ...]
+  holidaysOptions = [], 
 }) => {
   const [form] = Form.useForm();
 
   useEffect(() => {
     if (editingPublicHoliday) {
-      // Prepare initial values
       const initial = {
         holiday: editingPublicHoliday.holiday && typeof editingPublicHoliday.holiday === 'object'
           ? editingPublicHoliday.holiday.id
@@ -26,7 +25,6 @@ const PublicHolidayModal = ({
         comment: editingPublicHoliday.comment ?? '',
       };
 
-      // parse dates if present
       if (editingPublicHoliday.start_date) {
         initial.start_date = dayjs(editingPublicHoliday.start_date);
       }
@@ -83,7 +81,7 @@ const PublicHolidayModal = ({
           onFinish={handleSubmit}
           autoComplete="off"
         >
-          {/* Holiday Name dropdown */}
+
           <Form.Item
             label="Holiday Name"
             name="holiday"

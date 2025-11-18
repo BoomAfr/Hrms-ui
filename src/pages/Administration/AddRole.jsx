@@ -1,55 +1,61 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Space, Card, Row, Col, Select, message, Input } from 'antd';
 import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
-import CommonFormModal from '../components/common/SharedModal/BranchModal';
-import { useBranches } from '../hooks/useBranches';
-import ConfirmModal from '../components/common/SharedModal/ConfirmModal';
-import{useToast} from'../hooks/useToast';
+import AddRoleModal from '../../components/common/SharedModal/AddRoleModal';
+import { useAddRoles } from '../../hooks/useAddRole';
+import ConfirmModal from '../../components/common/SharedModal/ConfirmModal';
+import { useToast } from '../../hooks/useToast';
 const { Option } = Select;
 
-const Branch = () => {
+const AddRole = () => {
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { Toast, contextHolder } = useToast();
+
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [selectedBranch, setSelectedBranch] = useState(null);
-  const [editingBranch, setEditingBranch] = useState(null);
+  const [selectedRole, setSelectedRole] = useState(null);
+
+  // added editingDept state
+  const [editingRole, setEditingRole] = useState(null);
+
   const [searchText, setSearchText] = useState('');
 
-  const { branches, loading, error, refetch, addBranch, updateBranch, deleteBranch } = useBranches();
 
-  const {Toast, contextHolder}=useToast();  
 
+  const { roles, loading, error, refetch, addRole, updateRole, deleteRole } = useAddRoles();
+
+
+  const handleAddRole = (values) => {
+    console.log(values, 'values');
+    if (editingRole) {
+      updateRole(editingRole.id, values, Toast);
+      Toast?.success('Role Added Successfully');
+    }
+    else {
+      addRole(values);
+      Toast?.error('Role Not Added');
+    }
+    setEditingRole(null);
+  };
+
+  const loadRoles = async (page = currentPage, size = pageSize, search = searchText) => {
+    const data = await refetch(page, size, search);
+    if (data && data.count !== undefined) setTotal(data.count);
+  };
+  const [total, setTotal] = useState(0);
+
+  // Fetch when page, size, or search changes
   useEffect(() => {
-    refetch(currentPage, pageSize, searchText.trim());
+    loadRoles(currentPage, pageSize, searchText);
   }, [currentPage, pageSize, searchText]);
 
-  const handleAddBranch = async (values) => {
-    try {
-      const payload = { name: values.name };
-      if (editingBranch) {
-        await updateBranch(editingBranch.id, payload);
-        Toast.success('Branch updated successfully');
-       // message.success('Branch updated successfully');
-      } else {
-        await addBranch(payload);
-        Toast.success('Branch added successfully');
-      //  message.success('Branch added successfully');
-      }
-      refetch(currentPage, pageSize, searchText.trim());
-      setEditingBranch(null);
-      setIsModalOpen(false);
-    } catch (err) {
-      Toast.error(err.response?.data?.message || 'Operation failed');
-      //message.error(err.response?.data?.message || 'Operation failed');
-    }
+  const handleSearch = (value) => {
+    setSearchText(value.toLowerCase());
+    setCurrentPage(1); // reset to page 1
   };
 
-  const handleSearch = (e) => {
-    const value = e.target.value;
-    setSearchText(value);
-    setCurrentPage(1); // reset to first page on search
-  };
+
 
   const columns = [
     {
@@ -58,10 +64,10 @@ const Branch = () => {
       key: 'sl',
       width: 80,
       align: 'center',
-      render: (_, __, index) => index + 1,
+      render: (_, __, index) => index + 1, // ✅ auto index
     },
     {
-      title: 'Name',
+      title: 'Role',
       dataIndex: 'name',
       key: 'name',
       align: 'left',
@@ -92,49 +98,49 @@ const Branch = () => {
   ];
 
   const handleEdit = (record) => {
-    setEditingBranch({ id: record.id ?? record.key, name: record.name });
+    // record is table row. ensure it contains id & name
+    setEditingRole({ id: record.id ?? record.key, name: record.name });
     setIsModalOpen(true);
   };
 
   const handleDelete = (record) => {
-    setSelectedBranch(record);
-    setIsConfirmOpen(true);
+    console.log("Delete clicked for:", record);
+    setSelectedRole(record);
+    setIsConfirmOpen(true)
   };
-
   const handleConfirmDelete = async () => {
-    if (!selectedBranch) return;
+    if (!selectedRole) return;
     try {
-      await deleteBranch(selectedBranch.id);
-      Toast.success(`Deleted: ${selectedBranch.name}`);
-      //message.success(`Deleted: ${selectedBranch.name}`);
-      refetch(currentPage, pageSize, searchText.trim());
+      await deleteRole(selectedRole.id);
+      message.success(`Deleted: ${selectedRole.name}`);
+      refetch();
     } catch (error) {
-      Toast.error('Failed to delete branch');
-     // message.error('Failed to delete branch');
+      message.error('Failed to delete department');
+      console.error(error);
     } finally {
       setIsConfirmOpen(false);
-      setSelectedBranch(null);
+      setSelectedRole(null);
     }
   };
 
   const handleCancelDelete = () => {
     setIsConfirmOpen(false);
-    setSelectedBranch(null);
+    setSelectedRole(null);
   };
 
+
   const handleAddNew = () => {
-    setEditingBranch(null);
+    setEditingRole(null);
     setIsModalOpen(true);
   };
 
   const pagination = {
     current: currentPage,
     pageSize: pageSize,
-    total: 74, // backend pagination count can be handled later if available
+    total: total,
     showSizeChanger: true,
     showQuickJumper: true,
-    showTotal: (total, range) =>
-      `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+    showTotal: (total, range) => `Showing ${range[0]} to ${range[1]} of ${total} entries`,
     pageSizeOptions: ['10', '20', '50', '100'],
     onChange: (page, size) => {
       setCurrentPage(page);
@@ -146,10 +152,14 @@ const Branch = () => {
     <div style={{ padding: '24px' }}>
       {contextHolder}
       <Card
-        title="Branch List"
+        title="Role List"
         extra={
-          <Button type="primary" icon={<PlusOutlined />} onClick={handleAddNew}>
-            Add New Branch
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={handleAddNew}
+          >
+            Add New Role
           </Button>
         }
       >
@@ -170,9 +180,9 @@ const Branch = () => {
           </Col>
           <Col>
             <Input.Search
-              placeholder="Search branch..."
+              placeholder="Search role..."
               allowClear
-              onChange={handleSearch}
+              onChange={(e) => handleSearch(e.target.value)}
               style={{ width: 250 }}
             />
           </Col>
@@ -180,12 +190,16 @@ const Branch = () => {
 
         <Table
           columns={columns}
-          dataSource={branches.map((d, i) => ({
-            key: d.id || i,
-            id: d.id,
-            sl: i + 1,
-            name: d.name,
-          }))}
+          dataSource={roles
+            .filter((d) => d.name.toLowerCase().includes(searchText))
+            .map((d, i) => ({
+              key: d.id || i,
+              id: d.id,
+              sl: i + 1,
+              name: d.name,
+            }))
+          }
+
           loading={loading}
           pagination={pagination}
           size="middle"
@@ -193,33 +207,32 @@ const Branch = () => {
           scroll={{ x: 400 }}
         />
       </Card>
-
       {isModalOpen && (
-        <CommonFormModal
+        <AddRoleModal
           isModalOpen={isModalOpen}
           setIsModalOpen={setIsModalOpen}
-          onSubmit={handleAddBranch}
-          editingDept={editingBranch}
+          onSubmit={handleAddRole} //  pass the handler
+          editingRole={editingRole} // pass for prefill in modal
           fieldLabel={[
-              {
-                label: 'Branch Name',
-                name: 'name',
-                isRequired: true,
-                component: <Input placeholder="Enter Branch Name" size="large" />,
-              },
-            ]}
+            {
+              label: 'Role Name',
+              name: 'name',
+              isRequired: true,
+              component: <Input placeholder="Enter Role Name" size="large" />,
+            },
+          ]}
         />
       )}
-
       <ConfirmModal
         isOpen={isConfirmOpen}
-        title="Delete Branch"
-        message={`Are you sure you want to delete "${selectedBranch?.name}"?`}
+        title="Delete Role"
+        message={`Are you sure you want to delete "${selectedRole?.name}"?`}
         onOk={handleConfirmDelete}
         onCancel={handleCancelDelete}
       />
+
     </div>
   );
 };
 
-export default Branch;
+export default AddRole;
