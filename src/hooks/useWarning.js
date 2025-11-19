@@ -1,56 +1,117 @@
-import { warningApi } from "../services/warningService";
-import {manageEmployeeApi} from "../services/manageEmployeeServices";
-import {useState,useEffect} from 'react';
+import { useState, useEffect } from "react";
+import { warningApi } from "../services/warningServices";
+import { manageEmployeeApi } from "../services/manageEmployeeServices";
+import { message } from "antd";
 
-export const useWarning = ()=>{
-    const [warnings,setWarnings] = useState([]);
-    const [employees, setEmployees] = useState([]);
+export const useWarning = () => {
+  const [warnings, setWarnings] = useState([]);
+  const [employees, setEmployees] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-    const fetchAllWarnings = async()=>{
-        try{
-            const response = await warningApi.getAll();
-            console.log(response,'response')
-            setWarnings(response?.data?.results || []);
-        }
-        catch(error){
-            console.error("Error");
-        }
-        finally{
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0,
+  });
 
-        }
-
+  const formatDate = (data) => {
+    if (data.warning_date?.$d) {
+      return {
+        ...data,
+        warning_date: data.warning_date.format("YYYY-MM-DD"),
+      };
     }
-    const fetchEmployees = async () => {   // ⬅ added
+    return data;
+  };
+
+  const fetchWarnings = async (page = 1, pageSize = 10, search = "") => {
     try {
-      const response = await manageEmployeeApi.getAll();
-      setEmployees(response?.data?.results || []);
-    } catch (error) {
+      setLoading(true);
+      const res = await warningApi.getAll({
+        page,
+        page_size: pageSize,
+        search,
+      });
+
+      setWarnings(res.data.results || []);
+      setPagination({
+        current: page,
+        pageSize,
+        total: res.data.count,
+      });
+    } catch (err) {
+      console.error("Error fetching warnings");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchEmployees = async () => {
+    try {
+      const res = await manageEmployeeApi.getAll();
+      setEmployees(res.data.results || []);
+    } catch (err) {
       console.error("Error fetching employees");
     }
   };
 
-   const addWarning = (data) =>{
-    console.log("addWarningdata",data)
-        try{
-            warningApi.create(data);
-            fetchAllWarnings();
-
-        }catch{
-
-        }finally{}
+  const addWarning = async (data, onSuccess) => {
+    try {
+      setLoading(true);
+      const formatted = formatDate(data);
+      await warningApi.create(formatted);
+      message.success("Warning added successfully");
+      fetchWarnings();
+      onSuccess?.();
+    } catch (err) {
+      message.error("Failed to add warning");
+    } finally {
+      setLoading(false);
     }
+  };
 
-    useEffect(()=>{
-        fetchAllWarnings();
-        fetchEmployees();   // ⬅ added
-       },[])
+  const updateWarning = async (id, data, onSuccess) => {
+    try {
+      setLoading(true);
+      const formatted = formatDate(data);
+      await warningApi.update(id, formatted);
+      message.success("Warning updated successfully");
+      fetchWarnings();
+      onSuccess?.();
+    } catch (err) {
+      message.error("Failed to update warning");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-       return(
-        
-           { warnings,
-            addWarning,
-            employees  // ⬅ added
-        }
-        
-       )
-}
+  const deleteWarning = async (id, onSuccess) => {
+    try {
+      setLoading(true);
+      await warningApi.delete(id);
+      message.success("Warning deleted successfully");
+      fetchWarnings();
+      onSuccess?.();
+    } catch (err) {
+      message.error("Failed to delete warning");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchWarnings();
+    fetchEmployees();
+  }, []);
+
+  return {
+    warnings,
+    employees,
+    loading,
+    pagination,
+    fetchWarnings,
+    addWarning,
+    updateWarning,
+    deleteWarning,
+  };
+};

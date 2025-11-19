@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Table, Card, Tag, Button, Space, Spin } from "antd";
 import { getAllLeaveRequests } from "../../services/requestedApplicationsServices";
+import ViewModal from "../../components/common/SharedModal/ViewModal";
 
 const RequestedApplication = () => {
   const [data, setData] = useState([]);
@@ -11,13 +12,13 @@ const RequestedApplication = () => {
     total: 0,
   });
 
+  const [selectedRow, setSelectedRow] = useState(null);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+
   const fetchLeaveRequests = async (page = 1, pageSize = 10) => {
     try {
       setLoading(true);
-      const res = await getAllLeaveRequests({
-        page,
-        page_size: pageSize,
-      });
+      const res = await getAllLeaveRequests({ page, page_size: pageSize });
 
       setData(res.results || res || []);
       setPagination({
@@ -36,7 +37,6 @@ const RequestedApplication = () => {
     fetchLeaveRequests();
   }, []);
 
-  // Table columns
   const columns = [
     {
       title: "S/L",
@@ -60,14 +60,14 @@ const RequestedApplication = () => {
     },
     {
       title: "Request Duration",
+      dataIndex: "request_duration",
       key: "request_duration",
-      render: (record) => `${record.start_date} to ${record.end_date}`,
       align: "center",
     },
     {
       title: "Request Date",
-      dataIndex: "request_date",
-      key: "request_date",
+      dataIndex: "application_date",
+      key: "application_date",
       align: "center",
     },
     {
@@ -99,9 +99,16 @@ const RequestedApplication = () => {
       title: "Action",
       key: "action",
       align: "center",
-      render: () => (
+      render: (_, record) => (
         <Space>
-          <Button type="primary" size="small">
+          <Button
+            type="primary"
+            size="small"
+            onClick={() => {
+              setSelectedRow(record);
+              setIsViewModalOpen(true);
+            }}
+          >
             View
           </Button>
         </Space>
@@ -130,6 +137,14 @@ const RequestedApplication = () => {
           bordered
         />
       )}
+
+      {/* VIEW MODAL */}
+      <ViewModal
+        open={isViewModalOpen}
+        onClose={() => setIsViewModalOpen(false)}
+        data={selectedRow}
+        onSuccess={() => fetchLeaveRequests(pagination.current, pagination.pageSize)}
+      />
     </Card>
   );
 };
