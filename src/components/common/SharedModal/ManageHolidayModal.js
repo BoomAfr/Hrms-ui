@@ -2,13 +2,14 @@ import React, { useEffect } from 'react';
 import { Modal, Form, Input, Button, Card } from 'antd';
 import { SaveOutlined } from '@ant-design/icons';
 
-const AddDepartmentModal = ({
+const ManageHolidayModal = ({
   isModalOpen,
   setIsModalOpen,
   onSubmit,
   editingDept,
   title = 'Add Holiday',
   fieldLabel = 'Holiday Name',
+  loading = false   // 👈 Loader added here
 }) => {
   const [form] = Form.useForm();
 
@@ -20,10 +21,10 @@ const AddDepartmentModal = ({
     }
   }, [editingDept, form]);
 
-  const handleSubmit = (values) => {
-    onSubmit(values);
+  const handleSubmit = async (values) => {
+    await onSubmit(values);  
     form.resetFields();
-    setIsModalOpen(false);
+    setIsModalOpen(false);    
   };
 
   const handleCancel = () => {
@@ -71,33 +72,18 @@ const AddDepartmentModal = ({
           </Form.Item>
 
           <Form.Item style={{ marginBottom: 0, marginTop: '32px' }}>
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'flex-end',
-                gap: '12px',
-              }}
-            >
-              <Button
-                size="large"
-                onClick={handleCancel}
-                style={{
-                  minWidth: '100px',
-                  borderRadius: '6px',
-                }}
-              >
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+              <Button size="large" onClick={handleCancel} style={{ minWidth: '100px', borderRadius: '6px' }}>
                 Cancel
               </Button>
+
               <Button
                 type="primary"
                 htmlType="submit"
                 icon={<SaveOutlined />}
                 size="large"
-                style={{
-                  minWidth: '120px',
-                  borderRadius: '6px',
-                  backgroundColor: '#1890ff',
-                }}
+                loading={loading}   // 👈 loader here
+                style={{ minWidth: '120px', borderRadius: '6px', backgroundColor: '#1890ff' }}
               >
                 Save
               </Button>
@@ -109,4 +95,4 @@ const AddDepartmentModal = ({
   );
 };
 
-export default AddDepartmentModal;
+export default ManageHolidayModal;

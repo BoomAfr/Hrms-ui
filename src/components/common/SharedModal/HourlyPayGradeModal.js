@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Modal, Form, Input, Button, Card } from 'antd';
 import { SaveOutlined } from '@ant-design/icons';
 
@@ -11,6 +11,8 @@ const HourlyPaygradeModal = ({
 }) => {
   const [form] = Form.useForm();
 
+  const [saving,setSaving] = useState(false);
+
   useEffect(() => {
     if (editingPaygrade) {
       form.setFieldsValue({
@@ -22,16 +24,22 @@ const HourlyPaygradeModal = ({
     }
   }, [editingPaygrade, form]);
 
-  const handleFinish = (values) => {
+  const handleFinish = async (values) => {
     const payload = {
       pay_grade_name: values.pay_grade_name,
       hourly_rate: values.hourly_rate === '' || values.hourly_rate === undefined
         ? null
         : Number(values.hourly_rate),
     };
-    onSubmit(payload);
+   try{
+    setSaving(true);
+    await onSubmit(payload);
     form.resetFields();
     setIsModalOpen(false);
+   }
+   finally{
+    setSaving(false);
+   }
   };
 
   const handleCancel = () => {
@@ -88,7 +96,7 @@ const HourlyPaygradeModal = ({
               <Button size="large" onClick={handleCancel} style={{ minWidth: 100, borderRadius: 6 }}>
                 Cancel
               </Button>
-              <Button type="primary" htmlType="submit" icon={<SaveOutlined />} size="large" style={{ minWidth: 120, borderRadius: 6 }}>
+              <Button type="primary" htmlType="submit" icon={<SaveOutlined />} size="large" style={{ minWidth: 120, borderRadius: 6 }} loading={saving}>
                 Save
               </Button>
             </div>

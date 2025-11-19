@@ -1,9 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect,useState } from 'react';
 import { Modal, Form, Input, Button, Card } from 'antd';
 import { SaveOutlined } from '@ant-design/icons';
 
 const LeaveTypeModal = ({ isModalOpen, setIsModalOpen, onSubmit, editingLeaveType }) => {
   const [form] = Form.useForm();
+
+  const [saving, setSaving]= useState(false);
 
   useEffect(() => {
     if (editingLeaveType) {
@@ -16,15 +18,20 @@ const LeaveTypeModal = ({ isModalOpen, setIsModalOpen, onSubmit, editingLeaveTyp
     }
   }, [editingLeaveType, form]);
 
-  const handleSubmit = (values) => {
-    // ensure numeric field is number
+  const handleSubmit = async (values) => {
     const payload = {
       name: values.name,
       number_of_days: Number(values.number_of_days),
     };
-    onSubmit(payload);
-    form.resetFields();
-    setIsModalOpen(false);
+    try{
+     setSaving(true)
+     await onSubmit(payload);
+     form.resetFields();
+     setIsModalOpen(false);
+    }
+    finally{
+      setSaving(false);
+    }
   };
 
   const handleCancel = () => {
@@ -103,6 +110,7 @@ const LeaveTypeModal = ({ isModalOpen, setIsModalOpen, onSubmit, editingLeaveTyp
                 type="primary"
                 htmlType="submit"
                 icon={<SaveOutlined />}
+                loading={saving}
                 size="large"
                 style={{
                   minWidth: '120px',

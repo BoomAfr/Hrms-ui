@@ -11,6 +11,8 @@ const TrainingListModal = ({ isModalOpen, setIsModalOpen, onSubmit, editingTrain
   const [trainingTypes, setTrainingTypes] = useState([]);
   const [employees, setEmployees] = useState([]);
 
+  const [saving,setSaving] = useState(false);
+
   useEffect(() => {
     const fetchLookups = async () => {
       try {
@@ -46,7 +48,7 @@ const TrainingListModal = ({ isModalOpen, setIsModalOpen, onSubmit, editingTrain
     }
   }, [editingTraining, form]);
 
-  const handleFinish = (values) => {
+  const handleFinish = async (values) => {
     const payload = {
       training_type: values.training_type,
       employee: values.employee,
@@ -55,9 +57,15 @@ const TrainingListModal = ({ isModalOpen, setIsModalOpen, onSubmit, editingTrain
       to_date: values.to_date ? values.to_date.format('YYYY-MM-DD') : null,
       description: values.description,
     };
-    onSubmit(payload);
+  try{
+    setSaving(true);
+    await onSubmit(payload);
     form.resetFields();
     setIsModalOpen(false);
+  }
+  finally{
+    setSaving(false);
+  }
   };
 
   const handleCancel = () => {
@@ -123,7 +131,7 @@ const TrainingListModal = ({ isModalOpen, setIsModalOpen, onSubmit, editingTrain
           <Form.Item style={{ marginBottom: 0 }}>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
               <Button onClick={handleCancel} size="large">Cancel</Button>
-              <Button type="primary" htmlType="submit" icon={<SaveOutlined />} size="large">Save</Button>
+              <Button type="primary" htmlType="submit" icon={<SaveOutlined />} size="large" loading={saving}>Save</Button>
             </div>
           </Form.Item>
         </Form>

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Space, Card, Row, Col, Select, message, Input } from 'antd';
 import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
@@ -222,6 +221,7 @@ const ManageHoliday = () => {
           setIsModalOpen={setIsModalOpen}
           onSubmit={handleAddManageHoliday}
           editingDept={editingHoliday}
+          loading={loading}
         />
       )}
 

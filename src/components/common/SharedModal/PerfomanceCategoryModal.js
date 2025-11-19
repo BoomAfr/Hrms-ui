@@ -1,9 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Modal, Form, Input, Button, Card } from 'antd';
 import { SaveOutlined } from '@ant-design/icons';
 
 const PerformanceCategoryModal = ({ isModalOpen, setIsModalOpen, onSubmit, editingCategory }) => {
   const [form] = Form.useForm();
+
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (editingCategory) {
@@ -15,11 +17,16 @@ const PerformanceCategoryModal = ({ isModalOpen, setIsModalOpen, onSubmit, editi
     }
   }, [editingCategory, form]);
 
-  const handleFinish = (values) => {
-
-    onSubmit(values);
+  const handleFinish = async (values) => {
+  try{
+    setSaving(true)
+    await onSubmit(values);
     form.resetFields();
     setIsModalOpen(false);
+  }
+  finally{
+    setSaving(false)
+  }
   };
 
   const handleCancel = () => {
@@ -49,7 +56,7 @@ const PerformanceCategoryModal = ({ isModalOpen, setIsModalOpen, onSubmit, editi
           <Form.Item style={{ marginBottom: 0 }}>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
               <Button onClick={handleCancel} size="large">Cancel</Button>
-              <Button type="primary" htmlType="submit" icon={<SaveOutlined />} size="large">Save</Button>
+              <Button type="primary" htmlType="submit" icon={<SaveOutlined />} size="large"loading={saving}>Save</Button>
             </div>
           </Form.Item>
         </Form>

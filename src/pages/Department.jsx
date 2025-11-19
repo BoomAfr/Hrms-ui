@@ -34,7 +34,9 @@ const Department = () => {
     }
     else {
       addDepartment(values);
+      Toast.success("Depatment added succesfully");
     }
+    setIsModalOpen(false);
     setEditingDept(null);
   };
 
@@ -110,11 +112,19 @@ const Department = () => {
   const handleConfirmDelete = async () => {
     if (!selectedDept) return;
     try {
-      await deleteDepartment(selectedDept.id);
-      message.success(`Deleted: ${selectedDept.name}`);
-      refetch();
+       await deleteDepartment(selectedDept.id);
+    Toast.success(`Deleted: ${selectedDept.name}`);
+
+    const result = await refetch(currentPage, pageSize, searchText);
+
+    if (result?.results?.length === 0 && currentPage > 1) {
+      const newPage = currentPage - 1;
+      setCurrentPage(newPage);
+
+      await refetch(newPage, pageSize, searchText);
+    }
     } catch (error) {
-      message.error('Failed to delete department');
+      Toast.error('Failed to delete department')
       console.error(error);
     } finally {
       setIsConfirmOpen(false);
@@ -212,6 +222,7 @@ const Department = () => {
           setIsModalOpen={setIsModalOpen}
           onSubmit={handleAddDepartment} //  pass the handler
           editingDept={editingDept} // pass for prefill in modal
+          loading={loading}
           fieldLabel={[
             {
               label: 'Department Name',

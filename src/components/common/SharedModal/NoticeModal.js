@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Modal, Form, Input, Button, Select, DatePicker, Upload, Image } from "antd";
 import { SaveOutlined, UploadOutlined } from "@ant-design/icons";
 import moment from "moment";
@@ -13,6 +13,8 @@ const NoticeModal = ({
   isViewMode = false,
 }) => {
   const [form] = Form.useForm();
+
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (editingNotice) {
@@ -30,17 +32,24 @@ const NoticeModal = ({
     }
   }, [editingNotice, form]);
 
-  const handleFinish = (values) => {
-    const formData = new FormData();
-    formData.append("title", values.title);
-    formData.append("description", values.description);
-    formData.append("status", values.status);
-    if (values.publish_date)
-      formData.append("publish_date", values.publish_date.format("YYYY-MM-DD"));
-    if (values.image && values.image.file) {
-      formData.append("attach_file", values.image.file.originFileObj);
-    }
-    onSubmit(formData);
+  const handleFinish = async (values) => {
+    setSaving(true);
+
+  const formData = new FormData();
+  formData.append("title", values.title);
+  formData.append("description", values.description);
+  formData.append("status", values.status);
+  if (values.publish_date)
+    formData.append("publish_date", values.publish_date.format("YYYY-MM-DD"));
+  if (values.image && values.image.file) {
+    formData.append("attach_file", values.image.file.originFileObj);
+  }
+
+  try {
+    await onSubmit(formData);  // ⬅️ MUST be awaited
+  } finally {
+    setSaving(false);
+  }
   };
 
   const handleCancel = () => {
@@ -65,7 +74,7 @@ const NoticeModal = ({
             <Button onClick={handleCancel} style={{ marginRight: 8 }}>
               Cancel
             </Button>
-            <Button type="primary" htmlType="submit" form="noticeForm" icon={<SaveOutlined />}>
+            <Button type="primary" htmlType="submit" form="noticeForm" icon={<SaveOutlined />}loading={saving} disabled={saving}>
               Save
             </Button>
           </div>

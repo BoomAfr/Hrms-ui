@@ -9,10 +9,11 @@ const CommonFormModal = ({
   onSubmit,
   editingDept,
   title = 'Add Department',
+  loading,
   fieldLabel = [],
 }) => {
   const [form] = Form.useForm();
-  const {loading} = useDepartments();
+  //const {loading} = useDepartments();
 
   useEffect(() => {
     if (editingDept) {

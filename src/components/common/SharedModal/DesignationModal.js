@@ -1,8 +1,9 @@
-import React, { useEffect } from 'react';
+import React, { useEffect,useState } from 'react';
 import { Modal, Form, Input, Button, Card, Select } from 'antd';
 import { SaveOutlined } from '@ant-design/icons';
 
 const { Option } = Select;
+
 
 const DesignationModal = ({
   isModalOpen,
@@ -14,6 +15,8 @@ const DesignationModal = ({
   departments = [], // [{id, name}, ...]
 }) => {
   const [form] = Form.useForm();
+
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (editingDesignation) {
@@ -36,10 +39,15 @@ const DesignationModal = ({
     }
   }, [editingDesignation, form]);
 
-  const handleSubmit = (values) => {
-    onSubmit(values);
-    form.resetFields();
-    setIsModalOpen(false);
+   const handleSubmit = async (values) => {
+    setSaving(true); // start loader
+    try {
+      await onSubmit(values);
+      form.resetFields();
+      setIsModalOpen(false);
+    } finally {
+      setSaving(false); // stop loader
+    }
   };
 
   const handleCancel = () => {
@@ -125,6 +133,7 @@ const DesignationModal = ({
                 type="primary"
                 htmlType="submit"
                 icon={<SaveOutlined />}
+                loading={saving}
                 size="large"
                 style={{
                   minWidth: '120px',

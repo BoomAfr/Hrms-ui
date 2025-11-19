@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Modal, Form, Input, Select, Button } from "antd";
 import { SaveOutlined } from "@ant-design/icons";
 
@@ -12,6 +12,8 @@ const TrainingTypeModal = ({
 }) => {
   const [form] = Form.useForm();
 
+  const [saving,setSaving] = useState(false);
+
   useEffect(() => {
     if (editingTrainingType) {
       form.setFieldsValue({
@@ -23,8 +25,17 @@ const TrainingTypeModal = ({
     }
   }, [editingTrainingType, form]);
 
-  const handleFinish = (values) => {
-    onSubmit(values);
+  const handleFinish = async (values) => {
+    try{
+      setSaving(true)
+      await onSubmit(values);
+      setIsModalOpen(false);
+
+    }
+    finally{
+      setSaving(false);
+    }
+    
   };
 
   const handleCancel = () => {
@@ -70,7 +81,7 @@ const TrainingTypeModal = ({
           <Button onClick={handleCancel} style={{ marginRight: 8 }}>
             Cancel
           </Button>
-          <Button type="primary" htmlType="submit" icon={<SaveOutlined />}>
+          <Button type="primary" htmlType="submit" icon={<SaveOutlined />}loading={saving}>
             Save
           </Button>
         </div>

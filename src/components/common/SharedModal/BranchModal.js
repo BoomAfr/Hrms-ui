@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect,useState } from 'react';
 import { Modal, Form, Input, Button, Card } from 'antd';
 import { SaveOutlined } from '@ant-design/icons';
 
@@ -12,6 +12,9 @@ const CommonFormModal = ({
 }) => {
   const [form] = Form.useForm();
 
+  const [saving, setSaving] = useState(false);
+
+
   useEffect(() => {
     if (editingDept) {
       form.setFieldsValue({ name: editingDept.name });
@@ -20,12 +23,15 @@ const CommonFormModal = ({
     }
   }, [editingDept, form]);
 
-  const handleSubmit = (values) => {
-    console.log(values,'valuesvalues');
-    
-    onSubmit(values);
-    form.resetFields();
-    // setIsModalOpen(false);
+  const handleSubmit = async (values) => {
+      setSaving(true);
+    try {
+      await onSubmit(values); // waits for add/update to finish
+      form.resetFields();
+      setIsModalOpen(false);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleCancel = () => {
@@ -99,6 +105,7 @@ const CommonFormModal = ({
                 type="primary"
                 htmlType="submit"
                 icon={<SaveOutlined />}
+                loading={saving}
                 size="large"
                 style={{
                   minWidth: '120px',

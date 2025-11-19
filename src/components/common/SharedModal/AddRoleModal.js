@@ -1,9 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useEffect,useState } from 'react';
 import { Modal, Form, Button, Card } from 'antd';
 import { SaveOutlined } from '@ant-design/icons';
 
 const AddRoleModal = ({ isModalOpen, setIsModalOpen, onSubmit, editingRole, title = 'Add Role', fieldLabel = 'Update Role', loading = false }) => {
   const [form] = Form.useForm();
+  //const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (editingRole) {
@@ -13,9 +14,10 @@ const AddRoleModal = ({ isModalOpen, setIsModalOpen, onSubmit, editingRole, titl
     }
   }, [editingRole, form]);
 
-  const handleSubmit = (values) => {
-    onSubmit(values);
+  const handleSubmit = async (values) => {
+   await onSubmit(values);
     form.resetFields();
+    setIsModalOpen(false); 
   };
 
   const handleCancel = () => {

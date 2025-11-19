@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Modal, Form, Select, Input, DatePicker, Button, Card } from 'antd';
 import { SaveOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
@@ -8,7 +8,8 @@ const AwardModal = ({ isModalOpen, setIsModalOpen, onSubmit, editingAward, emplo
   const [form] = Form.useForm();
   const { employ = [] } = useEmployees() || {};
 
-  // backend expects predefined choices — so keep the same
+  const [saving, setSaving] = useState(false);
+
   const awardOptions = [
     { label: 'Employee of the month', value: 'Employee of the month' },
     { label: 'Employee of the year', value: 'Employee of the year' },
@@ -30,7 +31,7 @@ const AwardModal = ({ isModalOpen, setIsModalOpen, onSubmit, editingAward, emplo
     }
   }, [editingAward, form]);
 
-  const handleSubmit = (values) => {
+  const handleSubmit = async (values) => {
     const payload = {
       award_name: values.award_name,
       employee: values.employee, // employee ID, not name
@@ -39,9 +40,16 @@ const AwardModal = ({ isModalOpen, setIsModalOpen, onSubmit, editingAward, emplo
         ? values.award_month.format('YYYY-MM')
         : null,
     };
-    onSubmit(payload);
+  try{
+    setSaving(true)
+    await onSubmit(payload);
     form.resetFields();
     setIsModalOpen(false);
+  }
+  finally{
+    setSaving(false);
+  }
+    
   };
 
   const handleCancel = () => {
@@ -132,6 +140,7 @@ const AwardModal = ({ isModalOpen, setIsModalOpen, onSubmit, editingAward, emplo
                 type="primary"
                 htmlType="submit"
                 icon={<SaveOutlined />}
+                loading={saving}
                 size="large"
               >
                 Save

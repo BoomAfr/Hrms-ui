@@ -1,10 +1,12 @@
-import React, { useEffect } from "react";
+import React, { useEffect,useState } from "react";
 import { Modal, Form, Input, Button, TimePicker, Card } from "antd";
 import { SaveOutlined } from "@ant-design/icons";
 import moment from "moment";
 
 const WorkShiftModal = ({ isModalOpen, setIsModalOpen, onSubmit, editingShift }) => {
   const [form] = Form.useForm();
+
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (editingShift) {
@@ -19,16 +21,22 @@ const WorkShiftModal = ({ isModalOpen, setIsModalOpen, onSubmit, editingShift })
     }
   }, [editingShift, form]);
 
-  const handleFinish = (values) => {
+  const handleFinish = async (values) => {
     const payload = {
       shift_name: values.shift_name,
       start_time: values.start_time ? values.start_time.format("HH:mm") : null,
       end_time: values.end_time ? values.end_time.format("HH:mm") : null,
       late_count_time: values.late_count_time ? values.late_count_time.format("HH:mm") : null,
     };
-    onSubmit(payload);
+    try {
+    setSaving(true)
+    await onSubmit(payload);
     setIsModalOpen(false);
     form.resetFields();
+    }
+    finally{
+      setSaving(false)
+    }
   };
 
   const handleCancel = () => {
@@ -82,7 +90,7 @@ const WorkShiftModal = ({ isModalOpen, setIsModalOpen, onSubmit, editingShift })
           <Form.Item style={{ marginBottom: 0 }}>
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 12 }}>
               <Button onClick={handleCancel}>Cancel</Button>
-              <Button type="primary" htmlType="submit" icon={<SaveOutlined />}>
+              <Button type="primary" htmlType="submit" icon={<SaveOutlined />}loading={saving}>
                 Save
               </Button>
             </div>

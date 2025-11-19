@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Modal, Form, Input, Select, DatePicker } from "antd";
 import dayjs from "dayjs";
 
@@ -17,6 +17,8 @@ const publishedByOptions = [
 
 const JobPostModal = ({ open, onClose, onSubmit, initialData }) => {
   const [form] = Form.useForm();
+
+  const [saving,setSaving] = useState(false);
 
   useEffect(() => {
     if (open && initialData) {
@@ -54,12 +56,15 @@ const JobPostModal = ({ open, onClose, onSubmit, initialData }) => {
           ? dayjs(values.application_end_date).format("YYYY-MM-DD")
           : null,
       };
-
+      setSaving(true);
       await onSubmit(payload);
       onClose();
       form.resetFields();
     } catch (error) {
       console.error(error);
+    }
+    finally{
+      setSaving(false);
     }
   };
 
@@ -70,6 +75,7 @@ const JobPostModal = ({ open, onClose, onSubmit, initialData }) => {
       onCancel={onClose}
       onOk={handleFinish}
       okText="Save"
+      loading={saving}
       destroyOnClose
     >
       <Form form={form} layout="vertical">
