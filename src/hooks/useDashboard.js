@@ -1,24 +1,20 @@
 import { useState, useEffect } from 'react';
-import { authAPI } from '../services/authServices';
 import { departmentAPI } from '../services/departmentServices';
-import { data } from 'react-router-dom';
+import { dashboardAPI } from '../services/dashboardService';
 
-export const useDepartments = () => {
-  const [departments, setDepartments] = useState([]);
+
+export const useDashboard = () => {
+  const [dashboardData, setDashBoardData] = useState();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const fetchDepartments = async (page = 1, pageSize = 10, search = '') => {
+  const fetchDashboard = async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await departmentAPI.getAll({
-      page,
-      page_size: pageSize,
-      search,
-    });
-    setDepartments(response.data.results || []);
-    return response.data;
+      const response = await dashboardAPI.getAll();
+    setDashBoardData(response.data);
+    // return response.data;
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to fetch departments');
     } finally {
@@ -26,61 +22,57 @@ export const useDepartments = () => {
     }
   };
 
-  const addDepartment = async (departmentData) => {
-    console.log(departmentData,"departmentData"); 
-    try {
-      setLoading(true);
-      await departmentAPI.create(departmentData);
-      await fetchDepartments();
-    }catch (err) {
-      setError(err.response?.data?.message || 'Failed to add department');
-    }finally {
-      setLoading(false);
-    }
-  };
+  // const addDepartment = async (departmentData) => {
+  //   console.log(departmentData,"departmentData"); 
+  //   try {
+  //     setLoading(true);
+  //     await departmentAPI.create(departmentData);
+  //     await fetchDepartments();
+  //   }catch (err) {
+  //     setError(err.response?.data?.message || 'Failed to add department');
+  //   }finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   // Update department (PUT/PATCH)
-  const updateDepartment = async (id, data,Toast) => {
-          setLoading(true);
+  // const updateDepartment = async (id, data,Toast) => {
+  //         setLoading(true);
 
-    try {
-      await departmentAPI.update(id, data);
-      Toast.success("Department Updated Successfully")
-      await fetchDepartments();
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to update department');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
+  //   try {
+  //     await departmentAPI.update(id, data);
+  //     Toast.success("Department Updated Successfully")
+  //     await fetchDepartments();
+  //   } catch (err) {
+  //     setError(err.response?.data?.message || 'Failed to update department');
+  //     throw err;
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   // Delete department
-  const deleteDepartment = async (id) => {
-    try {
-      setLoading(true);
-      await departmentAPI.delete(id); // DELETE /company/departments/<id>/
-      await fetchDepartments();
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to delete department');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
+  // const deleteDepartment = async (id) => {
+  //   try {
+  //     setLoading(true);
+  //     await departmentAPI.delete(id); // DELETE /company/departments/<id>/
+  //     await fetchDepartments();
+  //   } catch (err) {
+  //     setError(err.response?.data?.message || 'Failed to delete department');
+  //     throw err;
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
 
   useEffect(() => {
-    fetchDepartments();
+    fetchDashboard();
   }, []);
 
   return {
-    departments,
+    dashboardData,
     loading,
     error,
-    refetch: fetchDepartments,
-    addDepartment,
-    updateDepartment,
-    deleteDepartment,
   };
 };

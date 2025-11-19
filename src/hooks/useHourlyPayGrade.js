@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { hourlyPaygradeAPI } from '../services/hourlyPayGradeServices';
 
 export const useHourlyPaygrades = () => {
-  const [paygrades, setPaygrades] = useState([]);
+  const [hourlyPaygrades, setHourlyPaygrades] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -21,7 +21,7 @@ export const useHourlyPaygrades = () => {
       const response = await hourlyPaygradeAPI.getAll(page, pageSize, search);
       const data = response.data;
 
-      setPaygrades(data.results || []);
+      setHourlyPaygrades(data.results || []);
 
       setPagination({
         count: data.count || 0,
@@ -83,7 +83,7 @@ export const useHourlyPaygrades = () => {
   }, []);
 
   return {
-    paygrades,
+    hourlyPaygrades,
     loading,
     error,
     pagination,

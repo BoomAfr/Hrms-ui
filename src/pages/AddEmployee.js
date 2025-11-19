@@ -9,6 +9,7 @@ import { useToast } from '../hooks/useToast';
 import { useMonthlyPayGrades } from '../hooks/useMonthlyPayGrade';
 import { useNavigate, useParams } from 'react-router-dom';
 import dayjs from 'dayjs';
+import useHourlyPaygrades from '../hooks/useHourlyPayGrade';
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -23,7 +24,10 @@ const AddEmployeeForm = () => {
     const { departments } = useDepartments();
     const { designations } = useDesignations();
     const { branches } = useBranches();
+    const {hourlyPaygrades} = useHourlyPaygrades();
     const [isEditMode,setIsEditMode] = useState(false)
+        const [activePanels, setActivePanels] = useState([1, 2, 3, 4])
+const [fileList, setFileList] = useState([]);
 
     const { id } = useParams();
       const navigate = useNavigate();
@@ -58,13 +62,12 @@ console.log(formattedData,'formattedData');
 
     const onFinish = (values) => {
         console.log(values, 'values')
-        const { date_of_birth, date_of_joining,date_of_leaving } = values;
+        const { date_of_birth, date_of_joining} = values;
         const formatedValues = {
             ...values,
             date_of_birth: date_of_birth.format('YYYY-MM-DD'),
             date_of_joining: date_of_joining.format('YYYY-MM-DD'),
-            date_of_leaving: date_of_leaving.format('YYYY-MM-DD'),
-        }
+            date_of_leaving: values.date_of_leaving ? values.date_of_leaving.format('YYYY-MM-DD') : undefined,        }
         console.log(formatedValues, 'formatedValues')
         if(isEditMode){
             updateEmployee(id,formatedValues, Toast)
@@ -72,28 +75,61 @@ console.log(formattedData,'formattedData');
 }
     };
 
-    const uploadProps = {
-        beforeUpload: (file) => {
-            const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
-            if (!isJpgOrPng) {
-                // message.error('You can only upload JPG/PNG file!');
+//  const [fileList, setFileList] = useState([]);
+
+const uploadProps = {
+    beforeUpload: (file) => {
+        const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
+        if (!isJpgOrPng) {
+            Toast('error', 'You can only upload JPG/PNG file!');
+            return Upload.LIST_IGNORE;
+        }
+        
+        // Custom file object create karein
+        const customFileObject = {
+            uid: file.uid,
+            lastModified: file.lastModified,
+            lastModifiedDate: file.lastModifiedDate,
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            percent: 0,
+            originFileObj: {
+                uid: file.uid
             }
-            return isJpgOrPng || Upload.LIST_IGNORE;
-        },
-        maxCount: 1,
-    };
-    const [activePanels, setActivePanels] = useState([1, 2, 3, 4])
+        };
+        
+        // Sirf ek file rakhein array mein
+        setFileList([customFileObject]);
+        
+        // Form field mein bhi set karein
+        form.setFieldValue('photo', [customFileObject]);
+        
+        // Auto upload rok dein
+        return false;
+    },
+    maxCount: 1,
+    fileList: fileList,
+    onRemove: () => {
+        setFileList([]);
+        form.setFieldValue('photo', null);
+    },
+};
+
+    const uploadButton = (
+        <Button 
+            icon={<UploadOutlined />} 
+            style={{ 
+                color: fileList.length > 0 ? '#52c41a' : 'inherit',
+                borderColor: fileList.length > 0 ? '#52c41a' : '#d9d9d9'
+            }}
+        >
+            {fileList.length > 0 ? fileList[0].name : 'Choose file'}
+        </Button>
+    );
 
     return (
         <div style={{ padding: '24px' }}>
-              <Button 
-  type="primary" 
-  icon={<ArrowLeftOutlined />} 
-  onClick={() => navigate(-1)}
-  style={{ marginBottom: '16px' }}
->
-  Back
-</Button>
             {contextHolder}
             <Card title={isEditMode ? "Edit Employee":"Add Employee"} style={{ marginBottom: '24px' }}>
 
@@ -201,7 +237,7 @@ console.log(formattedData,'formattedData');
                                         // rules={[{ required: true, message: 'Please select supervisor' }]}
 
                                     >
-                                        <Select defaultValue={null} placeholder="--- Please Select ---">
+                                        <Select  placeholder="--- Please Select ---">
                                             {Array.isArray(employees) && employees.length > 0 ? (
                                                 employees.map((employee) => (
                                                     <Option key={employee?.user_id} value={employee?.user_id}>
@@ -307,9 +343,14 @@ console.log(formattedData,'formattedData');
                                         name="hourly_pay_grade"
                                     >
                                         <Select placeholder="--- Please Select ---">
-                                            <Option value="hourly_1">Hourly Grade 1</Option>
-                                            <Option value="hourly_2">Hourly Grade 2</Option>
-                                            <Option value="hourly_3">Hourly Grade 3</Option>
+                                            {Array.isArray(hourlyPaygrades) && 
+                                            
+                                            hourlyPaygrades.map((grades)=>(
+                                            <Option value={grades?.id}>{grades?.pay_grade_name}</Option>
+
+                                            ))
+                                            }
+                                        
                                         </Select>
                                     </Form.Item>
                                 </Col>
@@ -421,7 +462,7 @@ console.log(formattedData,'formattedData');
                                         name="photo"
                                     >
                                         <Upload {...uploadProps}>
-                                            <Button icon={<UploadOutlined />}>Choose file</Button>
+                                           {uploadButton}
                                         </Upload>
                                     </Form.Item>
                                 </Col>

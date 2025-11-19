@@ -49,10 +49,12 @@ import ChangePassword from './pages/Administration/ChangePassword';
 import AddPermission from './pages/Administration/AddPermission';
 import AddRole from './pages/Administration/AddRole';
 import HourlyPayGrade from './pages/Payroll/HourlyPayGrade';
+import ErrorBoundary from './components/ErrorBoundry';
 
 function App() {
   return (
-    <ConfigProvider
+    <ErrorBoundary>
+      <ConfigProvider
       theme={{
         token: {
           colorPrimary: '#1890ff',
@@ -151,6 +153,7 @@ function App() {
         </Routes>
       </Router>
     </ConfigProvider>
+    </ErrorBoundary>
   );
 }
 

@@ -19,7 +19,7 @@ const HourlyPaygrade = () => {
   const [searchText, setSearchText] = useState('');
 
   const {
-    paygrades,
+    hourlyPaygrades,
     loading,
     pagination,
     fetchPaygrades,
@@ -171,7 +171,7 @@ const HourlyPaygrade = () => {
 
         <Table
           columns={columns}
-          dataSource={paygrades.map((p, i) => ({
+          dataSource={hourlyPaygrades.map((p, i) => ({
             key: p.id ?? i,
             id: p.id,
             pay_grade_name: p.pay_grade_name,
