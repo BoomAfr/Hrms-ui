@@ -27,18 +27,18 @@ const Department = () => {
   const { departments, loading, error, refetch, addDepartment, updateDepartment, deleteDepartment } = useDepartments();
 
 
-  const handleAddDepartment = (values) => {
-    console.log(values, 'values');
-    if (editingDept) {
-      updateDepartment(editingDept.id, values, Toast);
-    }
-    else {
-      addDepartment(values);
-      Toast.success("Depatment added succesfully");
-    }
-    setIsModalOpen(false);
-    setEditingDept(null);
-  };
+  const handleAddDepartment = async (values) => {
+  if (editingDept) {
+    await updateDepartment(editingDept.id, values, Toast);
+    
+  } else {
+    await addDepartment(values);
+    Toast.success("Department added successfully");
+  }
+
+  setIsModalOpen(false);
+  setEditingDept(null);
+};
 
   const loadDepartments = async (page = currentPage, size = pageSize, search = searchText) => {
     const data = await refetch(page, size, search);

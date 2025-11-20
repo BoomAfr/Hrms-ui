@@ -12,6 +12,7 @@ export const useTerminations = () => {
     try {
       const res = await manageEmployeeApi.getAll();
       setEmployees(res.data.results || []);
+      
     } catch (err) {
       console.error(err);
     }

@@ -1,20 +1,27 @@
 import API from './api';
 
-export const promotionAPI = {
-  getAll: (params) => API.get('/company/promotions/', { params }),
+export const promotionApi = {
+  getAll: (params = {}) => API.get('/company/promotions/', { params }),
+  getById: (id) => API.get(`/company/promotions/${id}/`),
   create: (payload) => API.post('/company/promotions/', payload),
-  update: (id, data) => API.put(`/company/promotions/${id}/`, data),
+  update: (id, payload) => API.put(`/company/promotions/${id}/`, payload),
   delete: (id) => API.delete(`/company/promotions/${id}/`),
 };
 
-export const departmentAPI = {
-  getAll: () => API.get('/company/departments/'),
+export const manageEmployeeApi = {
+  getAll: (params = {}) => API.get('/company/employees/', { params }),
+  getById: (id) => API.get(`/company/employees/${id}/`),
 };
 
-export const designationAPI = {
-  getAll: () => API.get('/company/designations/'),
+export const departmentApi = {
+  getAll: (params = {}) => API.get('/company/departments/', { params }),
 };
 
-export const paygradeAPI = {
-  getAll: () => API.get('/company/payroll/monthly/paygrades/'),
+export const designationApi = {
+  getAll: (params = {}) => API.get('/company/designations/', { params }),
+};
+
+export const paygradeApi = {
+  getAll: (params = {}) => API.get('/company/payroll/monthly/paygrades/', { params }),
+  getById: (id) => API.get(`/company/payroll/monthly/paygrades/${id}/`),
 };

@@ -14,21 +14,51 @@ export const useManageEmployee = () => {
   const [error, setError] = useState(null);
   let message, description;
 
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0,
+  });
+
+   const [filters, setFilters] = useState({
+    search: "",
+    department_id: "",
+    designation_id: "",
+    role: "",
+  });
+
 
   const fetchEmployee = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await manageEmployeeApi.getAll();
-      console.log(response, 'response')
-      setEmployees(response?.data.results);
-      setSupervisors(response.data?.results || response.data || []);
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to fetch departments');
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    setLoading(true);
+    setError(null);
+
+    const params = {
+      page: pagination.current,
+      page_size: pagination.pageSize,
+      search: filters.search || "",
+      department_id: filters.department_id || "",
+      designation_id: filters.designation_id || "",
+      role: filters.role || "",
+    };
+
+    const response = await manageEmployeeApi.getAll(params);
+
+    setEmployees(response?.data?.results || []);
+    setPagination(prev => ({
+      ...prev,
+      total: response?.data?.count || 0
+    }));
+
+    setSupervisors(response.data?.results || response.data || []);
+
+  } catch (err) {
+    setError(err.response?.data?.message || 'Failed to fetch employees');
+  } finally {
+    setLoading(false);
+  }
+};
+
 const fetchEmployeeById = async(id)=>{
   setLoading(true);
   setError(null);
@@ -97,7 +127,7 @@ const fetchEmployeeById = async(id)=>{
 
   useEffect(() => {
     fetchEmployee();
-  }, []);
+  }, [pagination.current, pagination.pageSize, filters.search, filters.department_id, filters.designation_id, filters.role]);
 
   return {
     employees,
@@ -113,6 +143,10 @@ const fetchEmployeeById = async(id)=>{
     // addDepartment,
     // updateDepartment,
     // deleteDepartment,
+    pagination,
+  setPagination,
+  filters,
+  setFilters,
   };
 };
 
