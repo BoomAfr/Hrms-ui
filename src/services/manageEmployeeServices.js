@@ -1,7 +1,7 @@
 import API from './api';
 
 export const manageEmployeeApi = {
-  getAll: () => API.get('/company/employees/'),
+  getAll: (params) => API.get('/company/employees/',{params}),
   create: (data) => API.post('/company/employees/create/', data),
   delete: (id) => API.delete(`/company/employees/${id}/`),
   getById: (id) =>API.get(`/company/employees/${id}/`),

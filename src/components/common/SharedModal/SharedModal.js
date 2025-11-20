@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Modal, Form, Input, Button, Card } from 'antd';
 import { SaveOutlined } from '@ant-design/icons';
 import { useDepartments } from '../../../hooks/useDepartments';
@@ -13,7 +13,7 @@ const CommonFormModal = ({
   fieldLabel = [],
 }) => {
   const [form] = Form.useForm();
-  //const {loading} = useDepartments();
+  const [saveLoading,setSaveLoading] = useState(false)
 
   useEffect(() => {
     if (editingDept) {
@@ -23,16 +23,22 @@ const CommonFormModal = ({
     }
   }, [editingDept, form]);
 
-  const handleSubmit = (values) => {    
-    onSubmit(values);
+  const handleSubmit = async (values) => { 
+    try{  
+    setSaveLoading(true) 
+    await onSubmit(values);
     form.resetFields();
+    }
+    finally{
+      setSaveLoading(false)
+    }
   };
 
   const handleCancel = () => {
     setIsModalOpen(false);
     form.resetFields();
   };
-console.log(loading,'loading');
+//console.log(loading,'loading');
 
   return (
     <Modal
@@ -68,11 +74,7 @@ console.log(loading,'loading');
               { min: 2, message: `${field} must be at least 2 characters!` },
             ]}
           >
-            {/* <Input
-              placeholder={`Enter ${field.toLowerCase()}`}
-              size="large"
-              style={{ borderRadius: '6px' }}
-            /> */}
+
             {field.component}
           </Form.Item>
           ))
@@ -97,7 +99,7 @@ console.log(loading,'loading');
                 Cancel
               </Button>
               <Button
-                loading={loading}
+                loading={saveLoading}
                 type="primary"
                 htmlType="submit"
                 icon={<SaveOutlined />}
