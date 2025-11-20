@@ -22,10 +22,39 @@ import PublicHoliday from './pages/leaveManagement/PublicHoliday';
 import EarnLeaveConfigure from './pages/leaveManagement/EarnLeaveConfigure';
 import WeeklyHoliday from './pages/leaveManagement/WeeklyHoliday';
 import Award from './pages/Award';
+import Notice from './pages/Notice';
+import TrainingType from './pages/Training/TrainingType';
+import TrainingList from './pages/Training/TrainingList';
+import TrainingReport from './pages/Training/TrainingReport';
+import ManageWorkShift from './pages/Attendance/ManageWorkShift';
+import MonthlyPayGrade from './pages/Payroll/MonthlyPayGrade';
+import PerfomanceCategory from './pages/Perfomance/PerfomanceCategory';
+import PerfomanceCriteria from './pages/Perfomance/PerfomanceCriteria';
+import EmployeePerfomance from './pages/Perfomance/EmployeePerfomance';
+import SummaryReport from './pages/Perfomance/SummaryReport';
+import ApplyForLeave from './pages/leaveManagement/ApplyForLeave';
+import RequestedApplication from './pages/leaveManagement/RequestedApplication';
+import LeaveReport from './pages/leaveManagement/LeaveReport';
+import MyLeaveReport from './pages/leaveManagement/MyLeaveReport';
+import JobPost from './pages/Requirement/JobPost';
+import JobCandidate from './pages/Requirement/JobCandidate';
+import LeaveSummaryReport from './pages/leaveManagement/LeaveSummaryReport';
+import DashboardAttendance from './pages/Attendance/DashboardAttendance';
+import ManualAttendance from './pages/Attendance/ManualAttendance';
+import AttendanceSummaryReport from './pages/Attendance/AttendanceSummaryReport';
+import DailyAttendance from './pages/Attendance/DailyAttendance'; 
+import MonthlyAttendance from './pages/Attendance/MonthlyAttendance';
+import MyAttendanceReport from './pages/Attendance/MyAttendanceReport';
+import ChangePassword from './pages/Administration/ChangePassword';
+import AddPermission from './pages/Administration/AddPermission';
+import AddRole from './pages/Administration/AddRole';
+import HourlyPayGrade from './pages/Payroll/HourlyPayGrade';
+import ErrorBoundary from './components/ErrorBoundry';
 
 function App() {
   return (
-    <ConfigProvider
+    <ErrorBoundary>
+      <ConfigProvider
       theme={{
         token: {
           colorPrimary: '#1890ff',
@@ -41,6 +70,13 @@ function App() {
             </ProtectedRoute>
           }>
             <Route index element={<Dashboard />} />
+            <Route path='administration'>
+              <Route path='manage-role' >
+               <Route path='add-role' element={<AddRole />} />
+               <Route path='add-role-permission' element={<AddPermission />} />
+              </Route>
+              <Route path='change-password' element={<ChangePassword/>} />
+            </Route>
             <Route path='employee-management'>
               <Route path='department' element={<Department />} />
               <Route path='designation' element={<Designation />} />
@@ -65,14 +101,59 @@ function App() {
                 <Route path='leave-type' element={<LeaveType/>}/>
                 <Route path='earn-leave-configure' element={<EarnLeaveConfigure/>}/>
               </Route>
+              <Route path='leave-application'>
+                <Route path='apply-for-leave' element={<ApplyForLeave/>} />
+                <Route path='requested-application' element={<RequestedApplication/>} />
+              </Route>
+              <Route path='report'>
+                <Route path='leave-report' element={<LeaveReport/>} />
+                <Route path='summary-report' element={<LeaveSummaryReport />} />
+                <Route path='my-leave-report' element={<MyLeaveReport/>} />
+              </Route>
+
              </Route>
+             <Route path='attendance'>
+               <Route path='setup'>
+                  <Route path='manage-work-shift' element={<ManageWorkShift/>}/>
+                  <Route path='dashboard-attendance' element={<DashboardAttendance/>}/>
+                </Route>
+                <Route path='report' >
+                  <Route path='daily-attendance' element={<DailyAttendance/>}/>
+                  <Route path='monthly-attendance' element={<MonthlyAttendance/>}/>
+                  <Route path='my-attendance-report' element={<MyAttendanceReport/>}/>
+                  <Route path='summary-report' element={<AttendanceSummaryReport/>}/> 
+                </Route>
+                <Route path='manual-attendance' element={<ManualAttendance/>} />
+             </Route>
+
+             <Route path='payroll'>
+              <Route path='monthly-pay-grade' element={<MonthlyPayGrade/>}/>
+              <Route path='hourly-pay-grade' element={<HourlyPayGrade/>} />
+             </Route>
+             
+              <Route path='performance-category' element={<PerfomanceCategory/>}/>
+              <Route path='performance-criteria' element={<PerfomanceCriteria/>}/>
+              <Route path='employee-performance' element={<EmployeePerfomance/>}/>
+              <Route path='performance-summary-report' element={<SummaryReport/>}/>
+
+              
+
+              <Route path='job-post' element={<JobPost/>}/>
+              <Route path='job-candidate' element={<JobCandidate/>}/>
+
+             <Route path='training-type' element={<TrainingType/>}/>
+             <Route path='training-list' element={<TrainingList/>}/>
+             <Route path='training-report' element={<TrainingReport/>}/>
+
              <Route path='award' element={<Award/>}/>
+             <Route path='notice' element={<Notice/>}/>
              </Route>
             
           {/* </Route> */}
         </Routes>
       </Router>
     </ConfigProvider>
+    </ErrorBoundary>
   );
 }
 

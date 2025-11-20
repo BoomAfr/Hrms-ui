@@ -1,49 +1,54 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Table, Button, Space, Card, Row, Col, Select, message, Input } from 'antd';
 import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
-import SharedModal from '../components/common/SharedModal/SharedModal';
+import CommonFormModal from '../components/common/SharedModal/BranchModal';
 import { useBranches } from '../hooks/useBranches';
 import ConfirmModal from '../components/common/SharedModal/ConfirmModal';
+import{useToast} from'../hooks/useToast';
 const { Option } = Select;
 
 const Branch = () => {
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [selectedBranch, setSelectedBranch] = useState(null);
-
-  // added editingBranch state
   const [editingBranch, setEditingBranch] = useState(null);
-
   const [searchText, setSearchText] = useState('');
 
   const { branches, loading, error, refetch, addBranch, updateBranch, deleteBranch } = useBranches();
 
-  // handle form submit (called from SharedModal)
+  const {Toast, contextHolder}=useToast();  
+
+  useEffect(() => {
+    refetch(currentPage, pageSize, searchText.trim());
+  }, [currentPage, pageSize, searchText]);
+
   const handleAddBranch = async (values) => {
     try {
       const payload = { name: values.name };
       if (editingBranch) {
-        // update flow
         await updateBranch(editingBranch.id, payload);
-        message.success('Branch updated successfully');
+        Toast.success('Branch updated successfully');
+       // message.success('Branch updated successfully');
       } else {
-        // create flow
         await addBranch(payload);
-        message.success('Branch added successfully');
+        Toast.success('Branch added successfully');
+      //  message.success('Branch added successfully');
       }
-      refetch();
+      refetch(currentPage, pageSize, searchText.trim());
       setEditingBranch(null);
       setIsModalOpen(false);
     } catch (err) {
-      message.error(err.response?.data?.message || 'Operation failed');
+      Toast.error(err.response?.data?.message || 'Operation failed');
+      //message.error(err.response?.data?.message || 'Operation failed');
     }
   };
 
-  const handleSearch = (value) => {
-    setSearchText(value.toLowerCase());
+  const handleSearch = (e) => {
+    const value = e.target.value;
+    setSearchText(value);
+    setCurrentPage(1); // reset to first page on search
   };
 
   const columns = [
@@ -53,7 +58,7 @@ const Branch = () => {
       key: 'sl',
       width: 80,
       align: 'center',
-      render: (_, __, index) => index + 1, // auto index
+      render: (_, __, index) => index + 1,
     },
     {
       title: 'Name',
@@ -92,7 +97,6 @@ const Branch = () => {
   };
 
   const handleDelete = (record) => {
-    console.log("Delete clicked for:", record);
     setSelectedBranch(record);
     setIsConfirmOpen(true);
   };
@@ -101,11 +105,12 @@ const Branch = () => {
     if (!selectedBranch) return;
     try {
       await deleteBranch(selectedBranch.id);
-      message.success(`Deleted: ${selectedBranch.name}`);
-      refetch();
+      Toast.success(`Deleted: ${selectedBranch.name}`);
+      //message.success(`Deleted: ${selectedBranch.name}`);
+      refetch(currentPage, pageSize, searchText.trim());
     } catch (error) {
-      message.error('Failed to delete branch');
-      console.error(error);
+      Toast.error('Failed to delete branch');
+     // message.error('Failed to delete branch');
     } finally {
       setIsConfirmOpen(false);
       setSelectedBranch(null);
@@ -125,7 +130,7 @@ const Branch = () => {
   const pagination = {
     current: currentPage,
     pageSize: pageSize,
-    total: 74,
+    total: 74, // backend pagination count can be handled later if available
     showSizeChanger: true,
     showQuickJumper: true,
     showTotal: (total, range) =>
@@ -139,14 +144,11 @@ const Branch = () => {
 
   return (
     <div style={{ padding: '24px' }}>
+      {contextHolder}
       <Card
         title="Branch List"
         extra={
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={handleAddNew}
-          >
+          <Button type="primary" icon={<PlusOutlined />} onClick={handleAddNew}>
             Add New Branch
           </Button>
         }
@@ -170,7 +172,7 @@ const Branch = () => {
             <Input.Search
               placeholder="Search branch..."
               allowClear
-              onChange={(e) => handleSearch(e.target.value)}
+              onChange={handleSearch}
               style={{ width: 250 }}
             />
           </Col>
@@ -178,14 +180,12 @@ const Branch = () => {
 
         <Table
           columns={columns}
-          dataSource={branches
-            .filter((d) => d.name.toLowerCase().includes(searchText))
-            .map((d, i) => ({
-              key: d.id || i,
-              id: d.id,
-              sl: i + 1,
-              name: d.name,
-            }))}
+          dataSource={branches.map((d, i) => ({
+            key: d.id || i,
+            id: d.id,
+            sl: i + 1,
+            name: d.name,
+          }))}
           loading={loading}
           pagination={pagination}
           size="middle"
@@ -193,14 +193,24 @@ const Branch = () => {
           scroll={{ x: 400 }}
         />
       </Card>
+
       {isModalOpen && (
-        <SharedModal
+        <CommonFormModal
           isModalOpen={isModalOpen}
           setIsModalOpen={setIsModalOpen}
           onSubmit={handleAddBranch}
           editingDept={editingBranch}
+          fieldLabel={[
+              {
+                label: 'Branch Name',
+                name: 'name',
+                isRequired: true,
+                component: <Input placeholder="Enter Branch Name" size="large" />,
+              },
+            ]}
         />
       )}
+
       <ConfirmModal
         isOpen={isConfirmOpen}
         title="Delete Branch"

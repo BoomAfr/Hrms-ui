@@ -1,7 +1,9 @@
 import React from 'react';
 import { Modal } from 'antd';
+import { useManageEmployee } from '../../../hooks/useManageEmployee';
 
 const ConfirmModal = ({ isOpen, title, message, onOk, onCancel }) => {
+  const {loading} = useManageEmployee();
   return (
     <Modal
       title={title || 'Confirm Delete'}
@@ -12,8 +14,9 @@ const ConfirmModal = ({ isOpen, title, message, onOk, onCancel }) => {
       okType="danger"
       cancelText="Cancel"
       centered
-      destroyOnClose
-    >
+confirmLoading={loading
+  
+}    >
       <p>{message}</p>
     </Modal>
   );

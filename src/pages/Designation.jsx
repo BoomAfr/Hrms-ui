@@ -5,64 +5,123 @@ import DesignationModal from '../components/common/SharedModal/DesignationModal'
 import { useDesignations } from '../hooks/useDesignations';
 import { departmentAPI } from '../services/departmentServices';
 import ConfirmModal from '../components/common/SharedModal/ConfirmModal';
+import {useToast} from '../hooks/useToast'
+
 const { Option } = Select;
 
 const Designation = () => {
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [selectedDesignation, setSelectedDesignation] = useState(null);
-
-  // editing state
   const [editingDesignation, setEditingDesignation] = useState(null);
-
   const [searchText, setSearchText] = useState('');
-
-  const { designations, loading, error, refetch, addDesignation, updateDesignation, deleteDesignation } = useDesignations();
-
-  // departments for dropdown in modal
   const [departments, setDepartments] = useState([]);
+
+  const {
+    designations,
+    loading,
+    error,
+    pagination,
+    fetchDesignations,
+    addDesignation,
+    updateDesignation,
+    deleteDesignation,
+  } = useDesignations();
+
+  const {Toast, contextHolder} = useToast();
 
   useEffect(() => {
     const loadDepartments = async () => {
       try {
-        const res = await departmentAPI.getAll();
-        setDepartments(res.data); // expect array of { id, name }
+        const res = await departmentAPI.getAll({ page: 1, page_size: 1000 });
+        const data = res.data;
+        if (Array.isArray(data)) setDepartments(data);
+        else if (Array.isArray(data.results)) setDepartments(data.results);
+        else setDepartments([]);
       } catch (err) {
         console.error('Failed to load departments', err);
+        setDepartments([]);
       }
     };
     loadDepartments();
   }, []);
 
+
+  useEffect(() => {
+    fetchDesignations(currentPage, pageSize, searchText);
+  }, [currentPage, pageSize, searchText]);
+
   const handleAddDesignation = async (values) => {
     try {
-      // values: { name: '...', department: <id> }
-      const payload = {
-        name: values.name,
-        department: values.department,
-      };
+      const payload = { name: values.name, department: values.department };
 
       if (editingDesignation) {
         await updateDesignation(editingDesignation.id, payload);
-        message.success('Designation updated successfully');
+        Toast.success('Designation updated successfully');
       } else {
         await addDesignation(payload);
-        message.success('Designation added successfully');
+        Toast.success('Designation added successfully');
       }
 
-      refetch();
+      fetchDesignations(currentPage, pageSize, searchText);
       setEditingDesignation(null);
       setIsModalOpen(false);
     } catch (err) {
-      message.error(err.response?.data?.message || 'Operation failed');
+      Toast.error(err.response?.data?.message || 'Operation failed');
     }
   };
 
-  const handleSearch = (value) => {
-    setSearchText(value.toLowerCase());
+  const handleEdit = (record) => {
+    const deptId =
+      record.department !== undefined
+        ? typeof record.department === 'object'
+          ? record.department.id
+          : record.department
+        : record.department_id ?? null;
+
+    setEditingDesignation({
+      id: record.id ?? record.key,
+      name: record.name,
+      department: deptId,
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = (record) => {
+    setSelectedDesignation(record);
+    setIsConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!selectedDesignation) return;
+    try {
+      await deleteDesignation(selectedDesignation.id);
+      Toast.success(`Deleted: ${selectedDesignation.name}`);
+      fetchDesignations(currentPage, pageSize, searchText);
+    } catch (error) {
+      Toast.error('Failed to delete designation');
+      console.error(error);
+    } finally {
+      setIsConfirmOpen(false);
+      setSelectedDesignation(null);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setIsConfirmOpen(false);
+    setSelectedDesignation(null);
+  };
+
+  const handleAddNew = () => {
+    setEditingDesignation(null);
+    setIsModalOpen(true);
+  };
+
+  const handleSearch = (e) => {
+    setSearchText(e.target.value.toLowerCase());
+    setCurrentPage(1);
   };
 
   const columns = [
@@ -72,7 +131,7 @@ const Designation = () => {
       key: 'sl',
       width: 80,
       align: 'center',
-      render: (_, __, index) => index + 1,
+      render: (_, __, index) => (currentPage - 1) * pageSize + index + 1,
     },
     {
       title: 'Designation Name',
@@ -111,58 +170,10 @@ const Designation = () => {
     },
   ];
 
-  const handleEdit = (record) => {
-    // normalize department to id if backend gave object
-    const deptId =
-      record.department !== undefined
-        ? typeof record.department === 'object'
-          ? record.department.id
-          : record.department
-        : record.department_id ?? null;
-
-    setEditingDesignation({
-      id: record.id ?? record.key,
-      name: record.name,
-      department: deptId,
-    });
-    setIsModalOpen(true);
-  };
-
-  const handleDelete = (record) => {
-    console.log('Delete clicked for:', record);
-    setSelectedDesignation(record);
-    setIsConfirmOpen(true);
-  };
-
-  const handleConfirmDelete = async () => {
-    if (!selectedDesignation) return;
-    try {
-      await deleteDesignation(selectedDesignation.id);
-      message.success(`Deleted: ${selectedDesignation.name}`);
-      refetch();
-    } catch (error) {
-      message.error('Failed to delete designation');
-      console.error(error);
-    } finally {
-      setIsConfirmOpen(false);
-      setSelectedDesignation(null);
-    }
-  };
-
-  const handleCancelDelete = () => {
-    setIsConfirmOpen(false);
-    setSelectedDesignation(null);
-  };
-
-  const handleAddNew = () => {
-    setEditingDesignation(null);
-    setIsModalOpen(true);
-  };
-
-  const pagination = {
+  const paginationConfig = {
     current: currentPage,
     pageSize: pageSize,
-    total: 74,
+    total: pagination.count || 0,
     showSizeChanger: true,
     showQuickJumper: true,
     showTotal: (total, range) =>
@@ -176,6 +187,7 @@ const Designation = () => {
 
   return (
     <div style={{ padding: '24px' }}>
+      {contextHolder}
       <Card
         title="Designation List"
         extra={
@@ -207,7 +219,8 @@ const Designation = () => {
             <Input.Search
               placeholder="Search designation..."
               allowClear
-              onChange={(e) => handleSearch(e.target.value)}
+              value={searchText}
+              onChange={handleSearch}
               style={{ width: 250 }}
             />
           </Col>
@@ -215,28 +228,21 @@ const Designation = () => {
 
         <Table
           columns={columns}
-          dataSource={designations
-            .filter((d) => {
-              const deptName = (d.department?.name ?? d.department_name ?? '') + '';
-              const searchable = (d.name + ' ' + deptName).toLowerCase();
-              return searchable.includes(searchText);
-            })
-            .map((d, i) => ({
-              key: d.id ?? i,
-              id: d.id,
-              sl: i + 1,
-              name: d.name,
-              department:
-                typeof d.department === 'object' && d.department !== null
-                  ? d.department.id
-                  : d.department,
-              department_name:
-                typeof d.department === 'object' && d.department !== null
-                  ? d.department.name
-                  : d.department_name ?? '',
-            }))}
+          dataSource={designations.map((d, i) => ({
+            key: d.id ?? i,
+            id: d.id,
+            name: d.name,
+            department:
+              typeof d.department === 'object' && d.department !== null
+                ? d.department.id
+                : d.department,
+            department_name:
+              typeof d.department === 'object' && d.department !== null
+                ? d.department.name
+                : d.department_name ?? '',
+          }))}
           loading={loading}
-          pagination={pagination}
+          pagination={paginationConfig}
           size="middle"
           bordered
           scroll={{ x: 600 }}

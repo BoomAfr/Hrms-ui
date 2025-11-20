@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Table, Button, Space, Card, Row, Col, Select, message, Input } from 'antd';
 import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import LeaveTypeModal from '../../components/common/SharedModal/LeaveTypeModal';
 import ConfirmModal from '../../components/common/SharedModal/ConfirmModal';
 import { useLeaveTypes } from '../../hooks/useLeaveType';
+import {useToast} from '../../hooks/useToast';  
 const { Option } = Select;
 
 const LeaveType = () => {
@@ -17,20 +18,25 @@ const LeaveType = () => {
 
   const { leaveTypes, loading, refetch, addLeaveType, updateLeaveType, deleteLeaveType } = useLeaveTypes();
 
+  const {Toast,contextHolder} = useToast();
+
   const handleAddLeaveType = async (values) => {
     try {
       if (editingLeaveType) {
         await updateLeaveType(editingLeaveType.id, values);
-        message.success('Leave type updated successfully');
+        Toast.success('Leave type updated successfully');
+       // message.success('Leave type updated successfully');
       } else {
         await addLeaveType(values);
-        message.success('Leave type added successfully');
+        Toast.success('Leave type added successfully');
+        //message.success('Leave type added successfully');
       }
       refetch();
       setEditingLeaveType(null);
       setIsModalOpen(false);
     } catch (err) {
-      message.error(err.response?.data?.message || 'Operation failed');
+      Toast.error(err.response?.data?.message || 'Operation failed');
+      //message.error(err.response?.data?.message || 'Operation failed');
     }
   };
 
@@ -52,10 +58,12 @@ const LeaveType = () => {
     if (!selectedLeaveType) return;
     try {
       await deleteLeaveType(selectedLeaveType.id);
-      message.success(`Deleted: ${selectedLeaveType.name}`);
+      Toast.success(`Deleted: ${selectedLeaveType.name}`);
+    //  message.success(`Deleted: ${selectedLeaveType.name}`);
       refetch();
     } catch (error) {
-      message.error('Failed to delete leave type');
+      Toast.error('Failed to delete leave type');
+     // message.error('Failed to delete leave type');
     } finally {
       setIsConfirmOpen(false);
       setSelectedLeaveType(null);
@@ -71,9 +79,19 @@ const LeaveType = () => {
     setEditingLeaveType(null);
     setIsModalOpen(true);
   };
+  const loadLeaveType = async (page = currentPage, size = pageSize, search = searchText) => {
+    const data = await refetch(page, size, search);
+    if (data && data.count !== undefined) setTotal(data.count);
+  };
+  const [total, setTotal] = useState(0);
+  
+  useEffect(() => {
+    loadLeaveType(currentPage, pageSize, searchText);
+  }, [currentPage, pageSize, searchText]);
 
   const handleSearch = (value) => {
     setSearchText(value.toLowerCase());
+    setCurrentPage(1); // reset to page 1
   };
 
   const columns = [
@@ -113,6 +131,7 @@ const LeaveType = () => {
 
   return (
     <div style={{ padding: '24px' }}>
+      {contextHolder}
       <Card
         title="Leave Type List"
         extra={

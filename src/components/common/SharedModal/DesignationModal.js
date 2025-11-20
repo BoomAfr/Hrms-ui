@@ -1,23 +1,25 @@
-import React, { useEffect } from 'react';
+import React, { useEffect,useState } from 'react';
 import { Modal, Form, Input, Button, Card, Select } from 'antd';
 import { SaveOutlined } from '@ant-design/icons';
 
 const { Option } = Select;
 
+
 const DesignationModal = ({
   isModalOpen,
   setIsModalOpen,
   onSubmit,
-  editingDesignation, // { id, name, department } where department is id or {id,name}
+  editingDesignation,
   title = 'Add Designation',
   fieldLabel = 'Designation Name',
   departments = [], // [{id, name}, ...]
 }) => {
   const [form] = Form.useForm();
 
+  const [saving, setSaving] = useState(false);
+
   useEffect(() => {
     if (editingDesignation) {
-      // Prepare initial values. department may be id or object.
       const initial = {
         name: editingDesignation.name ?? '',
       };
@@ -37,11 +39,15 @@ const DesignationModal = ({
     }
   }, [editingDesignation, form]);
 
-  const handleSubmit = (values) => {
-    // values: { name: '...', department: <id> }
-    onSubmit(values);
-    form.resetFields();
-    setIsModalOpen(false);
+   const handleSubmit = async (values) => {
+    setSaving(true); // start loader
+    try {
+      await onSubmit(values);
+      form.resetFields();
+      setIsModalOpen(false);
+    } finally {
+      setSaving(false); // stop loader
+    }
   };
 
   const handleCancel = () => {
@@ -127,6 +133,7 @@ const DesignationModal = ({
                 type="primary"
                 htmlType="submit"
                 icon={<SaveOutlined />}
+                loading={saving}
                 size="large"
                 style={{
                   minWidth: '120px',

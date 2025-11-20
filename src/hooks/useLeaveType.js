@@ -6,12 +6,16 @@ export const useLeaveTypes = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const fetchLeaveTypes = async () => {
+  const fetchLeaveTypes = async (page = 1, pageSize = 10, search = '') => {
     try {
       setLoading(true);
       setError(null);
-      const response = await leaveTypeAPI.getAll();
-      setLeaveTypes(response.data);
+      const response = await leaveTypeAPI.getAllPage({
+            page,
+            page_size: pageSize,
+            search,
+          });
+      setLeaveTypes(response.data.results);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to fetch leave types');
     } finally {

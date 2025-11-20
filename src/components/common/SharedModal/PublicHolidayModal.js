@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Modal, Form, Input, Button, Card, Select, DatePicker } from 'antd';
 import { SaveOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
@@ -10,23 +10,23 @@ const PublicHolidayModal = ({
   isModalOpen,
   setIsModalOpen,
   onSubmit,
-  editingPublicHoliday, // { id, holiday, start_date, end_date, comment }
+  editingPublicHoliday,
   title = 'Add Public Holiday',
-  holidaysOptions = [], // list from manageHoliday: [{id, name}, ...]
+  holidaysOptions = [],
 }) => {
   const [form] = Form.useForm();
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (editingPublicHoliday) {
-      // Prepare initial values
       const initial = {
-        holiday: editingPublicHoliday.holiday && typeof editingPublicHoliday.holiday === 'object'
-          ? editingPublicHoliday.holiday.id
-          : editingPublicHoliday.holiday ?? editingPublicHoliday.holiday_id ?? null,
+        holiday:
+          editingPublicHoliday.holiday && typeof editingPublicHoliday.holiday === 'object'
+            ? editingPublicHoliday.holiday.id
+            : editingPublicHoliday.holiday ?? editingPublicHoliday.holiday_id ?? null,
         comment: editingPublicHoliday.comment ?? '',
       };
 
-      // parse dates if present
       if (editingPublicHoliday.start_date) {
         initial.start_date = dayjs(editingPublicHoliday.start_date);
       }
@@ -40,17 +40,24 @@ const PublicHolidayModal = ({
     }
   }, [editingPublicHoliday, form]);
 
-  const handleSubmit = (values) => {
-    // values: { holiday: id, start_date: Dayjs, end_date: Dayjs, comment }
+  const handleSubmit = async (values) => {
     const payload = {
       holiday: values.holiday,
       start_date: values.start_date ? values.start_date.format('YYYY-MM-DD') : null,
       end_date: values.end_date ? values.end_date.format('YYYY-MM-DD') : null,
       comment: values.comment ?? '',
     };
-    onSubmit(payload);
-    form.resetFields();
-    setIsModalOpen(false);
+
+    try {
+      setSaving(true); 
+      await onSubmit(payload);
+      form.resetFields();
+      setIsModalOpen(false);
+    } catch (err) {
+      console.error("Save failed");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleCancel = () => {
@@ -66,7 +73,7 @@ const PublicHolidayModal = ({
       footer={null}
       width={600}
       centered
-      destroyOnHidden
+      destroyOnClose
     >
       <Card
         size="small"
@@ -81,9 +88,7 @@ const PublicHolidayModal = ({
           form={form}
           layout="vertical"
           onFinish={handleSubmit}
-          autoComplete="off"
         >
-          {/* Holiday Name dropdown */}
           <Form.Item
             label="Holiday Name"
             name="holiday"
@@ -99,15 +104,22 @@ const PublicHolidayModal = ({
               size="large"
               style={{ borderRadius: '6px' }}
             >
-              {holidaysOptions.map((h) => (
-                <Option key={h.id} value={h.id}>
-                  {h.name}
-                </Option>
-              ))}
+              {Array.isArray(holidaysOptions)
+                ? holidaysOptions.map((h) => (
+                    <Option key={h.id} value={h.id}>
+                      {h.name}
+                    </Option>
+                  ))
+                : Array.isArray(holidaysOptions?.results)
+                ? holidaysOptions.results.map((h) => (
+                    <Option key={h.id} value={h.id}>
+                      {h.name}
+                    </Option>
+                  ))
+                : null}
             </Select>
           </Form.Item>
 
-          {/* Start Date */}
           <Form.Item
             label="Start Date"
             name="start_date"
@@ -120,7 +132,6 @@ const PublicHolidayModal = ({
             />
           </Form.Item>
 
-          {/* End Date */}
           <Form.Item
             label="End Date"
             name="end_date"
@@ -133,12 +144,7 @@ const PublicHolidayModal = ({
             />
           </Form.Item>
 
-          {/* Comment */}
-          <Form.Item
-            label="Comment"
-            name="comment"
-            rules={[]}
-          >
+          <Form.Item label="Comment" name="comment">
             <TextArea
               placeholder="Enter comments (optional)"
               rows={4}
@@ -151,6 +157,7 @@ const PublicHolidayModal = ({
               <Button
                 size="large"
                 onClick={handleCancel}
+                disabled={saving}
                 style={{
                   minWidth: '100px',
                   borderRadius: '6px',
@@ -158,11 +165,13 @@ const PublicHolidayModal = ({
               >
                 Cancel
               </Button>
+
               <Button
                 type="primary"
                 htmlType="submit"
                 icon={<SaveOutlined />}
                 size="large"
+                loading={saving}   
                 style={{
                   minWidth: '120px',
                   borderRadius: '6px',

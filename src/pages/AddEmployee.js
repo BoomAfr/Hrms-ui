@@ -1,35 +1,137 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Form, Input, Select, DatePicker, Button, Card, Row, Col, Checkbox, Divider, Radio, Upload, Space, Collapse } from 'antd';
-import { UserOutlined, MailOutlined, PhoneOutlined, LockOutlined, UploadOutlined, PlusOutlined, DeleteOutlined } from '@ant-design/icons';
-import { useManageEmployee } from '../hooks/useManageEmployee';
+import { UserOutlined, MailOutlined, PhoneOutlined, LockOutlined, UploadOutlined, PlusOutlined, DeleteOutlined, ArrowLeftOutlined } from '@ant-design/icons';
+import { useManageEmployee, useShift } from '../hooks/useManageEmployee';
+import { useDepartments } from '../hooks/useDepartments';
+import { useDesignations } from '../hooks/useDesignations';
+import { useBranches } from '../hooks/useBranches';
+import { useToast } from '../hooks/useToast';
+import { useMonthlyPayGrades } from '../hooks/useMonthlyPayGrade';
+import { useNavigate, useParams } from 'react-router-dom';
+import dayjs from 'dayjs';
+import useHourlyPaygrades from '../hooks/useHourlyPayGrade';
 
 const { Option } = Select;
 const { TextArea } = Input;
 
+
 const AddEmployeeForm = () => {
     const [form] = Form.useForm();
-    const {addEmployee} = useManageEmployee();
+    const { addEmployee,loading,employees,profile,fetchEmployeeById,updateEmployee } = useManageEmployee();
+    const { shifts } = useShift();
+    const { paygrades } = useMonthlyPayGrades();
+    const { Toast, contextHolder } = useToast();
+    const { departments } = useDepartments();
+    const { designations } = useDesignations();
+    const { branches } = useBranches();
+    const {hourlyPaygrades} = useHourlyPaygrades();
+    const [isEditMode,setIsEditMode] = useState(false)
+        const [activePanels, setActivePanels] = useState([1, 2, 3, 4])
+const [fileList, setFileList] = useState([]);
+
+    const { id } = useParams();
+      const navigate = useNavigate();
+
+        const setFormField = () => {
+        const formattedData = {
+                    ...profile,
+                    date_of_birth: dayjs(employees.date_of_birth) ,
+                    date_of_joining: dayjs(employees.date_of_joining) ,
+                    date_of_leaving: dayjs(employees.date_of_leaving) ,
+                };
+console.log(formattedData,'formattedData');
+
+                // Set form fields with the fetched data
+                form.setFieldsValue(formattedData);
+    };
+    console.log(profile,'employees');
+    
+
+  useEffect(() => {
+    if(id){
+             Object.keys(profile).length === 0 &&   fetchEmployeeById(id)
+
+        setIsEditMode(true);
+
+    setFormField()
+
+
+    }
+        
+  }, [id,profile])
 
     const onFinish = (values) => {
-        console.log('Form values:', values);
-        addEmployee(values)
+        console.log(values, 'values')
+        const { date_of_birth, date_of_joining} = values;
+        const formatedValues = {
+            ...values,
+            date_of_birth: date_of_birth.format('YYYY-MM-DD'),
+            date_of_joining: date_of_joining.format('YYYY-MM-DD'),
+            date_of_leaving: values.date_of_leaving ? values.date_of_leaving.format('YYYY-MM-DD') : undefined,        }
+        console.log(formatedValues, 'formatedValues')
+        if(isEditMode){
+            updateEmployee(id,formatedValues, Toast)
+        }else{        addEmployee(formatedValues, Toast)
+}
     };
 
-    const uploadProps = {
-        beforeUpload: (file) => {
-            const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
-            if (!isJpgOrPng) {
-                // message.error('You can only upload JPG/PNG file!');
+//  const [fileList, setFileList] = useState([]);
+
+const uploadProps = {
+    beforeUpload: (file) => {
+        const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
+        if (!isJpgOrPng) {
+            Toast('error', 'You can only upload JPG/PNG file!');
+            return Upload.LIST_IGNORE;
+        }
+        
+        // Custom file object create karein
+        const customFileObject = {
+            uid: file.uid,
+            lastModified: file.lastModified,
+            lastModifiedDate: file.lastModifiedDate,
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            percent: 0,
+            originFileObj: {
+                uid: file.uid
             }
-            return isJpgOrPng || Upload.LIST_IGNORE;
-        },
-        maxCount: 1,
-    };
-    const [activePanels, setActivePanels] = useState([1, 2, 3, 4])
+        };
+        
+        // Sirf ek file rakhein array mein
+        setFileList([customFileObject]);
+        
+        // Form field mein bhi set karein
+        form.setFieldValue('photo', [customFileObject]);
+        
+        // Auto upload rok dein
+        return false;
+    },
+    maxCount: 1,
+    fileList: fileList,
+    onRemove: () => {
+        setFileList([]);
+        form.setFieldValue('photo', null);
+    },
+};
+
+    const uploadButton = (
+        <Button 
+            icon={<UploadOutlined />} 
+            style={{ 
+                color: fileList.length > 0 ? '#52c41a' : 'inherit',
+                borderColor: fileList.length > 0 ? '#52c41a' : '#d9d9d9'
+            }}
+        >
+            {fileList.length > 0 ? fileList[0].name : 'Choose file'}
+        </Button>
+    );
 
     return (
         <div style={{ padding: '24px' }}>
-            <Card title="Add Employee" style={{ marginBottom: '24px' }}>
+            {contextHolder}
+            <Card title={isEditMode ? "Edit Employee":"Add Employee"} style={{ marginBottom: '24px' }}>
 
                 <Form
                     form={form}
@@ -48,20 +150,21 @@ const AddEmployeeForm = () => {
                                         rules={[{ required: true, message: 'Please select role' }]}
                                     >
                                         <Select placeholder="--- Please Select ---">
-                                            <Option value="admin">Admin</Option>
-                                            <Option value="employee">Employee</Option>
-                                            <Option value="manager">Manager</Option>
-                                            <Option value="supervisor">Supervisor</Option>
+                                            <Option value="ADMIN">Admin</Option>
+                                            <Option value="MANAGER">Manager</Option>
+
+                                            <Option value="EMPLOYEE">Employee</Option>
                                         </Select>
                                     </Form.Item>
                                 </Col>
                                 <Col xs={24} sm={6}>
                                     <Form.Item
+                                    
                                         label="User Name"
                                         // name="username"
-                                        rules={[{ required: true, message: 'Please enter username' }]}
+                                        // rules={[{ required: true, message: 'Please enter username' }]}
                                     >
-                                        <Input placeholder="User Name" prefix={<UserOutlined />} />
+                                        <Input disabled={true} placeholder="User Name" prefix={<UserOutlined />} />
                                     </Form.Item>
                                 </Col>
                                 <Col xs={24} sm={6}>
@@ -76,7 +179,7 @@ const AddEmployeeForm = () => {
                                 <Col xs={24} sm={6}>
                                     <Form.Item
                                         label="Confirm Password"
-                                        // name="confirmPassword"
+                                        name="confirmPassword"
                                         dependencies={['password']}
                                         rules={[
                                             { required: true, message: 'Please confirm password' },
@@ -110,6 +213,8 @@ const AddEmployeeForm = () => {
                                     <Form.Item
                                         label="Last Name"
                                         name="last_name"
+                                         rules={[{ required: true, message: 'Please enter last name' }]}
+
                                     >
                                         <Input placeholder="Last Name" />
                                     </Form.Item>
@@ -126,13 +231,22 @@ const AddEmployeeForm = () => {
                                 </Col>
                                 <Col xs={24} sm={6}>
                                     <Form.Item
+                                        
                                         label="Supervisor"
                                         name="supervisor"
+                                        // rules={[{ required: true, message: 'Please select supervisor' }]}
+
                                     >
-                                        <Select placeholder="--- Please Select ---">
-                                            <Option value="supervisor1">Supervisor 1</Option>
-                                            <Option value="supervisor2">Supervisor 2</Option>
-                                            <Option value="supervisor3">Supervisor 3</Option>
+                                        <Select  placeholder="--- Please Select ---">
+                                            {Array.isArray(employees) && employees.length > 0 ? (
+                                                employees.map((employee) => (
+                                                    <Option key={employee?.user_id} value={employee?.user_id}>
+                                                        {employee?.name}
+                                                    </Option>
+                                                ))
+                                            ) : (
+                                                <Option disabled>No Supervisors Found</Option>
+                                            )}
                                         </Select>
                                     </Form.Item>
                                 </Col>
@@ -145,10 +259,9 @@ const AddEmployeeForm = () => {
                                         rules={[{ required: true, message: 'Please select department' }]}
                                     >
                                         <Select placeholder="--- Please Select ---">
-                                            <Option value="engineering">Engineering</Option>
-                                            <Option value="hr">Human Resource</Option>
-                                            <Option value="finance">Finance</Option>
-                                            <Option value="marketing">Marketing</Option>
+                                            {Array.isArray(departments) && departments?.map((department) => (
+                                                <Option value={department?.id} key={department?.id}>{department?.name}</Option>))}
+
                                         </Select>
                                     </Form.Item>
                                 </Col>
@@ -159,10 +272,10 @@ const AddEmployeeForm = () => {
                                         rules={[{ required: true, message: 'Please select designation' }]}
                                     >
                                         <Select placeholder="--- Please Select ---">
-                                            <Option value="software_engineer">Software Engineer</Option>
-                                            <Option value="senior_engineer">Senior Engineer</Option>
-                                            <Option value="team_lead">Team Lead</Option>
-                                            <Option value="manager">Manager</Option>
+                                            {Array.isArray(designations) && designations.map((designation) => (
+                                                <Option value={designation?.id} key={designation?.id}>{designation?.name}</Option>
+                                            ))}
+
                                         </Select>
                                     </Form.Item>
                                 </Col>
@@ -170,11 +283,16 @@ const AddEmployeeForm = () => {
                                     <Form.Item
                                         label="Branch Name"
                                         name="branch"
+                                        rules={[{ required: true, message: 'Please select Branch Name' }]}
                                     >
                                         <Select placeholder="--- Please Select ---">
-                                            <Option value="main_branch">Main Branch</Option>
-                                            <Option value="branch_2">Branch 2</Option>
-                                            <Option value="branch_3">Branch 3</Option>
+                                            {
+                                                Array.isArray(branches)
+                                                && branches?.map((branch) => (
+                                                    <Option value={branch?.id} key={branch?.id}>{branch?.name}</Option>
+                                                ))
+                                            }
+
                                         </Select>
                                     </Form.Item>
                                 </Col>
@@ -184,12 +302,20 @@ const AddEmployeeForm = () => {
                                         name="work_shift"
                                         rules={[{ required: true, message: 'Please select work shift' }]}
                                     >
-                                        <Select placeholder="--- Please Select ---">
-                                            <Option value="morning">Morning Shift</Option>
-                                            <Option value="evening">Evening Shift</Option>
-                                            <Option value="night">Night Shift</Option>
+                                        <Select placeholder="--- Please Select ---" allowClear>
+                                            {Array.isArray(shifts) && shifts.length > 0 ? (
+                                                shifts.map((shift) => (
+                                                    <Option key={shift.id} value={shift.id}>
+                                                        {shift.name || shift.shift_name}
+                                                    </Option>
+                                                ))
+                                            ) : (
+                                                <Option disabled>No Shifts Found</Option>
+                                            )}
                                         </Select>
                                     </Form.Item>
+
+
                                 </Col>
                             </Row>
                             <Row gutter={16}>
@@ -197,11 +323,17 @@ const AddEmployeeForm = () => {
                                     <Form.Item
                                         label="Month/Pay Grade"
                                         name="monthly_pay_grade"
+                                        rules={[{ required: true, message: 'Please select Month/Pay Grade' }]}
+
                                     >
                                         <Select placeholder="--- Please Select ---">
-                                            <Option value="grade_a">Grade A</Option>
-                                            <Option value="grade_b">Grade B</Option>
-                                            <Option value="grade_c">Grade C</Option>
+                                            {Array.isArray(paygrades) &&
+                                                paygrades.map((paygrade) => (
+                                                    <Option value={paygrade?.id}>{paygrade?.grade_name}</Option>
+
+                                                ))
+                                            }
+
                                         </Select>
                                     </Form.Item>
                                 </Col>
@@ -211,9 +343,14 @@ const AddEmployeeForm = () => {
                                         name="hourly_pay_grade"
                                     >
                                         <Select placeholder="--- Please Select ---">
-                                            <Option value="hourly_1">Hourly Grade 1</Option>
-                                            <Option value="hourly_2">Hourly Grade 2</Option>
-                                            <Option value="hourly_3">Hourly Grade 3</Option>
+                                            {Array.isArray(hourlyPaygrades) && 
+                                            
+                                            hourlyPaygrades.map((grades)=>(
+                                            <Option value={grades?.id}>{grades?.pay_grade_name}</Option>
+
+                                            ))
+                                            }
+                                        
                                         </Select>
                                     </Form.Item>
                                 </Col>
@@ -222,7 +359,7 @@ const AddEmployeeForm = () => {
                                         label="Email"
                                         name="email"
                                         rules={[
-                                            { type: 'email', message: 'Please enter valid email' }
+                                            { required: true, type: 'email', message: 'Please enter valid email' }
                                         ]}
                                     >
                                         <Input placeholder="email" prefix={<MailOutlined />} />
@@ -314,8 +451,8 @@ const AddEmployeeForm = () => {
                                         rules={[{ required: true, message: 'Please select status' }]}
                                     >
                                         <Radio.Group>
-                                            <Radio value="active">Active</Radio>
-                                            <Radio value="inactive">Inactive</Radio>
+                                            <Radio value="Active">Active</Radio>
+                                            <Radio value="Inactive">Inactive</Radio>
                                         </Radio.Group>
                                     </Form.Item>
                                 </Col>
@@ -325,7 +462,7 @@ const AddEmployeeForm = () => {
                                         name="photo"
                                     >
                                         <Upload {...uploadProps}>
-                                            <Button icon={<UploadOutlined />}>Choose file</Button>
+                                           {uploadButton}
                                         </Upload>
                                     </Form.Item>
                                 </Col>
@@ -349,289 +486,14 @@ const AddEmployeeForm = () => {
                                 </Col>
                             </Row>
                         </Collapse.Panel>
-                        <Collapse.Panel key={3} header={"PROFESSIONAL EXPERIENCE"}>
-                            <Form.List name="experiences">
-                                {(fields, { add, remove }) => (
-                                    <div>
-                                        {fields.map((field, index) => (
-                                            <Card
-                                                key={field.key}
-                                                type="inner"
-                                                style={{
-                                                    marginBottom: '16px',
-                                                    border: '1px solid #d9d9d9'
-                                                }}
-                                                title={`Professional Experience ${index + 1}`}
-                                                extra={
-                                                    fields.length > 1 && (
-                                                        <Button
-                                                            type="text"
-                                                            danger
-                                                            icon={<DeleteOutlined />}
-                                                            onClick={() => remove(field.name)}
-                                                        >
-                                                            Delete
-                                                        </Button>
-                                                    )
-                                                }
-                                            >
-                                                {/* Organization */}
-                                                <Form.Item
-                                                    {...field}
-                                                    label="Organization"
-                                                    name={[field.name, 'organization']}
-                                                    rules={[{ required: true, message: 'Please enter organization name' }]}
-                                                >
-                                                    <Input placeholder="Organization" />
-                                                </Form.Item>
 
-                                                {/* Designation and Date Range */}
-                                                <Row gutter={16}>
-                                                    <Col xs={24} sm={8}>
-                                                        <Form.Item
-                                                            {...field}
-                                                            label="Designation"
-                                                            name={[field.name, 'designation']}
-                                                            rules={[{ required: true, message: 'Please enter designation' }]}
-                                                        >
-                                                            <Input placeholder="Designation" />
-                                                        </Form.Item>
-                                                    </Col>
-
-                                                    <Col xs={24} sm={8}>
-                                                        <Form.Item
-                                                            {...field}
-                                                            label="From Date"
-                                                            name={[field.name, 'fromDate']}
-                                                            rules={[{ required: true, message: 'Please select from date' }]}
-                                                        >
-                                                            <DatePicker style={{ width: '100%' }} placeholder="From Date" />
-                                                        </Form.Item>
-                                                    </Col>
-
-                                                    <Col xs={24} sm={8}>
-                                                        <Form.Item
-                                                            {...field}
-                                                            label="To Date"
-                                                            name={[field.name, 'toDate']}
-                                                            rules={[{ required: true, message: 'Please select to date' }]}
-                                                        >
-                                                            <DatePicker style={{ width: '100%' }} placeholder="To Date" />
-                                                        </Form.Item>
-                                                    </Col>
-                                                </Row>
-
-                                                {/* Skills Section - Dynamic Skills List */}
-                                                <Form.Item
-                                                    label="Skills"
-                                                >
-                                                    <Form.List name={[field.name, 'skills']}>
-                                                        {(skillFields, skillOperations) => (
-                                                            <div>
-                                                                {skillFields.map((skillField, skillIndex) => (
-                                                                    <Space
-                                                                        key={skillField.key}
-                                                                        style={{ display: 'flex', marginBottom: 8 }}
-                                                                        align="baseline"
-                                                                    >
-                                                                        <Form.Item
-                                                                            {...skillField}
-                                                                            name={[skillField.name, 'skill']}
-                                                                            rules={[{ required: true, message: 'Please enter skill' }]}
-                                                                            style={{ marginBottom: 0 }}
-                                                                        >
-                                                                            <Input placeholder="Skill" />
-                                                                        </Form.Item>
-
-                                                                        {skillFields.length > 1 && (
-                                                                            <Button
-                                                                                type="text"
-                                                                                danger
-                                                                                icon={<DeleteOutlined />}
-                                                                                onClick={() => skillOperations.remove(skillField.name)}
-                                                                            >
-                                                                                Delete
-                                                                            </Button>
-                                                                        )}
-                                                                    </Space>
-                                                                ))}
-
-                                                                <Button
-                                                                    type="dashed"
-                                                                    onClick={() => skillOperations.add()}
-                                                                    icon={<PlusOutlined />}
-                                                                    style={{ width: '100%', marginBottom: 16 }}
-                                                                >
-                                                                    Add Skill
-                                                                </Button>
-                                                            </div>
-                                                        )}
-                                                    </Form.List>
-                                                </Form.Item>
-
-                                                {/* Responsibility */}
-                                                <Form.Item
-                                                    {...field}
-                                                    label="Responsibility"
-                                                    name={[field.name, 'responsibility']}
-                                                    rules={[{ required: true, message: 'Please enter responsibilities' }]}
-                                                >
-                                                    <TextArea
-                                                        placeholder="Describe your responsibilities..."
-                                                        rows={4}
-                                                    />
-                                                </Form.Item>
-
-                                                <Divider />
-                                            </Card>
-                                        ))}
-
-                                        <Form.Item>
-                                            <Button
-                                                type="dashed"
-                                                onClick={() => add()}
-                                                icon={<PlusOutlined />}
-                                                style={{ width: '100%' }}
-                                            >
-                                                Add Professional Experience
-                                            </Button>
-                                        </Form.Item>
-                                    </div>
-                                )}
-                            </Form.List>
-                        </Collapse.Panel>
-                        <Collapse.Panel key={4} header={"EDUCATIONAL QUALIFICATION"}>
-                            <Form.List name="qualifications">
-                                {(fields, { add, remove }) => (
-                                    <div>
-                                        {fields.map((field, index) => (
-                                            <Card
-                                                key={field.key}
-                                                type="inner"
-                                                style={{
-                                                    marginBottom: '16px',
-                                                    border: '1px solid #d9d9d9'
-                                                }}
-                                                title={`Educational Qualification ${index + 1}`}
-                                                extra={
-                                                    fields.length > 1 && (
-                                                        <Button
-                                                            type="text"
-                                                            danger
-                                                            icon={<DeleteOutlined />}
-                                                            onClick={() => remove(field.name)}
-                                                        >
-                                                            Delete
-                                                        </Button>
-                                                    )
-                                                }
-                                            >
-                                                <Row gutter={16}>
-                                                    <Col xs={24} sm={12}>
-                                                        <Form.Item
-                                                            {...field}
-                                                            label="Institute"
-                                                            name={[field.name, 'institute']}
-                                                            rules={[{ required: true, message: 'Please select institute' }]}
-                                                        >
-                                                            <Select placeholder="--- Please Select ---">
-                                                                <Option value="university_1">University of Example</Option>
-                                                                <Option value="university_2">Example Institute of Technology</Option>
-                                                                <Option value="university_3">Sample University</Option>
-                                                                <Option value="university_4">Test College</Option>
-                                                            </Select>
-                                                        </Form.Item>
-                                                    </Col>
-
-                                                    <Col xs={24} sm={12}>
-                                                        <Form.Item
-                                                            {...field}
-                                                            label="Result"
-                                                            name={[field.name, 'result']}
-                                                        >
-                                                            <Select placeholder="--- Please Select ---">
-                                                                <Option value="first_class">First Class</Option>
-                                                                <Option value="second_class">Second Class</Option>
-                                                                <Option value="third_class">Third Class</Option>
-                                                                <Option value="distinction">Distinction</Option>
-                                                                <Option value="passed">Passed</Option>
-                                                            </Select>
-                                                        </Form.Item>
-                                                    </Col>
-                                                </Row>
-
-                                                <Row gutter={16}>
-                                                    <Col xs={24} sm={12}>
-                                                        <Form.Item
-                                                            {...field}
-                                                            label="Board / University"
-                                                            name={[field.name, 'boardUniversity']}
-                                                            rules={[{ required: true, message: 'Please enter board/university' }]}
-                                                        >
-                                                            <Input placeholder="Board / University" />
-                                                        </Form.Item>
-                                                    </Col>
-
-                                                    <Col xs={24} sm={12}>
-                                                        <Form.Item
-                                                            {...field}
-                                                            label="GPA / CGPA"
-                                                            name={[field.name, 'gpa']}
-                                                        >
-                                                            <Input placeholder="Example: 5.00, 4.63" />
-                                                        </Form.Item>
-                                                    </Col>
-                                                </Row>
-
-                                                <Row gutter={16}>
-                                                    <Col xs={24} sm={12}>
-                                                        <Form.Item
-                                                            {...field}
-                                                            label="Degree"
-                                                            name={[field.name, 'degree']}
-                                                            rules={[{ required: true, message: 'Please enter degree' }]}
-                                                        >
-                                                            <Input placeholder="Example: B.Sc. Engr.(Bachelor of Science in Engineering)" />
-                                                        </Form.Item>
-                                                    </Col>
-
-                                                    <Col xs={24} sm={12}>
-                                                        <Form.Item
-                                                            {...field}
-                                                            label="Passing Year"
-                                                            name={[field.name, 'passingYear']}
-                                                            rules={[{ required: true, message: 'Please enter passing year' }]}
-                                                        >
-                                                            <Input placeholder="Passing Year" />
-                                                        </Form.Item>
-                                                    </Col>
-                                                </Row>
-
-                                                <Divider />
-                                            </Card>
-                                        ))}
-
-                                        <Form.Item>
-                                            <Button
-                                                type="dashed"
-                                                onClick={() => add()}
-                                                icon={<PlusOutlined />}
-                                                style={{ width: '100%' }}
-                                            >
-                                                Add Educational Qualification
-                                            </Button>
-                                        </Form.Item>
-                                    </div>
-                                )}
-                            </Form.List>
-                        </Collapse.Panel>
                     </Collapse>
 
 
                     <Form.Item style={{ marginTop: '24px', textAlign: 'center' }}>
                         <Space style={{ width: "100%", justifyContent: "space-between" }}>
-                            <Button type="primary" htmlType="submit" size="large" style={{ marginRight: '16px' }}>
-                                {"Save"}
+                            <Button loading={loading} type="primary" htmlType="submit" size="large" style={{ marginRight: '16px' }}>
+                                  {isEditMode ? "Update" : "Save"}
                             </Button>
                             <Button size="large" onClick={() => form.resetFields()}>
                                 Reset Form

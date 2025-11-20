@@ -6,12 +6,16 @@ export const useManageHoliday = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const fetchManageHoliday = async () => {
+  const fetchManageHoliday = async (page = 1, pageSize = 10, search = '') => {
     try {
       setLoading(true);
       setError(null);
-      const response = await manageHolidayAPI.getAll();
-      setManageHoliday(response.data);
+      const response = await manageHolidayAPI.getALLPage({
+            page,
+            page_size: pageSize,
+            search,
+          });
+      setManageHoliday(response.data.results || []);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to fetch holidays');
     } finally {

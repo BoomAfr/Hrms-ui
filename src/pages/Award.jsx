@@ -4,6 +4,7 @@ import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import AwardModal from '../components/common/SharedModal/AwardModal';
 import ConfirmModal from '../components/common/SharedModal/ConfirmModal';
 import { useAwards } from '../hooks/useAward';
+import { useEmployees } from '../hooks/useAward';
 const { Option } = Select;
 
 const Award = () => {
@@ -19,6 +20,7 @@ const Award = () => {
   const [searchText, setSearchText] = useState('');
 
   const { awards, loading, refetch, addAward, updateAward, deleteAward } = useAwards();
+  const { employees } = useEmployees();
 
   // handle form submit (called from AwardModal)
   const handleAddOrUpdate = async (values) => {
@@ -224,6 +226,7 @@ const Award = () => {
           setIsModalOpen={setIsModalOpen}
           onSubmit={handleAddOrUpdate}
           editingAward={editingAward}
+          employees={employees}
         />
       )}
 

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect,useState } from 'react';
 import { Modal, Form, Select, Button, Card } from 'antd';
 import { SaveOutlined } from '@ant-design/icons';
 
@@ -10,6 +10,7 @@ const WeeklyHolidayModal = ({ isModalOpen, setIsModalOpen, onSubmit, editingHoli
   ];
 
   const statusOptions = ['Active', 'Non Active'];
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (editingHoliday) {
@@ -22,15 +23,22 @@ const WeeklyHolidayModal = ({ isModalOpen, setIsModalOpen, onSubmit, editingHoli
     }
   }, [editingHoliday, form]);
 
-  const handleSubmit = (values) => {
-    // ✅ Send exactly what backend expects
+  const handleSubmit = async (values) => {
     const payload = {
       day: values.name,
       is_active: values.status === 'Active' ? true : false, // ✅ boolean expected by backend
     };
-    onSubmit(payload);
-    form.resetFields();
-    setIsModalOpen(false);
+
+    try{
+      setSaving(true)
+     await onSubmit(payload);
+     form.resetFields();
+     setIsModalOpen(false);
+    }
+    finally{
+      setSaving(false)
+    }
+    
   };
 
   const handleCancel = () => {
@@ -112,6 +120,7 @@ const WeeklyHolidayModal = ({ isModalOpen, setIsModalOpen, onSubmit, editingHoli
                 type="primary"
                 htmlType="submit"
                 icon={<SaveOutlined />}
+                loading={saving}
                 size="large"
                 style={{
                   minWidth: '120px',

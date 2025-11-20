@@ -2,6 +2,7 @@ import API from './api';
 
 export const publicHolidayAPI = {
   getAll: () => API.get('/company/leave/setup/public-holidays/'),
+  getAllPage: (params) => API.get('/company/leave/setup/public-holidays/', { params }),
   create: (data) => API.post('/company/leave/setup/public-holidays/', data),
   getById: (id) => API.get(`/company/leave/setup/public-holidays/${id}/`),
   update: (id, data) => API.put(`/company/leave/setup/public-holidays/${id}/`, data),

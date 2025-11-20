@@ -8,12 +8,17 @@ export const useDepartments = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const fetchDepartments = async () => {
+  const fetchDepartments = async (page = 1, pageSize = 10, search = '') => {
     try {
       setLoading(true);
       setError(null);
-      const response = await departmentAPI.getAll();
-      setDepartments(response.data);
+      const response = await departmentAPI.getAll({
+      page,
+      page_size: pageSize,
+      search,
+    });
+    setDepartments(response.data.results || []);
+    return response.data;
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to fetch departments');
     } finally {
@@ -35,10 +40,12 @@ export const useDepartments = () => {
   };
 
   // Update department (PUT/PATCH)
-  const updateDepartment = async (id, data) => {
+  const updateDepartment = async (id, data,Toast) => {
+          setLoading(true);
+
     try {
-      setLoading(true);
-      await departmentAPI.update(id, data); // PUT /company/departments/<id>/
+      await departmentAPI.update(id, data);
+      Toast.success("Department Updated Successfully")
       await fetchDepartments();
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to update department');

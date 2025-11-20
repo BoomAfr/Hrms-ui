@@ -2,6 +2,7 @@ import React from 'react';
 import { Table, Input, Select, Space, Button, Card, Pagination } from 'antd';
 import { SearchOutlined, ReloadOutlined } from '@ant-design/icons';
 import ConfirmModal from '../SharedModal/ConfirmModal';
+import CommonFormModal from '../SharedModal/SharedModal';
 
 const { Search } = Input;
 const { Option } = Select;
@@ -23,9 +24,34 @@ const CommonTable = ({
   searchPlaceholder = "Search...",
   extraButtons = null,
   deleteModal,
+  formModal,
 }) => {
-console.log(deleteModal,'deleteModal');
-const {isOpen,message,handleDeleteConfirm,handleDeleteCancel} = deleteModal;
+  console.log(deleteModal,'deleteModal')
+  const getDeleteModalProps = (flag) => {
+    if (deleteModal) {
+      switch (flag) {
+        case "isOpen": return (deleteModal.isOpen);
+        case "message": return (deleteModal.message);
+        case "onOk": return (deleteModal.onOk);
+        case "onCancel": return (deleteModal.onCancel);
+        default: return null;
+      }
+    }
+  }
+  const getformModalProps = (flag) => {
+    if (formModal) {
+      switch (flag) {
+        case "isOpen": return (formModal.isModalOpen);
+        case "title": return (formModal.title);
+        case "message": return (formModal.message);
+        case "handleDeleteConfirm": return (formModal.onSubmit);
+        case "setIsModalOpen": return (formModal.setIsModalOpen);
+        case "fieldLabel": return (formModal.fieldLabel);
+        case "onSubmit": return (formModal.onSubmit);
+        default: return null;
+      }
+  }
+}
 
   // Default pagination settings
   const paginationConfig = showPagination ? {
@@ -41,7 +67,6 @@ const {isOpen,message,handleDeleteConfirm,handleDeleteCancel} = deleteModal;
       if (onPageChange) onPageChange(current, size);
     }
   } : false;
-console.log(isOpen,'isOpenisOpen',deleteModal);
 
   return (
     <Card
@@ -69,15 +94,28 @@ console.log(isOpen,'isOpenisOpen',deleteModal);
         scroll={{ x: true }}
         size="middle"
       />
-      {isOpen && (
+      {deleteModal && (
         <ConfirmModal
-          isOpen
-          title={deleteModal.title}
-          message={message}
-          onOk={handleDeleteConfirm}
-          onCancel={handleDeleteCancel}
+          isOpen={getDeleteModalProps("isOpen")}
+          title={getDeleteModalProps("title")}
+          message={getDeleteModalProps("message")}
+          onOk={getDeleteModalProps("onOk")}
+          onCancel={getDeleteModalProps("onCancel")}
         />
-      )}    </Card>
+      )}
+
+      {formModal && (
+        <CommonFormModal
+          isModalOpen={getformModalProps("isOpen")}
+          setIsModalOpen={getformModalProps("setIsModalOpen")}
+          onSubmit={getformModalProps("onSubmit")}
+          editingDept={null}
+          title={getformModalProps("title")}
+          fieldLabel={getformModalProps("fieldLabel")}
+
+        />
+      )}
+    </Card>
   );
 };
 

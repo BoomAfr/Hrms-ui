@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Card, 
   Row, 
@@ -10,7 +10,11 @@ import {
   Divider,
   Avatar,
   List,
-  Badge
+  Badge,
+  Statistic,
+  Skeleton,
+  Empty,
+  Alert
 } from 'antd';
 import { 
   UserOutlined, 
@@ -18,14 +22,21 @@ import {
   CheckCircleOutlined,
   LogoutOutlined,
   BellOutlined,
-  TeamOutlined
+  TeamOutlined,
+  RiseOutlined,
+  FallOutlined,
+  ExclamationCircleOutlined
 } from '@ant-design/icons';
+import { useDashboard } from '../hooks/useDashboard';
 
-const { Title, Text, Paragraph } = Typography;
+const { Title, Text } = Typography;
 
 const Dashboard = () => {
   const [isCheckedIn, setIsCheckedIn] = useState(false);
   const [checkInTime, setCheckInTime] = useState(null);
+  const { dashboardData, loading, error } = useDashboard();
+  
+  console.log(dashboardData, 'dashboardData');
 
   const handleCheckIn = () => {
     const now = new Date();
@@ -43,13 +54,48 @@ const Dashboard = () => {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
+  // Stats data from API response
+  const statsData = [
+    {
+      title: 'TOTAL EMPLOYEE',
+      value: dashboardData?.metrics?.total_employee || 0,
+      icon: <TeamOutlined />,
+      color: '#1890ff'
+    },
+    {
+      title: 'DEPARTMENT',
+      value: dashboardData?.metrics?.total_department || 0,
+      icon: <UserOutlined />,
+      color: '#52c41a'
+    },
+    {
+      title: 'PRESENT TODAY',
+      value: dashboardData?.metrics?.present_today || 0,
+      icon: <CheckCircleOutlined />,
+      color: '#52c41a'
+    },
+    {
+      title: 'ABSENT TODAY',
+      value: dashboardData?.metrics?.absent_today || 0,
+      icon: <ClockCircleOutlined />,
+      color: '#ff4d4f'
+    }
+  ];
+
   // Table columns for attendance
   const attendanceColumns = [
     {
       title: 'Photo',
       dataIndex: 'photo',
       key: 'photo',
-      render: () => <Avatar size="small" icon={<UserOutlined />} />,
+      render: (photo, record) => (
+        <Avatar 
+          size="small" 
+          src={photo} 
+          icon={<UserOutlined />} 
+        />
+      ),
+      width: 60,
     },
     {
       title: 'Name',
@@ -58,95 +104,229 @@ const Dashboard = () => {
     },
     {
       title: 'In Time',
-      dataIndex: 'inTime',
-      key: 'inTime',
+      dataIndex: 'in_time',
+      key: 'in_time',
     },
     {
       title: 'Out Time',
-      dataIndex: 'outTime',
-      key: 'outTime',
+      dataIndex: 'out_time',
+      key: 'out_time',
     },
     {
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
-      render: (status) => (
-        <Tag color={status === 'Late' ? 'red' : 'green'}>
-          {status}
-        </Tag>
-      ),
+      render: (status) => {
+        const statusConfig = {
+          'Present': { color: 'green', text: 'Present' },
+          'Late': { color: 'orange', text: 'Late' },
+          'Absent': { color: 'red', text: 'Absent' },
+          'Half Day': { color: 'blue', text: 'Half Day' }
+        };
+        
+        const config = statusConfig[status] || { color: 'default', text: status };
+        return (
+          <Tag color={config.color}>
+            {config.text}
+          </Tag>
+        );
+      },
     },
   ];
 
-  // Empty data for the table
-  const attendanceData = [];
+  // Notice board data from API
+  const noticeData = dashboardData?.notice_board ? [dashboardData.notice_board] : [];
 
-  // Notice board data
-  const noticeData = [
-    {
-      title: 'Meeting',
-      date: '12 Mar 2025',
-      publishedBy: 'Admin',
-      description: 'Dissertations',
-    },
-  ];
+  // Loading Skeleton Components
+  const StatSkeleton = () => (
+    <Card style={{ borderRadius: '8px' }} bodyStyle={{ padding: '16px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ flex: 1 }}>
+          <Skeleton.Input active size="small" style={{ width: '80%', marginBottom: '8px' }} />
+          <Skeleton.Input active size="large" style={{ width: '60%' }} />
+        </div>
+        <Skeleton.Avatar active size={32} />
+      </div>
+    </Card>
+  );
+
+  const TableSkeleton = () => (
+    <div>
+      {[...Array(5)].map((_, index) => (
+        <div key={index} style={{ display: 'flex', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid #f0f0f0' }}>
+          <Skeleton.Avatar active size="small" style={{ marginRight: '12px' }} />
+          <div style={{ flex: 1 }}>
+            <Skeleton.Input active size="small" style={{ width: '80%' }} />
+          </div>
+          <Skeleton.Input active size="small" style={{ width: '60px', marginRight: '12px' }} />
+          <Skeleton.Input active size="small" style={{ width: '60px', marginRight: '12px' }} />
+          <Skeleton.Input active size="small" style={{ width: '80px' }} />
+        </div>
+      ))}
+    </div>
+  );
+
+  const NoticeSkeleton = () => (
+    <div>
+      {[...Array(2)].map((_, index) => (
+        <div key={index} style={{ marginBottom: '12px', padding: '12px', backgroundColor: '#fafafa', borderRadius: '4px' }}>
+          <Skeleton active paragraph={{ rows: 1 }} />
+        </div>
+      ))}
+    </div>
+  );
+
+  if (error) {
+    return (
+      <div style={{ padding: '24px' }}>
+        <Alert
+          message="Error Loading Dashboard"
+          description="There was an error loading the dashboard data. Please try again later."
+          type="error"
+          showIcon
+        />
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: '24px', background: '#f0f2f5', minHeight: '100vh' }}>
-      <Title level={2}>Dashboard</Title>
+      <Title level={2} style={{ marginBottom: '24px' }}>Dashboard</Title>
       
       {/* Stats Section */}
       <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
-        <Col xs={24} sm={12} md={8}>
-          <Card>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div>
-                <Text type="secondary">TOTAL EMPLOYEE</Text>
-                <Title level={3} style={{ margin: '8px 0 0 0' }}>ent</Title>
-              </div>
-              <TeamOutlined style={{ fontSize: '24px', color: '#1890ff' }} />
-            </div>
-          </Card>
-        </Col>
-        
-        <Col xs={24} sm={12} md={8}>
-          <Card>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div>
-                <Text type="secondary">Today Attendance</Text>
-                <div style={{ marginTop: '8px' }}>
-                  {isCheckedIn ? (
-                    <div>
-                      <div>
-                        <CheckCircleOutlined style={{ color: '#52c41a', marginRight: '8px' }} />
-                        <Text strong>Checked In: {formatTime(checkInTime)}</Text>
-                      </div>
-                    </div>
-                  ) : (
-                    <Text type="secondary">Not Checked In</Text>
-                  )}
+        {statsData.map((stat, index) => (
+          <Col xs={24} sm={12} lg={6} key={index}>
+            {loading ? (
+              <StatSkeleton />
+            ) : (
+              <Card 
+                style={{ 
+                  borderLeft: `4px solid ${stat.color}`,
+                  borderRadius: '8px'
+                }}
+                bodyStyle={{ padding: '16px' }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div>
+                    <Text type="secondary" style={{ fontSize: '12px', fontWeight: '500' }}>
+                      {stat.title}
+                    </Text>
+                    <Title 
+                      level={2} 
+                      style={{ 
+                        margin: '8px 0 0 0', 
+                        color: stat.color,
+                        fontSize: '28px'
+                      }}
+                    >
+                      {stat.value}
+                    </Title>
+                  </div>
+                  <div 
+                    style={{
+                      fontSize: '32px',
+                      color: stat.color,
+                      opacity: 0.8
+                    }}
+                  >
+                    {stat.icon}
+                  </div>
                 </div>
-              </div>
-              <ClockCircleOutlined style={{ fontSize: '24px', color: '#faad14' }} />
-            </div>
+              </Card>
+            )}
+          </Col>
+        ))}
+      </Row>
+
+      {/* Single Row for Notice Board, Check In/Out, and Today Attendance */}
+      <Row gutter={[16, 16]}>
+        {/* Notice Board - Left Side */}
+        <Col xs={24} lg={6}>
+          <Card 
+            title={
+              <span style={{ fontWeight: '600', fontSize: '14px' }}>
+                <BellOutlined style={{ marginRight: '8px', color: '#1890ff' }} />
+                NOTICE BOARD
+              </span>
+            }
+            style={{ borderRadius: '8px', height: '100%' }}
+            bodyStyle={{ padding: '12px' }}
+          >
+            {loading ? (
+              <NoticeSkeleton />
+            ) : noticeData.length > 0 ? (
+              <List
+                itemLayout="horizontal"
+                dataSource={noticeData}
+                size="small"
+                renderItem={item => (
+                  <List.Item
+                    style={{
+                      borderLeft: '3px solid #1890ff',
+                      paddingLeft: '8px',
+                      marginBottom: '8px',
+                      backgroundColor: '#fafafa',
+                      borderRadius: '4px',
+                      padding: '8px'
+                    }}
+                  >
+                    <List.Item.Meta
+                      title={
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <Text strong style={{ fontSize: '13px' }}>{item.title}</Text>
+                          <Text type="secondary" style={{ fontSize: '11px' }}>
+                            {item.date}
+                          </Text>
+                        </div>
+                      }
+                      description={
+                        <div>
+                          <div style={{ marginBottom: '2px' }}>
+                            <Text type="secondary" style={{ fontSize: '11px' }}>
+                              Published By: {item.publishedBy}
+                            </Text>
+                          </div>
+                          <Text style={{ fontSize: '12px' }}>
+                            {item.description}
+                          </Text>
+                        </div>
+                      }
+                    />
+                  </List.Item>
+                )}
+              />
+            ) : (
+              <Empty 
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                description="No notices available"
+                imageStyle={{ height: 40 }}
+              />
+            )}
           </Card>
         </Col>
-        
-        <Col xs={24} sm={24} md={8}>
-          <Card>
+
+        {/* Check In/Out Card - Middle */}
+        <Col xs={24} lg={6}>
+          <Card 
+            style={{ borderRadius: '8px', height: '100%' }}
+            bodyStyle={{ padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}
+          >
             <div style={{ textAlign: 'center' }}>
-              <Title level={4} style={{ marginBottom: '8px' }}>
-                HEY ADMIN PLEASE CHECK IN/OUT YOUR ATTENDANCE
+              <Title level={4} style={{ marginBottom: '8px', color: '#1890ff', fontSize: '16px' }}>
+                CHECK IN/OUT
               </Title>
-              <Text type="secondary">Your IP is 49.3/24.192</Text>
-              <div style={{ marginTop: '16px' }}>
+              <Text type="secondary" style={{ display: 'block', marginBottom: '12px', fontSize: '12px' }}>
+                Your IP is 49.3/24.192
+              </Text>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
                 {!isCheckedIn ? (
                   <Button 
                     type="primary" 
                     icon={<CheckCircleOutlined />} 
-                    size="large"
+                    size="middle"
                     onClick={handleCheckIn}
-                    block
+                    style={{ minWidth: '100px' }}
                   >
                     Check In
                   </Button>
@@ -154,101 +334,58 @@ const Dashboard = () => {
                   <Button 
                     danger
                     icon={<LogoutOutlined />} 
-                    size="large"
+                    size="middle"
                     onClick={handleCheckOut}
-                    block
+                    style={{ minWidth: '100px' }}
                   >
                     Check Out
                   </Button>
+                )}
+                {isCheckedIn && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <CheckCircleOutlined style={{ color: '#52c41a', fontSize: '14px' }} />
+                    <Text strong style={{ fontSize: '12px' }}>Checked In: {formatTime(checkInTime)}</Text>
+                  </div>
                 )}
               </div>
             </div>
           </Card>
         </Col>
-      </Row>
 
-      <Row gutter={[16, 16]}>
-        {/* Attendance Table */}
-        <Col xs={24} lg={16}>
+        {/* Today Attendance Table - Right Side */}
+        <Col xs={24} lg={12}>
           <Card 
             title={
-              <span>
-                <ClockCircleOutlined style={{ marginRight: '8px' }} />
-                Today Attendance
+              <span style={{ fontWeight: '600', fontSize: '14px' }}>
+                <ClockCircleOutlined style={{ marginRight: '8px', color: '#1890ff' }} />
+                TODAY ATTENDANCE
               </span>
             }
+            style={{ borderRadius: '8px', height: '100%' }}
+            bodyStyle={{ padding: '12px' }}
           >
-            <Table 
-              columns={attendanceColumns}
-              dataSource={attendanceData}
-              locale={{
-                emptyText: 'No data available'
-              }}
-              pagination={false}
-              scroll={{ x: 500 }}
-            />
+            {loading ? (
+              <TableSkeleton />
+            ) : dashboardData?.today_attendance_list?.length > 0 ? (
+              <Table 
+                columns={attendanceColumns}
+                dataSource={dashboardData.today_attendance_list}
+                pagination={false}
+                scroll={{ x: 400 }}
+                size="small"
+                style={{ fontSize: '12px' }}
+              />
+            ) : (
+              <Empty 
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                description="No attendance records for today"
+                imageStyle={{ height: 40 }}
+              />
+            )}
           </Card>
         </Col>
-
-        {/* Department & Notice Board */}
-        <Col xs={24} lg={8}>
-          <Row gutter={[0, 16]}>
-            {/* Department Section */}
-            <Col span={24}>
-              <Card 
-                title={
-                  <span>
-                    <TeamOutlined style={{ marginRight: '8px' }} />
-                    DEPARTMENT
-                  </span>
-                }
-              >
-                <div style={{ textAlign: 'center', padding: '20px 0' }}>
-                  <Title level={3} type="success">PRESENT</Title>
-                  <Text type="secondary">Department status overview</Text>
-                </div>
-              </Card>
-            </Col>
-
-            {/* Notice Board */}
-            <Col span={24}>
-              <Card 
-                title={
-                  <span>
-                    <BellOutlined style={{ marginRight: '8px' }} />
-                    NOTICE BOARD
-                  </span>
-                }
-              >
-                <List
-                  itemLayout="horizontal"
-                  dataSource={noticeData}
-                  renderItem={item => (
-                    <List.Item>
-                      <List.Item.Meta
-                        title={item.title}
-                        description={
-                          <div>
-                            <div>
-                              <Text type="secondary">Published Date: {item.date}</Text>
-                            </div>
-                            <div>
-                              <Text type="secondary">Publish By: {item.publishedBy}</Text>
-                            </div>
-                            <div style={{ marginTop: '8px' }}>
-                              <Text>{item.description}</Text>
-                            </div>
-                          </div>
-                        }
-                      />
-                    </List.Item>
-                  )}
-                />
-              </Card>
-            </Col>
-          </Row>
-        </Col>
       </Row>
+
     </div>
   );
 };
