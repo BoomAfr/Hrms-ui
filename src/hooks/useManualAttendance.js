@@ -55,8 +55,6 @@ export function useManualAttendance() {
     setAttendanceRows((prev) => prev.map((r) => (r.employee_id === employee_id ? { ...r, [key]: value } : r)));
   };
 
-  // Save all rows by calling PATCH per employee sequentially.
-  // You can change to Promise.all for concurrency if you prefer.
   const saveAttendanceBatch = async (payloadArray) => {
     try {
       for (const item of payloadArray) {
