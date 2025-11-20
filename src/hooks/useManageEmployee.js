@@ -44,14 +44,15 @@ const fetchEmployeeById = async(id)=>{
   const addEmployee = async (employeeData, Toast) => {
     try {
       setLoading(true);
-       await manageEmployeeApi.create(employeeData);
-        Toast.success('success', 'Employee added successfully')
+      const resp =  await manageEmployeeApi.create(employeeData);
+        Toast.success('success', resp?.message || 'Employee added successfully')
         await fetchEmployee();
       // }
 
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to add department');
-        Toast.error('error', 'Failed to add employee')
+      console.log(err,'err')
+      setError(err?.message || 'Failed to add department');
+        Toast.error('error', err?.message || 'Failed to add employee')
 
     } finally {
       setLoading(false);
