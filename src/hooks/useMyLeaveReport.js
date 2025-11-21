@@ -1,20 +1,16 @@
 import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import { myLeaveReportAPI } from "../services/myLeaveReportServices";
 import { message } from "antd";
 
-/**
- * Hook: useMyLeaveReport
- *
- * - Initializes employee_id from localStorage "user" if present (safe parse).
- * - Provides pagination (page, pageSize, total).
- * - fetches report data from /company/leave/report/my-leave/
- */
 export const useMyLeaveReport = () => {
+
+  const { user: reduxUser } = useSelector((state) => state.auth);
+
   const [reportData, setReportData] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Try to read current user from localStorage (safe)
-  const getSavedUser = () => {
+  const savedUser = reduxUser || (() => {
     try {
       const raw = localStorage.getItem("user");
       if (!raw) return null;
@@ -22,9 +18,8 @@ export const useMyLeaveReport = () => {
     } catch (e) {
       return null;
     }
-  };
+  })();
 
-  const savedUser = getSavedUser();
   const initialEmployeeId = savedUser?.user_id ?? null;
 
   const [filters, setFilters] = useState({
@@ -51,7 +46,6 @@ export const useMyLeaveReport = () => {
       };
 
       const res = await myLeaveReportAPI.getMyLeave(params);
-      // Expecting server returns paginated object: { count, next, previous, results: [...] }
       setReportData(res.data?.results || []);
       setPagination((prev) => ({
         ...prev,
@@ -68,7 +62,6 @@ export const useMyLeaveReport = () => {
   };
 
   const handleFilter = () => {
-    // reset to first page when filtering
     fetchReport(1, pagination.pageSize);
   };
 
@@ -77,9 +70,7 @@ export const useMyLeaveReport = () => {
   };
 
   useEffect(() => {
-    // initial load
     fetchReport(1, pagination.pageSize);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return {
@@ -90,6 +81,6 @@ export const useMyLeaveReport = () => {
     pagination,
     handleFilter,
     handlePageChange,
-    savedUser, // expose in case page wants to display user info
+    savedUser, 
   };
 };

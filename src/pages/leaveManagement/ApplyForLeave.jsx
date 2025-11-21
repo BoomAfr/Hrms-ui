@@ -1,7 +1,7 @@
-
 import React, { useState, useEffect } from "react";
-import { Card, Button, Input, Table, message } from "antd";
+import { Card, Button, Input, Table, message, Tag } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
+import { useSelector } from "react-redux";
 import ApplyForLeaveModal from "../../components/common/SharedModal/ApplyForLeaveModal";
 import { useApplyLeave } from "../../hooks/useApplyForLeave";
 
@@ -10,17 +10,18 @@ const ApplyForLeavePage = () => {
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchText, setSearchText] = useState("");
+
+  const { user: savedUser } = useSelector((state) => state.auth);
   const { applications, pagination, fetchMyApplications, loading } = useApplyLeave();
 
   useEffect(() => {
     loadData(currentPage, pageSize, searchText);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, pageSize]);
 
   const loadData = async (page = 1, pageSizeArg = 10, search = "") => {
     try {
       await fetchMyApplications(page, pageSizeArg, search);
-    } catch (err) {
+    } catch {
       message.error("Failed to load applications");
     }
   };
@@ -44,36 +45,42 @@ const ApplyForLeavePage = () => {
     },
     { title: "Number of Days", dataIndex: "number_of_days", key: "number_of_days" },
     {
-      title: "Approve Status",
-      dataIndex: "approve_status",
-      key: "approve_status",
-      render: (val) => val ?? "-",
-    },
+    title: "Approve Date", 
+    dataIndex: "approve_date",
+    key: "approve_date",
+    render: (val) => val ?? "-", 
+  },
+     {
+    title: "Reject Date", 
+    dataIndex: "reject_date",
+    key: "reject_date",
+    render: (val) => val ?? "-", 
+  },
     {
-      title: "Reject Status",
-      dataIndex: "reject_status",
-      key: "reject_status",
-      render: (val) => val ?? "-",
+     title: "Status",
+    dataIndex: "status",
+    key: "status",
+    align: "center",
+    render: (status) => {
+      let color = "blue";
+      if (status === "Approved") color = "green";
+      else if (status === "Rejected") color = "red";
+      else if (status === "Pending") color = "gold";
+      return <Tag color={color}>{status}</Tag>;
     },
-    {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-      render: (s) => s ?? "-",
-      width: 120,
-    },
+  }
   ];
 
   const dataSource = (applications || []).map((a, i) => ({
     key: a.id ?? i,
     sl: i + 1,
-    employee_name: a.employee_name || a.employee?.name || "You",
+    employee_name: savedUser?.name || "You", // ✅ always show logged-in user
     leave_type_name: a.leave_type_name ?? a.leave_type?.name ?? a.leave_type ?? "",
     from_date: a.from_date ?? a.start_date ?? null,
     to_date: a.to_date ?? a.end_date ?? null,
     number_of_days: a.number_of_days ?? a.days ?? 0,
-    approve_status: a.approved_by ?? a.approve_status ?? a.approve ?? "",
-    reject_status: a.rejected_by ?? a.reject_status ?? a.rejected ?? "",
+    approve_date: a.approved_date ?? null,
+    reject_date: a.reject_date ?? null,
     status: a.status ?? a.application_status ?? "",
   }));
 

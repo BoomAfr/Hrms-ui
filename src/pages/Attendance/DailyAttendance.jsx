@@ -31,7 +31,6 @@ const DailyAttendance = () => {
     doc.setLineWidth(0.5);
     doc.line(40, 84, 555, 84);
 
-    // build combined table rows department-wise with a header row for each department
     const tableCols = [
       "S/L",
       "Date",
@@ -44,12 +43,12 @@ const DailyAttendance = () => {
       "Over Time",
     ];
 
-    // We'll accumulate rows and insert a department header row when dept changes.
+
     const body = [];
     let globalCounter = 1;
 
     Object.keys(groupedByDept).forEach((dept) => {
-      // Add a department header row (styled later via styles)
+ 
       body.push([
         { content: `${dept}`, colSpan: 9, styles: { halign: "left", fillColor: [230, 230, 230], textColor: 20, fontStyle: "bold" } },
       ]);
@@ -71,10 +70,6 @@ const DailyAttendance = () => {
       });
     });
 
-    // Convert department header rows that have colSpan into multi-cell rows for autoTable:
-    // autoTable supports objects in body with `colSpan` only inside special format.
-    // The easiest approach: create an array of arrays where dept headers are single-cell arrays and set didParseCell hook.
-    // We'll use didParseCell to style rows that have only one cell with a department name.
 
     autoTable(doc, {
       startY: 100,
@@ -83,17 +78,15 @@ const DailyAttendance = () => {
       styles: { fontSize: 10, cellPadding: 6 },
       headStyles: { fillColor: [40, 116, 240], textColor: 255, fontStyle: "bold" },
       willDrawCell: function (data) {
-        // if the body row is our department header (length === 1 and cell.raw is object for colSpan), paint a background
+
         if (data.section === "body") {
           const raw = data.row.raw;
           if (Array.isArray(raw) && raw.length === 1 && raw[0] && raw[0].colSpan) {
-            // enlarge the cell to span all columns
-            // nothing needed here; we will style in didDrawCell instead
+
           }
         }
       },
       didParseCell: function (data) {
-        // detect if this is a department header row: body row where first cell is an object with colSpan
         if (data.section === "body" && data.row.raw && Array.isArray(data.row.raw) && data.row.raw.length === 1 && data.row.raw[0].colSpan) {
           // set colspan for the cell
           if (data.column.index === 0) {

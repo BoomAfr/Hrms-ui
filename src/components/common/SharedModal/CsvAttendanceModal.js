@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Modal, DatePicker, Upload, Button, message, Space } from "antd";
 import { InboxOutlined } from "@ant-design/icons";
+import Papa from "papaparse";
 import moment from "moment";
 import { manualAttendanceServices } from "../../../services/manualAttendanceServices";
 
@@ -27,22 +28,48 @@ export default function CSVAttendanceModal({ visible, onClose, onUploaded }) {
     if (!date) return message.error("Please select a date");
     if (!fileList.length) return message.error("Please select a CSV file");
 
-    const fd = new FormData();
-    fd.append("file", fileList[0]);
-    fd.append("target_date", date.format("YYYY-MM-DD"));
+    const file = fileList[0];
 
+    // Parse CSV and map Finger ID → employee_id
+    Papa.parse(file, {
+    header: true,
+    skipEmptyLines: true,
+  complete: async function (results) {
     try {
+      const rows = results.data.map((row) => {
+        const punchIn = row["In Time"] ? `${date.format("YYYY-MM-DD")}T${row["In Time"]}` : null;
+        const punchOut = row["Out Time"] ? `${date.format("YYYY-MM-DD")}T${row["Out Time"]}` : null;
+
+        return {
+          employee_id: Number(row["Finger ID"]), // map Finger ID
+          punch_in_time: punchIn,
+          punch_out_time: punchOut,
+          target_date: date.format("YYYY-MM-DD"),
+        };
+      });
+
       setUploading(true);
-      await manualAttendanceServices.uploadCSV(fd);
+      for (const r of rows) {
+        await manualAttendanceServices.patchAttendance(r);
+      }
+
       message.success("CSV uploaded successfully");
       setFileList([]);
       onUploaded && onUploaded();
     } catch (err) {
-      console.error(err);
-      message.error("CSV upload failed");
+      if (err.response?.data) {
+  const errors = Object.entries(err.response.data)
+    .map(([key, val]) => `${key}: ${Array.isArray(val) ? val.join(", ") : val}`)
+    .join("\n");
+  message.error(`CSV upload failed:\n${errors}`);
+} else {
+  message.error("CSV upload failed");
+} 
     } finally {
       setUploading(false);
     }
+  },
+});
   };
 
   return (
@@ -55,7 +82,7 @@ export default function CSVAttendanceModal({ visible, onClose, onUploaded }) {
             <InboxOutlined />
           </p>
           <p className="ant-upload-text">Click or drag CSV file to this area to upload</p>
-          <p className="ant-upload-hint">CSV must have columns: "Finger ID",Name,"In Time","Out Time"</p>
+          <p className="ant-upload-hint">CSV must have columns: "Finger ID", Name, "In Time", "Out Time"</p>
         </Dragger>
 
         <div style={{ textAlign: "right" }}>
