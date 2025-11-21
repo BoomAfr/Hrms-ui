@@ -18,7 +18,11 @@ API.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
     
-    // Log request details for debugging
+    if (config.data instanceof FormData) {
+      config.headers['Content-Type'] = 'multipart/form-data';
+    } else if (config.data) {
+      config.headers['Content-Type'] = 'application/json';
+    }
     console.log('API Request:', {
       url: config.url,
       method: config.method,
@@ -34,7 +38,7 @@ API.interceptors.request.use(
   }
 );
 
-// Response interceptor with better error handling
+
 API.interceptors.response.use(
   (response) => {
     console.log('API Response Success:', {
@@ -45,19 +49,46 @@ API.interceptors.response.use(
     return response;
   },
   (error) => {
+    const { config, response } = error;
+    
     console.error('API Response Error:', {
-      url: error.config?.url,
-      status: error.response?.status,
-      data: error.response?.data,
+      url: config?.url,
+      status: response?.status,
+      data: response?.data,
       message: error.message
     });
     
-    if (error.response?.status === HTTP_STATUS.UNAUTHORIZED) {
-      localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
-      window.location.href = '/login';
+    // ✅ Specific handling for 404 errors
+    if (response?.status === HTTP_STATUS.NOT_FOUND) {
+      const errorMessage = `Resource not found: ${config?.url}`;
+      console.warn('404 Error:', errorMessage);
+      
+      // Custom 404 error object create karein
+      const customError = new Error(errorMessage);
+      customError.status = 404;
+      customError.url = config?.url;
+      customError.is404 = true;
+      
+      return Promise.reject(customError);
     }
     
-    return Promise.reject(error);
+    // ✅ Handle other errors
+    if (response?.status === HTTP_STATUS.UNAUTHORIZED) {
+      localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
+      // window.location.href = '/login'; // Temporary comment
+    }
+    
+    // ✅ Always return a proper error object
+    const enhancedError = new Error(
+      response?.data?.message || 
+      response?.data?.detail || 
+      error.message || 
+      'Request failed'
+    );
+    enhancedError.status = response?.status;
+    enhancedError.data = response?.data;
+    
+    return Promise.reject(enhancedError);
   }
 );
 

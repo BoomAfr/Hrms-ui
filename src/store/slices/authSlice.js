@@ -9,7 +9,7 @@ export const login = createAsyncThunk(
       return response.data; 
     } catch (error) {
       return rejectWithValue(
-        error.response?.data?.message || 'Login failed'
+        error.response?.data || 'Login failed'
       );
     }
   }

@@ -75,8 +75,11 @@ const fetchEmployeeById = async(id)=>{
     try {
       setLoading(true);
       const resp =  await manageEmployeeApi.create(employeeData);
+              console.log(resp,'respresp')
+
         Toast.success('success', resp?.message || 'Employee added successfully')
-        await fetchEmployee();
+        // await fetchEmployee();
+        return(resp)
       // }
 
     } catch (err) {

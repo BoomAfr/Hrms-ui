@@ -49,11 +49,9 @@ import ChangePassword from './pages/Administration/ChangePassword';
 import AddPermission from './pages/Administration/AddPermission';
 import AddRole from './pages/Administration/AddRole';
 import HourlyPayGrade from './pages/Payroll/HourlyPayGrade';
-import ErrorBoundary from './components/ErrorBoundry';
 
 function App() {
   return (
-    <ErrorBoundary>
       <ConfigProvider
       theme={{
         token: {
@@ -153,7 +151,6 @@ function App() {
         </Routes>
       </Router>
     </ConfigProvider>
-    </ErrorBoundary>
   );
 }
 

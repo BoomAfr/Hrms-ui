@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Form, Input, Select, DatePicker, Button, Card, Row, Col, Checkbox, Divider, Radio, Upload, Space, Collapse } from 'antd';
-import { UserOutlined, MailOutlined, PhoneOutlined, LockOutlined, UploadOutlined, PlusOutlined, DeleteOutlined, ArrowLeftOutlined } from '@ant-design/icons';
+import { UserOutlined, MailOutlined, PhoneOutlined, LockOutlined, UploadOutlined, PlusOutlined, DeleteOutlined, ArrowLeftOutlined, SaveFilled } from '@ant-design/icons';
 import { useManageEmployee, useShift } from '../hooks/useManageEmployee';
 import { useDepartments } from '../hooks/useDepartments';
 import { useDesignations } from '../hooks/useDesignations';
@@ -10,6 +10,8 @@ import { useMonthlyPayGrades } from '../hooks/useMonthlyPayGrade';
 import { useNavigate, useParams } from 'react-router-dom';
 import dayjs from 'dayjs';
 import useHourlyPaygrades from '../hooks/useHourlyPayGrade';
+import { useAddRoles } from '../hooks/useAddRole';
+import { useExperiences } from '../hooks/useExperiences';
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -25,12 +27,17 @@ const AddEmployeeForm = () => {
     const { designations } = useDesignations();
     const { branches } = useBranches();
     const {hourlyPaygrades} = useHourlyPaygrades();
+    const {roles} = useAddRoles();
+    const [employeeId, setEmployeeId] = useState(null);
+    const {addExperience,updateExperience} = useExperiences();
+
+    console.log(roles,'roles');
+    
     const [isEditMode,setIsEditMode] = useState(false)
         const [activePanels, setActivePanels] = useState([1, 2, 3, 4])
 const [fileList, setFileList] = useState([]);
 
     const { id } = useParams();
-      const navigate = useNavigate();
 
         const setFormField = () => {
         const formattedData = {
@@ -71,11 +78,15 @@ console.log(formattedData,'formattedData');
         console.log(formatedValues, 'formatedValues')
         if(isEditMode){
             updateEmployee(id,formatedValues, Toast)
-        }else{        addEmployee(formatedValues, Toast)
+        }else{        
+            
+          const resp =  addEmployee(formatedValues, Toast)
+          setEmployeeId(resp)
 }
     };
 
 //  const [fileList, setFileList] = useState([]);
+console.log(employeeId,'employeeId')
 
 const uploadProps = {
     beforeUpload: (file) => {
@@ -128,6 +139,19 @@ const uploadProps = {
         </Button>
     );
 
+     const shouldShowAdditionalSections = employeeId || isEditMode;
+     const saveExperiences = ()=>{
+        const values = form.getFieldValue("experiences");
+        console.log(values,'valuesvalues')
+if(isEditMode){
+        updateExperience(id,values);
+
+}else{
+        addExperience(employeeId, values);
+
+}
+     }
+
     return (
         <div style={{ padding: '24px' }}>
             {contextHolder}
@@ -150,10 +174,11 @@ const uploadProps = {
                                         rules={[{ required: true, message: 'Please select role' }]}
                                     >
                                         <Select placeholder="--- Please Select ---">
-                                            <Option value="ADMIN">Admin</Option>
-                                            <Option value="MANAGER">Manager</Option>
-
-                                            <Option value="EMPLOYEE">Employee</Option>
+                                            {Array.isArray(roles) &&
+                                            roles.map((role) =>(
+<Option value={role?.id}>{role?.name}</Option>
+                                            ))
+                                            }
                                         </Select>
                                     </Form.Item>
                                 </Col>
@@ -486,6 +511,298 @@ const uploadProps = {
                                 </Col>
                             </Row>
                         </Collapse.Panel>
+
+                        {shouldShowAdditionalSections && 
+                        
+                        <>
+                        <Collapse.Panel key={3} header={"PROFESSIONAL EXPERIENCE"}>
+                            <Form.List name="experiences">
+                                {(fields, { add, remove }) => (
+                                    <div>
+                                        {fields.map((field, index) => (
+                                            <Card
+                                                key={field.key}
+                                                type="inner"
+                                                style={{
+                                                    marginBottom: '16px',
+                                                    border: '1px solid #d9d9d9'
+                                                }}
+                                                title={`Professional Experience ${index + 1}`}
+                                                extra={
+                                                    fields.length > 1 && (
+                                                        <Button
+                                                            type="text"
+                                                            danger
+                                                            icon={<DeleteOutlined />}
+                                                            onClick={() => remove(field.name)}
+                                                        >
+                                                            Delete
+                                                        </Button>
+                                                    )
+                                                }
+                                            >
+                                                {/* Organization */}
+                                                <Form.Item
+                                                    {...field}
+                                                    label="Organization"
+                                                    name={[field.name, 'organization']}
+                                                    rules={[{ required: true, message: 'Please enter organization name' }]}
+                                                >
+                                                    <Input placeholder="Organization" />
+                                                </Form.Item>
+
+                                                {/* Designation and Date Range */}
+                                                <Row gutter={16}>
+                                                    <Col xs={24} sm={8}>
+                                                        <Form.Item
+                                                            {...field}
+                                                            label="Designation"
+                                                            name={[field.name, 'designation']}
+                                                            rules={[{ required: true, message: 'Please enter designation' }]}
+                                                        >
+                                                            <Input placeholder="Designation" />
+                                                        </Form.Item>
+                                                    </Col>
+
+                                                    <Col xs={24} sm={8}>
+                                                        <Form.Item
+                                                            {...field}
+                                                            label="From Date"
+                                                            name={[field.name, 'fromDate']}
+                                                            rules={[{ required: true, message: 'Please select from date' }]}
+                                                        >
+                                                            <DatePicker style={{ width: '100%' }} placeholder="From Date" />
+                                                        </Form.Item>
+                                                    </Col>
+
+                                                    <Col xs={24} sm={8}>
+                                                        <Form.Item
+                                                            {...field}
+                                                            label="To Date"
+                                                            name={[field.name, 'toDate']}
+                                                            rules={[{ required: true, message: 'Please select to date' }]}
+                                                        >
+                                                            <DatePicker style={{ width: '100%' }} placeholder="To Date" />
+                                                        </Form.Item>
+                                                    </Col>
+                                                </Row>
+
+                                                {/* Skills Section - Dynamic Skills List */}
+                                                <Form.Item
+                                                    label="Skills"
+                                                >
+                                                    <Form.List name={[field.name, 'skills']}>
+                                                        {(skillFields, skillOperations) => (
+                                                            <div>
+                                                                {skillFields.map((skillField, skillIndex) => (
+                                                                    <Space
+                                                                        key={skillField.key}
+                                                                        style={{ display: 'flex', marginBottom: 8 }}
+                                                                        align="baseline"
+                                                                    >
+                                                                        <Form.Item
+                                                                            {...skillField}
+                                                                            name={[skillField.name, 'skill']}
+                                                                            rules={[{ required: true, message: 'Please enter skill' }]}
+                                                                            style={{ marginBottom: 0 }}
+                                                                        >
+                                                                            <Input placeholder="Skill" />
+                                                                        </Form.Item>
+
+                                                                        {skillFields.length > 1 && (
+                                                                            <Button
+                                                                                type="text"
+                                                                                danger
+                                                                                icon={<DeleteOutlined />}
+                                                                                onClick={() => skillOperations.remove(skillField.name)}
+                                                                            >
+                                                                                Delete
+                                                                            </Button>
+                                                                        )}
+                                                                    </Space>
+                                                                ))}
+
+                                                                <Button
+                                                                    type="dashed"
+                                                                    onClick={() => skillOperations.add()}
+                                                                    icon={<PlusOutlined />}
+                                                                    style={{ width: '100%', marginBottom: 16 }}
+                                                                >
+                                                                    Add Skill
+                                                                </Button>
+                                                            </div>
+                                                        )}
+                                                    </Form.List>
+                                                </Form.Item>
+
+                                                {/* Responsibility */}
+                                                <Form.Item
+                                                    {...field}
+                                                    label="Responsibility"
+                                                    name={[field.name, 'responsibility']}
+                                                    rules={[{ required: true, message: 'Please enter responsibilities' }]}
+                                                >
+                                                    <TextArea
+                                                        placeholder="Describe your responsibilities..."
+                                                        rows={4}
+                                                    />
+                                                </Form.Item>
+
+                                                <Divider />
+                                                  <Form.Item>
+                                            <Button
+                                                type="primary"
+                                                onClick={saveExperiences}
+                                                icon={<SaveFilled />}
+                                                style={{ width: '100%' }}
+                                            >
+                                                Save Experience's
+                                            </Button>
+                                        </Form.Item>
+                                            </Card>
+                                        ))}
+
+                                        <Form.Item>
+                                            <Button
+                                                type="dashed"
+                                                onClick={() => add()}
+                                                icon={<PlusOutlined />}
+                                                style={{ width: '100%' }}
+                                            >
+                                                Add Professional Experience
+                                            </Button>
+                                        </Form.Item>
+                                    </div>
+                                )}
+                            </Form.List>
+                        </Collapse.Panel>
+                        <Collapse.Panel key={4} header={"EDUCATIONAL QUALIFICATION"}>
+                            <Form.List name="qualifications">
+                                {(fields, { add, remove }) => (
+                                    <div>
+                                        {fields.map((field, index) => (
+                                            <Card
+                                                key={field.key}
+                                                type="inner"
+                                                style={{
+                                                    marginBottom: '16px',
+                                                    border: '1px solid #d9d9d9'
+                                                }}
+                                                title={`Educational Qualification ${index + 1}`}
+                                                extra={
+                                                    fields.length > 1 && (
+                                                        <Button
+                                                            type="text"
+                                                            danger
+                                                            icon={<DeleteOutlined />}
+                                                            onClick={() => remove(field.name)}
+                                                        >
+                                                            Delete
+                                                        </Button>
+                                                    )
+                                                }
+                                            >
+                                                <Row gutter={16}>
+                                                    <Col xs={24} sm={12}>
+                                                        <Form.Item
+                                                            {...field}
+                                                            label="Institute"
+                                                            name={[field.name, 'institute']}
+                                                            rules={[{ required: true, message: 'Please select institute' }]}
+                                                        >
+                                                            <Select placeholder="--- Please Select ---">
+                                                                <Option value="university_1">University of Example</Option>
+                                                                <Option value="university_2">Example Institute of Technology</Option>
+                                                                <Option value="university_3">Sample University</Option>
+                                                                <Option value="university_4">Test College</Option>
+                                                            </Select>
+                                                        </Form.Item>
+                                                    </Col>
+
+                                                    <Col xs={24} sm={12}>
+                                                        <Form.Item
+                                                            {...field}
+                                                            label="Result"
+                                                            name={[field.name, 'result']}
+                                                        >
+                                                            <Select placeholder="--- Please Select ---">
+                                                                <Option value="first_class">First Class</Option>
+                                                                <Option value="second_class">Second Class</Option>
+                                                                <Option value="third_class">Third Class</Option>
+                                                                <Option value="distinction">Distinction</Option>
+                                                                <Option value="passed">Passed</Option>
+                                                            </Select>
+                                                        </Form.Item>
+                                                    </Col>
+                                                </Row>
+
+                                                <Row gutter={16}>
+                                                    <Col xs={24} sm={12}>
+                                                        <Form.Item
+                                                            {...field}
+                                                            label="Board / University"
+                                                            name={[field.name, 'boardUniversity']}
+                                                            rules={[{ required: true, message: 'Please enter board/university' }]}
+                                                        >
+                                                            <Input placeholder="Board / University" />
+                                                        </Form.Item>
+                                                    </Col>
+
+                                                    <Col xs={24} sm={12}>
+                                                        <Form.Item
+                                                            {...field}
+                                                            label="GPA / CGPA"
+                                                            name={[field.name, 'gpa']}
+                                                        >
+                                                            <Input placeholder="Example: 5.00, 4.63" />
+                                                        </Form.Item>
+                                                    </Col>
+                                                </Row>
+
+                                                <Row gutter={16}>
+                                                    <Col xs={24} sm={12}>
+                                                        <Form.Item
+                                                            {...field}
+                                                            label="Degree"
+                                                            name={[field.name, 'degree']}
+                                                            rules={[{ required: true, message: 'Please enter degree' }]}
+                                                        >
+                                                            <Input placeholder="Example: B.Sc. Engr.(Bachelor of Science in Engineering)" />
+                                                        </Form.Item>
+                                                    </Col>
+
+                                                    <Col xs={24} sm={12}>
+                                                        <Form.Item
+                                                            {...field}
+                                                            label="Passing Year"
+                                                            name={[field.name, 'passingYear']}
+                                                            rules={[{ required: true, message: 'Please enter passing year' }]}
+                                                        >
+                                                            <Input placeholder="Passing Year" />
+                                                        </Form.Item>
+                                                    </Col>
+                                                </Row>
+
+                                                <Divider />
+                                            </Card>
+                                        ))}
+
+                                        <Form.Item>
+                                            <Button
+                                                type="dashed"
+                                                onClick={() => add()}
+                                                icon={<PlusOutlined />}
+                                                style={{ width: '100%' }}
+                                            >
+                                                Add Educational Qualification
+                                            </Button>
+                                        </Form.Item>
+                                    </div>
+                                )}
+                            </Form.List>
+                        </Collapse.Panel>
+                        </>
+                        }
 
                     </Collapse>
 

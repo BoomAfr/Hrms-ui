@@ -21,11 +21,11 @@ export const useExperiences = () => {
     }
   };
 
-  const addExperience = async (id) => {
+  const addExperience = async (id,payload) => {
     try {
       setLoading(true);
-      await experienceAPI.create(id);
-      await fetchExperience(id);
+      await experienceAPI.create(id,payload);
+      // await fetchExperience(id);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to add award');
       throw err;
