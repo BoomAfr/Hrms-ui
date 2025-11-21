@@ -30,18 +30,18 @@ const Branch = () => {
       if (editingBranch) {
         await updateBranch(editingBranch.id, payload);
         Toast.success('Branch updated successfully');
-       // message.success('Branch updated successfully');
+    
       } else {
         await addBranch(payload);
         Toast.success('Branch added successfully');
-      //  message.success('Branch added successfully');
+   
       }
       refetch(currentPage, pageSize, searchText.trim());
       setEditingBranch(null);
       setIsModalOpen(false);
     } catch (err) {
       Toast.error(err.response?.data?.message || 'Operation failed');
-      //message.error(err.response?.data?.message || 'Operation failed');
+      
     }
   };
 
@@ -187,7 +187,7 @@ const Branch = () => {
             name: d.name,
           }))}
           loading={loading}
-          pagination={pagination}
+          pagination={branches.length > 0 ? pagination : false}
           size="middle"
           bordered
           scroll={{ x: 400 }}
