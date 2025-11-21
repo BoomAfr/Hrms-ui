@@ -55,7 +55,8 @@ const MainLayout = () => {
     if (!role) return 'ADMIN';
     
     if (typeof role === 'object' && role !== null) {
-      return role.name || 'ADMIN';
+      // return role.name || 'ADMIN';
+      return 'ADMIN';
     }
     
     return String(role).toUpperCase();

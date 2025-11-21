@@ -49,6 +49,11 @@ import ChangePassword from './pages/Administration/ChangePassword';
 import AddPermission from './pages/Administration/AddPermission';
 import AddRole from './pages/Administration/AddRole';
 import HourlyPayGrade from './pages/Payroll/HourlyPayGrade';
+import TaxruleSetup from './pages/Payroll/setup/TaxruleSetup';
+import LateConfiguration from './pages/Payroll/setup/LateConfiguration';
+import Allowance from './pages/Payroll/Allowance';
+import Deductions from './pages/Payroll/Deductions';
+import GenerateSalarySheet from './pages/Payroll/GenerateSalarySheet';
 
 function App() {
   return (
@@ -125,8 +130,28 @@ function App() {
              </Route>
 
              <Route path='payroll'>
+               <Route path='setup'>
+              
+              <Route path='tax-rule-setup' element={<TaxruleSetup/>}/>
+              <Route path='late-configuration' element={<LateConfiguration/>} />
+             </Route>
+              <Route path='allowance' element={<Allowance/>} />
+              <Route path='deduction' element={<Deductions/>} />
               <Route path='monthly-pay-grade' element={<MonthlyPayGrade/>}/>
               <Route path='hourly-pay-grade' element={<HourlyPayGrade/>} />
+              <Route path='generate-salary-sheet' />
+ <Route path='report' >
+                  <Route path='payment-history' element={<DailyAttendance/>}/>
+                  <Route path='my-payroll' element={<MonthlyAttendance/>}/>
+                </Route>
+                 <Route path='manage-work-hour'>
+                  <Route path='approve-work-hour' element={<DailyAttendance/>}/>
+                </Route>
+                <Route path='manage-bonus' >
+                  <Route path='bonus-setting' element={<DailyAttendance/>}/>
+                  <Route path='my-generate-bonus' element={<MonthlyAttendance/>}/>
+                </Route>
+                       
              </Route>
              
               <Route path='performance-category' element={<PerfomanceCategory/>}/>

@@ -45,6 +45,7 @@ const [fileList, setFileList] = useState([]);
                     date_of_birth: dayjs(employees.date_of_birth) ,
                     date_of_joining: dayjs(employees.date_of_joining) ,
                     date_of_leaving: dayjs(employees.date_of_leaving) ,
+                    role : profile?.role_name,
                 };
 console.log(formattedData,'formattedData');
 
@@ -85,7 +86,6 @@ console.log(formattedData,'formattedData');
 }
     };
 
-//  const [fileList, setFileList] = useState([]);
 console.log(employeeId,'employeeId')
 
 const uploadProps = {
@@ -96,7 +96,6 @@ const uploadProps = {
             return Upload.LIST_IGNORE;
         }
         
-        // Custom file object create karein
         const customFileObject = {
             uid: file.uid,
             lastModified: file.lastModified,
@@ -110,13 +109,10 @@ const uploadProps = {
             }
         };
         
-        // Sirf ek file rakhein array mein
         setFileList([customFileObject]);
         
-        // Form field mein bhi set karein
         form.setFieldValue('photo', [customFileObject]);
         
-        // Auto upload rok dein
         return false;
     },
     maxCount: 1,
