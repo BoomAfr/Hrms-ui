@@ -3,7 +3,7 @@ import { Modal, Form, Input, Select, DatePicker } from 'antd';
 import moment from 'moment';
 const { TextArea } = Input;
 
-const TerminationModal = ({ open, onClose, onSubmit, employees, editingData, loading }) => {
+const TerminationModal = ({ open, onClose, onSubmit, employees, editingData, loading, submitLoading }) => {
   const [form] = Form.useForm();
 
   useEffect(() => {
@@ -43,39 +43,59 @@ const TerminationModal = ({ open, onClose, onSubmit, employees, editingData, loa
       open={open}
       onCancel={onClose}
       okText="Submit"
-      confirmLoading={loading}
+      confirmLoading={submitLoading}
       onOk={() => form.submit()}
       width={600}
       destroyOnClose
     >
       <Form form={form} layout="vertical" onFinish={handleFinish}>
         <Form.Item
-          name="terminate_to"
-          label="Employee Name*"
-          rules={[{ required: true, message: 'Please select employee' }]}
-        >
-          <Select placeholder="Select Employee" showSearch optionFilterProp="children" allowClear>
-            {employees.map(emp => (
-              <Select.Option key={emp.id} value={emp.id}>
-                {emp.name}
-              </Select.Option>
-            ))}
-          </Select>
-        </Form.Item>
+  name="terminate_to"
+  label="Employee Name*"
+  rules={[{ required: true, message: 'Please select employee' }]}
+>
+  <Select placeholder="Select Employee" showSearch optionFilterProp="children" allowClear>
+    {employees.map(emp => {
+      const id = emp.id || emp.user_id;   // FIXED ID
+      const fullName =
+        emp.name ||
+        emp.full_name ||
+        emp.profile?.full_name ||
+        emp.first_name + " " + emp.last_name ||
+        "Unknown";
 
-        <Form.Item
-          name="terminate_by"
-          label="Terminated By*"
-          rules={[{ required: true, message: 'Please select employee' }]}
-        >
-          <Select placeholder="Select Terminated By" showSearch optionFilterProp="children" allowClear>
-            {employees.map(emp => (
-              <Select.Option key={emp.id} value={emp.id}>
-                {emp.name}
-              </Select.Option>
-            ))}
-          </Select>
-        </Form.Item>
+      return (
+        <Select.Option key={id} value={id}>
+          {fullName}
+        </Select.Option>
+      );
+    })}
+  </Select>
+</Form.Item>
+
+<Form.Item
+  name="terminate_by"
+  label="Terminated By*"
+  rules={[{ required: true, message: 'Please select employee' }]}
+>
+  <Select placeholder="Select Terminated By" showSearch optionFilterProp="children" allowClear>
+    {employees.map(emp => {
+      const id = emp.id || emp.user_id;   // FIXED ID
+      const fullName =
+        emp.name ||
+        emp.full_name ||
+        emp.profile?.full_name ||
+        emp.first_name + " " + emp.last_name ||
+        "Unknown";
+
+      return (
+        <Select.Option key={id} value={id}>
+          {fullName}
+        </Select.Option>
+      );
+    })}
+  </Select>
+</Form.Item>
 
         <Form.Item
           name="termination_type"

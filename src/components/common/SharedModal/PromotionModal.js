@@ -1,148 +1,191 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, Form, Input, Select, DatePicker } from 'antd';
-import moment from 'moment';
+import dayjs from 'dayjs';
 
-const { TextArea } = Input;
 const { Option } = Select;
 
-const PromotionModal = ({ open, onClose, onSubmit, employees, departments, designations, paygrades, editingData, loading }) => {
+const PromotionModal = ({ open, onClose, onSubmit, employees = [], departments = [], designations = [], paygrades = [], loading,saveLoading, editingData, viewMode }) => {
   const [form] = Form.useForm();
-  const [currentInfo, setCurrentInfo] = useState({ department: '', designation: '', pay_grade: '', salary: '' });
+  const [currentDepartment, setCurrentDepartment] = useState('');
+  const [currentDesignation, setCurrentDesignation] = useState('');
+  const [currentPaygrade, setCurrentPaygrade] = useState('');
+  const [currentSalary, setCurrentSalary] = useState('');
+  const [newSalary, setNewSalary] = useState('');
 
-  // Set editing data
+  // populate when editingData changes
   useEffect(() => {
     if (editingData) {
       form.setFieldsValue({
-        employee: editingData.employee?.id,
-        promoted_department: editingData.promoted_department?.id,
-        promoted_designation: editingData.promoted_designation?.id,
-        promoted_pay_grade: editingData.promoted_pay_grade?.id,
-        promotion_date: editingData.promotion_date ? moment(editingData.promotion_date) : null,
-        description: editingData.description || '',
+        employee: editingData.employee?.id ?? undefined,
+        promoted_department: editingData.promoted_department?.id ?? undefined,
+        promoted_designation: editingData.promoted_designation?.id ?? undefined,
+        promoted_pay_grade: editingData.promoted_pay_grade?.id ?? undefined,
+        promoted_salary: editingData.promoted_salary ?? editingData.new_salary ?? undefined,
+        promotion_date: editingData.promotion_date ? dayjs(editingData.promotion_date) : null,
+        description: editingData.description ?? '',
       });
 
-      setCurrentInfo({
-        department: editingData.previous_department?.name || '',
-        designation: editingData.previous_designation?.name || '',
-        pay_grade: editingData.previous_pay_grade?.name || '',
-        salary: editingData.previous_salary || '',
-      });
+      // try to set current employee info from editingData.employee object
+      const emp = editingData.employee;
+      setCurrentDepartment(emp?.department?.name ?? emp?.profile?.department_name ?? '');
+      setCurrentDesignation(emp?.designation?.name ?? emp?.profile?.designation_name ?? '');
+      setCurrentPaygrade(emp?.paygrade?.name ?? emp?.profile?.pay_grade_name ?? '');
+      setCurrentSalary(emp?.salary ?? emp?.profile?.salary ?? '');
+      setNewSalary(editingData.promoted_salary ?? editingData.new_salary ?? '');
     } else {
       form.resetFields();
-      setCurrentInfo({ department: '', designation: '', pay_grade: '', salary: '' });
+      setCurrentDepartment('');
+      setCurrentDesignation('');
+      setCurrentPaygrade('');
+      setCurrentSalary('');
+      setNewSalary('');
     }
   }, [editingData, form]);
 
-  // Fetch current employee info on employee select
-  const handleEmployeeChange = (id) => {
-    const selectedEmp = employees.find((e) => e.id === id);
-    if (selectedEmp) {
-      setCurrentInfo({
-        department: selectedEmp.department?.name || '',
-        designation: selectedEmp.designation?.name || '',
-        pay_grade: selectedEmp.pay_grade?.name || '',
-        salary: selectedEmp.salary || '',
-      });
-    }
+  // When employee selected, set current fields
+  const handleEmployeeChange = (employeeId) => {
+    const emp = employees.find(e => e.user_id === employeeId);
+    if (emp) {
+  setCurrentDepartment(emp.department || "");
+  setCurrentDesignation(emp.designation || "");
+  setCurrentPaygrade(emp.pay_grade || "");
+ const cleanName = emp.pay_grade?.split(" ")[0]?.split("(")[0]?.trim();
+
+    // Find paygrade by cleaned name
+    const matchedPg = paygrades.find(
+      pg => pg.grade_name.toLowerCase() === cleanName?.toLowerCase()
+    );
+
+    const salaryValue = matchedPg?.gross_salary || "";
+
+    setCurrentSalary(salaryValue);
+} else {
+  setCurrentDepartment("");
+  setCurrentDesignation("");
+  setCurrentPaygrade("");
+  setCurrentSalary("");
+}
+
+
+    form.setFieldsValue({ promoted_pay_grade: undefined, promoted_salary: undefined });
+    setNewSalary('');
   };
 
-  // Fetch salary based on pay grade
-  const handlePayGradeChange = (id) => {
-    const selectedGrade = paygrades.find((p) => p.id === id);
-    if (selectedGrade) {
-      form.setFieldsValue({ new_salary: selectedGrade.salary });
-    }
+  // When promoted paygrade selected, auto-fill promoted_salary
+  const handlePaygradeChange = (pgId) => {
+   const pg = paygrades.find(p => p.id === pgId);
+
+  const salaryVal = pg?.gross_salary || "";
+
+  setNewSalary(salaryVal);
+  form.setFieldsValue({ promoted_salary: salaryVal });
   };
 
   const handleFinish = (values) => {
+    // ensure promoted_salary is present (we set it on paygrade change)
     const payload = {
-      employee: Number(values.employee),
-      promoted_department: Number(values.promoted_department),
-      promoted_designation: Number(values.promoted_designation),
-      promoted_pay_grade: Number(values.promoted_pay_grade),
-      promotion_date: values.promotion_date.format('YYYY-MM-DD'),
+      employee: values.employee,
+      promoted_department: values.promoted_department,
+      promoted_designation: values.promoted_designation,
+      promoted_pay_grade: values.promoted_pay_grade,
+      promoted_salary: values.promoted_salary ?? newSalary,
+      promotion_date: values.promotion_date ? values.promotion_date.format('YYYY-MM-DD') : undefined,
       description: values.description,
+
+      current_department_name: currentDepartment,
+  current_designation_name: currentDesignation,
+  current_salary: currentSalary,
     };
     onSubmit(payload);
   };
 
   return (
     <Modal
-      title={editingData ? 'Edit Promotion' : 'Add Promotion'}
+      title={viewMode ? 'Promotion Details' : editingData ? 'Edit Promotion' : 'Add Promotion'}
       open={open}
       onCancel={onClose}
-      okText="Submit"
-      confirmLoading={loading}
-      onOk={() => form.submit()}
-      width={650}
-      destroyOnClose
+      okText={viewMode ? 'Close' : 'Save'}
+      onOk={() => { if (viewMode) return onClose(); form.submit(); }}
+      confirmLoading={saveLoading}
+      centered
     >
-      <Form form={form} layout="vertical" onFinish={handleFinish}>
-       <Form.Item name="employee" label="Employee Name*" rules={[{ required: true }]}>
+      <Form layout="vertical" form={form} onFinish={handleFinish}>
+        <Form.Item
+  label="Employee Name*"
+  name="employee"
+  rules={[{ required: !viewMode }]}
+>
   <Select
-    placeholder="Select Employee"
+    disabled={viewMode}
+    placeholder="Select employee"
     showSearch
     optionFilterProp="children"
     onChange={handleEmployeeChange}
   >
-    {employees.map((emp) => (
-      <Option key={emp.id} value={emp.id}>
-        {emp.profile?.full_name || emp.username || 'Unknown'}
-      </Option>
+    {employees.map(emp => (
+      <Option key={emp.user_id} value={emp.user_id}>
+  {emp.name}
+</Option>
     ))}
   </Select>
 </Form.Item>
 
-        <Form.Item label="Current Department">
-          <Input value={currentInfo.department} disabled />
+        <Form.Item label="Current Department*">
+          <Input disabled value={currentDepartment} />
         </Form.Item>
 
-        <Form.Item label="Current Designation">
-          <Input value={currentInfo.designation} disabled />
+        <Form.Item label="Current Designation*">
+          <Input disabled value={currentDesignation} />
         </Form.Item>
 
-        <Form.Item label="Current Pay Grade">
-          <Input value={currentInfo.pay_grade} disabled />
+        <Form.Item label="Current Pay Grade*">
+          <Input disabled value={currentPaygrade} />
         </Form.Item>
 
-        <Form.Item label="Current Salary">
-          <Input value={currentInfo.salary} disabled />
+        <Form.Item label="Current Salary*">
+          <Input disabled value={currentSalary} />
         </Form.Item>
 
-        <Form.Item name="promoted_department" label="Promoted Department*" rules={[{ required: true }]}>
-          <Select placeholder="Select Department">
-            {departments.map((d) => (
-              <Option key={d.id} value={d.id}>{d.name}</Option>
+        <Form.Item label="Promoted Pay Grade*" name="promoted_pay_grade" rules={[{ required: !viewMode }]}>
+          <Select disabled={viewMode} placeholder="Select pay grade" onChange={handlePaygradeChange} showSearch optionFilterProp="children">
+            {paygrades.map(pg => (
+              <Option key={pg.id} value={pg.id}>
+                {pg.name ?? pg.title ?? `Paygrade ${pg.id}`}
+              </Option>
             ))}
           </Select>
         </Form.Item>
 
-        <Form.Item name="promoted_designation" label="Promoted Designation*" rules={[{ required: true }]}>
-          <Select placeholder="Select Designation">
-            {designations.map((d) => (
-              <Option key={d.id} value={d.id}>{d.name}</Option>
+        <Form.Item label="New Salary" name="promoted_salary">
+          <Input disabled value={newSalary} />
+        </Form.Item>
+
+        <Form.Item label="Promoted Department*" name="promoted_department" rules={[{ required: !viewMode }]}>
+          <Select disabled={viewMode} placeholder="Select department" showSearch optionFilterProp="children">
+            {departments.map(d => (
+              <Option key={d.id} value={d.id}>
+                {d.name}
+              </Option>
             ))}
           </Select>
         </Form.Item>
 
-        <Form.Item name="promoted_pay_grade" label="Promoted Pay Grade*" rules={[{ required: true }]}>
-          <Select placeholder="Select Pay Grade" onChange={handlePayGradeChange}>
-            {paygrades.map((p) => (
-              <Option key={p.id} value={p.id}>{p.name}</Option>
+        <Form.Item label="Promoted Designation*" name="promoted_designation" rules={[{ required: !viewMode }]}>
+          <Select disabled={viewMode} placeholder="Select designation" showSearch optionFilterProp="children">
+            {designations.map(d => (
+              <Option key={d.id} value={d.id}>
+                {d.name}
+              </Option>
             ))}
           </Select>
         </Form.Item>
 
-        <Form.Item label="New Salary">
-          <Input name="new_salary" disabled />
+        <Form.Item label="Promotion Date*" name="promotion_date" rules={[{ required: !viewMode }]}>
+          <DatePicker disabled={viewMode} format="YYYY-MM-DD" style={{ width: '100%' }} />
         </Form.Item>
 
-        <Form.Item name="promotion_date" label="Promotion Date*" rules={[{ required: true }]}>
-          <DatePicker style={{ width: '100%' }} />
-        </Form.Item>
-
-        <Form.Item name="description" label="Description">
-          <TextArea rows={5} />
+        <Form.Item label="Description" name="description">
+          <Input disabled={viewMode} />
         </Form.Item>
       </Form>
     </Modal>

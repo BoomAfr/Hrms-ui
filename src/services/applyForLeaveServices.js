@@ -3,7 +3,7 @@ import API from "./api";
 
 
 export const fetchLeaveBalance = async () => {
-  const res = await API.get("/leave/apply/");
+  const res = await API.get("/company/leave/apply/");
   return res.data;
 };
 
@@ -12,7 +12,7 @@ export const getLeaveTypes = async () => {
   return res.data;
 };
 export const getLeaveBalance = () =>
-  API.get(`/company/leave/setup/leave-balance/`);
+  API.get(`/company/leave/apply/`);
 
 export const applyForLeave = async (payload) => {
   const res = await API.post("/company/leave/apply/", payload);

@@ -1,7 +1,7 @@
-
 import React, { useState, useEffect } from "react";
 import { Modal, Form, Select, DatePicker, Input, message } from "antd";
 import dayjs from "dayjs";
+import { useSelector } from "react-redux";
 import { getLeaveTypes, getLeaveBalance, applyForLeave } from "../../../services/applyForLeaveServices";
 
 const ApplyForLeaveModal = ({ isModalOpen, setIsModalOpen, onSuccess }) => {
@@ -11,15 +11,16 @@ const ApplyForLeaveModal = ({ isModalOpen, setIsModalOpen, onSuccess }) => {
   const [daysCount, setDaysCount] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  // ✅ Fetch leave types on load
+  const { user: savedUser } = useSelector((state) => state.auth);
+
   useEffect(() => {
     const loadLeaveTypes = async () => {
       try {
         const res = await getLeaveTypes();
         const list = Array.isArray(res)
-        ? res
-        : res?.results || res?.data || [];
-      setLeaveTypes(list);
+          ? res
+          : res?.results || res?.data || [];
+        setLeaveTypes(list);
       } catch (err) {
         message.error("Failed to load leave types");
       }
@@ -27,7 +28,6 @@ const ApplyForLeaveModal = ({ isModalOpen, setIsModalOpen, onSuccess }) => {
     loadLeaveTypes();
   }, []);
 
-  // ✅ Fetch balance when leave type selected
   const handleLeaveTypeChange = async (value) => {
     form.setFieldValue("leave_type", value);
     try {
@@ -38,7 +38,6 @@ const ApplyForLeaveModal = ({ isModalOpen, setIsModalOpen, onSuccess }) => {
     }
   };
 
-  // ✅ Calculate number of days automatically
   const handleDateChange = (dates) => {
     if (dates && dates[0] && dates[1]) {
       const diff = dayjs(dates[1]).diff(dayjs(dates[0]), "day") + 1;
@@ -48,11 +47,11 @@ const ApplyForLeaveModal = ({ isModalOpen, setIsModalOpen, onSuccess }) => {
     }
   };
 
-  // ✅ Submit form
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
       const payload = {
+        employee_id: savedUser?.user_id, // ✅ apply leave for logged-in user
         leave_type: values.leave_type,
         from_date: values.date_range[0].format("YYYY-MM-DD"),
         to_date: values.date_range[1].format("YYYY-MM-DD"),
@@ -67,7 +66,7 @@ const ApplyForLeaveModal = ({ isModalOpen, setIsModalOpen, onSuccess }) => {
       form.resetFields();
       onSuccess?.();
     } catch (err) {
-      if (err?.errorFields) return; // form validation
+      if (err?.errorFields) return;
       message.error("Failed to apply for leave");
     } finally {
       setLoading(false);
@@ -85,7 +84,6 @@ const ApplyForLeaveModal = ({ isModalOpen, setIsModalOpen, onSuccess }) => {
       destroyOnClose
     >
       <Form form={form} layout="vertical">
-        {/* ✅ Leave Type */}
         <Form.Item
           name="leave_type"
           label="Leave Type"
@@ -101,12 +99,10 @@ const ApplyForLeaveModal = ({ isModalOpen, setIsModalOpen, onSuccess }) => {
           />
         </Form.Item>
 
-        {/* ✅ Current Balance */}
         <Form.Item label="Current Balance">
           <Input value={currentBalance ?? "—"} disabled />
         </Form.Item>
 
-        {/* ✅ Date Range */}
         <Form.Item
           name="date_range"
           label="Date Range"
@@ -118,12 +114,10 @@ const ApplyForLeaveModal = ({ isModalOpen, setIsModalOpen, onSuccess }) => {
           />
         </Form.Item>
 
-        {/* ✅ Number of Days */}
         <Form.Item label="Number of Days">
           <Input value={daysCount} disabled />
         </Form.Item>
 
-        {/* ✅ Purpose */}
         <Form.Item
           name="purpose"
           label="Purpose / Reason"

@@ -12,8 +12,10 @@ export const useAddRoles = () => {
     setError(null);
     try {
       const response = await addRoleAPI.getAll({ page, page_size: pageSize, search });
-      setRoles(response.data.results || []);
-      return response.data; // ensure caller gets {count, results, ...}
+      console.log(response,'response');
+      
+      setRoles(response?.data || []);
+      return response?.data; // ensure caller gets {count, results, ...}
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to fetch roles');
       return null;

@@ -8,8 +8,12 @@ export const login = createAsyncThunk(
       const response = await authAPI.login(credentials);
       return response.data; 
     } catch (error) {
+      console.log(error.response?.data?.detail || error.message, 'Login Error');
+      
       return rejectWithValue(
-        error.response?.data?.message || 'Login failed'
+        error.response?.data?.detail || 
+        error.message || 
+        'Login failed'
       );
     }
   }

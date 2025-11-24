@@ -6,30 +6,43 @@ import { Form, Input, Button, Card, message, Typography, Image } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { login, clearError } from '../store/slices/authSlice';
 import logo from '../assets/images/logo.svg';
+import { useToast } from '../hooks/useToast';
 const { Title } = Typography;
 
 const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [form] = Form.useForm();
   const { loading, error, isAuthenticated } = useSelector((state) => state.auth);
+    const {Toast,contextHolder} = useToast();
+  
 
   useEffect(() => {
     if (isAuthenticated) {
+      setTimeout(()=>{
       navigate('/');
+
+      },[300])
     }
   }, [isAuthenticated, navigate]);
 
-  useEffect(() => {
-    if (error) {
-      message.error(error);
-      dispatch(clearError());
+  // useEffect(() => {
+  //   if (error) {
+  //     message.error(error);
+  //     dispatch(clearError());
+  //   }
+  // }, [error, dispatch]);
+
+  const onFinish = async(values) => {
+    try {
+      const result = await dispatch(login(values)).unwrap();
+      Toast.success("Login Successfully")
+
+    } catch (error) {
+      Toast.error(error)
     }
-  }, [error, dispatch]);
 
-  const onFinish = (values) => {
-    dispatch(login(values));
   };
-
   return (
     <div
       style={{
@@ -40,6 +53,7 @@ const Login = () => {
         backgroundColor: '#e6e9ff',
       }}
     >
+      {contextHolder}
       <Card
         style={{
           width: 380,
@@ -68,7 +82,7 @@ const Login = () => {
           />
         </div>
 
-        <Form name="login" onFinish={onFinish} autoComplete="off" layout="vertical">
+        <Form form={form} name="login" onFinish={onFinish} autoComplete="off" layout="vertical">
           <Form.Item
             label={<span style={{ fontWeight: 600, color: '#333' }}>Registered Email</span>}
             name="email"
@@ -79,7 +93,7 @@ const Login = () => {
           >
             <Input
               prefix={<UserOutlined />}
-              placeholder="User Name"
+              placeholder="User Name / Email"
               style={{
                 borderRadius: 3,
                 padding: '8px 10px',
@@ -116,24 +130,10 @@ const Login = () => {
                 fontWeight: 500,
               }}
             >
-              LOG IN
+              Log in
             </Button>
           </Form.Item>
         </Form>
-           {/* <div style={{ textAlign: 'center', marginTop: 16 }}>
-          <p style={{ color: '#999', fontSize: 12 }}>
-            Demo Credentials: admin@hrms.com / password
-          </p>
-        </div>
-        <div style={{ textAlign: 'center', marginTop: 10 }}>
-          <a href="#" style={{ color: '#6f53e1', fontSize: 18 }}>
-            Forgot Password ? click here to reset
-          </a>
-          <br />
-          <a href="#" style={{ color: '#6f53e1', fontSize: 14 }}>
-            Visit Application Front End
-          </a>
-        </div> */}
       </Card>
     </div>
   );

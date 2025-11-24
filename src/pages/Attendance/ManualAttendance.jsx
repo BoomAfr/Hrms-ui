@@ -4,6 +4,7 @@ import { UploadOutlined } from "@ant-design/icons";
 import moment from "moment";
 import { useManualAttendance } from "../../hooks/useManualAttendance";
 import CSVAttendanceModal from "../../components/common/SharedModal/CsvAttendanceModal";
+import { useToast } from "../../hooks/useToast";
 
 const { Option } = Select;
 
@@ -20,8 +21,10 @@ export default function ManualAttendancePage() {
   } = useManualAttendance();
 
   const [selectedDept, setSelectedDept] = useState(null);
-  const [selectedDate, setSelectedDate] = useState(moment()); // default today
+  const [selectedDate, setSelectedDate] = useState(moment()); 
   const [showCSVModal, setShowCSVModal] = useState(false);
+
+  const { Toast, contextHolder } = useToast();
 
   useEffect(() => {
     fetchDepartments();
@@ -30,14 +33,13 @@ export default function ManualAttendancePage() {
   const handleFilter = () => {
     if (!selectedDept) return message.error("Please select a department");
     if (!selectedDate) return message.error("Please select a date");
-    fetchAttendance({ department_id: selectedDept, target_date: selectedDate.format("YYYY-MM-DD") });
+    fetchAttendance({ department_id: Number(selectedDept), target_date: selectedDate.format("YYYY-MM-DD") });
   };
 
   const handleSave = async () => {
     if (!selectedDate) return message.error("Please select a date before saving");
     if (!selectedDept) return message.error("Please select a department before saving");
 
-    // Validate times locally: punch_out > punch_in if both present
     for (const r of attendanceRows) {
       if (r.punch_in_time && r.punch_out_time) {
         const inT = moment(r.punch_in_time, "HH:mm:ss");
@@ -51,18 +53,22 @@ export default function ManualAttendancePage() {
     const payload = attendanceRows.map((r) => ({
       employee_id: r.employee_id,
       target_date: selectedDate.format("YYYY-MM-DD"),
-      // null when empty so backend can treat accordingly
-      punch_in_time: r.punch_in_time || null,
-      punch_out_time: r.punch_out_time || null,
-      is_present: !!r.punch_in_time, // simple heuristic; backend uses business rules
+      punch_in_time: r.punch_in_time
+  ? moment(`${selectedDate.format("YYYY-MM-DD")} ${r.punch_in_time}`, "YYYY-MM-DD HH:mm:ss").toISOString()
+  : null,
+punch_out_time: r.punch_out_time
+  ? moment(`${selectedDate.format("YYYY-MM-DD")} ${r.punch_out_time}`, "YYYY-MM-DD HH:mm:ss").toISOString()
+  : null,
+      is_present: !!r.punch_in_time,
     }));
 
     try {
       await saveAttendanceBatch(payload);
+      Toast.success("Attendance saved successfully");
       message.success("Attendance saved successfully");
-      // Re-fetch to show updated statuses
       fetchAttendance({ department_id: selectedDept, target_date: selectedDate.format("YYYY-MM-DD") });
     } catch (err) {
+      Toast.error("Failed to save attendance");
       message.error("Failed to save attendance");
     }
   };
@@ -77,9 +83,11 @@ export default function ManualAttendancePage() {
       key: "punch_in_time",
       render: (value, record) => (
         <TimePicker
-          value={value ? moment(value, "HH:mm:ss") : null}
+          value={value ? moment(value, "HH:mm:ss") : null} // fix: parse HH:mm:ss only
           format="HH:mm:ss"
-          onChange={(time) => updateRowLocal(record.employee_id, "punch_in_time", time ? time.format("HH:mm:ss") : null)}
+          onChange={(time) =>
+            updateRowLocal(record.employee_id, "punch_in_time", time ? time.format("HH:mm:ss") : null)
+          }
           allowClear
         />
       ),
@@ -90,9 +98,11 @@ export default function ManualAttendancePage() {
       key: "punch_out_time",
       render: (value, record) => (
         <TimePicker
-          value={value ? moment(value, "HH:mm:ss") : null}
+          value={value ? moment(value, "HH:mm:ss") : null} // fix: parse HH:mm:ss only
           format="HH:mm:ss"
-          onChange={(time) => updateRowLocal(record.employee_id, "punch_out_time", time ? time.format("HH:mm:ss") : null)}
+          onChange={(time) =>
+            updateRowLocal(record.employee_id, "punch_out_time", time ? time.format("HH:mm:ss") : null)
+          }
           allowClear
         />
       ),
@@ -103,6 +113,7 @@ export default function ManualAttendancePage() {
 
   return (
     <div>
+      {contextHolder}
       <Row gutter={16} style={{ marginBottom: 16 }} align="middle">
         <Col>
           <Select
@@ -160,8 +171,8 @@ export default function ManualAttendancePage() {
         onClose={() => setShowCSVModal(false)}
         onUploaded={() => {
           setShowCSVModal(false);
-          // re-fetch if a department + date is selected
-          if (selectedDept && selectedDate) fetchAttendance({ department_id: selectedDept, target_date: selectedDate.format("YYYY-MM-DD") });
+          if (selectedDept && selectedDate)
+            fetchAttendance({ department_id: selectedDept, target_date: selectedDate.format("YYYY-MM-DD") });
         }}
       />
     </div>

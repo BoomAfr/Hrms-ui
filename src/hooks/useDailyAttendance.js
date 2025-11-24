@@ -4,19 +4,16 @@ import { message } from "antd";
 import dayjs from "dayjs";
 
 export const useDailyAttendance = () => {
-  // default date = today (YYYY-MM-DD)
   const todayStr = dayjs().format("YYYY-MM-DD");
 
   const [date, setDate] = useState(todayStr);
   const [loading, setLoading] = useState(false);
 
-  // raw rows fetched from API (array)
   const [rows, setRows] = useState([]);
 
-  // pagination (if backend supports it)
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 1000, // default large page size (no pagination UI requested)
+    pageSize: 1000,
     total: 0,
   });
 
@@ -31,40 +28,33 @@ export const useDailyAttendance = () => {
 
       const res = await dailyAttendanceAPI.getDaily(params);
 
-      // handle multiple possible response shapes
       let dataArray = [];
 
-      if (!res || !res.data) {
-        dataArray = [];
-      } else if (Array.isArray(res.data)) {
-        // direct array response
-        dataArray = res.data;
-      } else if (Array.isArray(res.data.results)) {
-        // DRF-style paginated results
-        dataArray = res.data.results;
+      if (res?.data && Array.isArray(res.data)) {
+        // Map API response to expected structure
+        dataArray = res.data.map((r) => ({
+          date: r["Date"],
+          employee_name: r["Employee Name"],
+          in_time: r["In Time"],
+          out_time: r["Out Time"],
+          working_time: r["Working Time"],
+          late: r["Late"] === "Yes", // convert to boolean
+          late_time: r["Late Time"],
+          over_time: r["Over Time"],
+          department: r["Designation"] || "Unassigned", // use Designation as department
+          id: r["Employee ID"], // optional key
+        }));
         setPagination((prev) => ({
           ...prev,
-          total: res.data.count ?? (res.data.results.length || 0),
+          total: dataArray.length,
           current: fetchPage,
           pageSize: fetchPageSize,
         }));
-      } else if (Array.isArray(res.data.data)) {
-        dataArray = res.data.data;
       } else {
-        // maybe nested object with department grouping already
-        // try to detect { departments: [ { department: 'X', attendance: [...] } ] }
-        if (Array.isArray(res.data.departments)) {
-          // flatten department-attendance to array of records with department included
-          dataArray = res.data.departments.flatMap((d) =>
-            (d.attendance || []).map((r) => ({ ...r, department: d.department || d.name }))
-          );
-        } else {
-          // unknown shape but try to coerce to an array if it's an object with results-like key
-          dataArray = Array.isArray(res.data.results) ? res.data.results : [];
-        }
+        dataArray = [];
       }
 
-      setRows(dataArray || []);
+      setRows(dataArray);
     } catch (err) {
       console.error("Daily attendance fetch error:", err);
       message.error("Failed to fetch daily attendance");
@@ -74,7 +64,6 @@ export const useDailyAttendance = () => {
   };
 
   const handleFilter = () => {
-    // reset to first page
     fetchDaily(1, pagination.pageSize);
   };
 
@@ -83,21 +72,16 @@ export const useDailyAttendance = () => {
   };
 
   useEffect(() => {
-    // initial fetch
     fetchDaily(1, pagination.pageSize);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [date]);
 
-  // Group rows by department for rendering
   const groupedByDept = useMemo(() => {
     const groups = {};
     (rows || []).forEach((r) => {
-      const dept = r.department || r.department_name || r.department_title || "Unassigned";
+      const dept = r.department || "Unassigned";
       if (!groups[dept]) groups[dept] = [];
       groups[dept].push(r);
     });
-
-    // maintain insertion order
     return groups;
   }, [rows]);
 
@@ -110,6 +94,6 @@ export const useDailyAttendance = () => {
     pagination,
     handleFilter,
     handlePageChange,
-    fetchDaily, // exposed if you want to call directly
+    fetchDaily,
   };
 };

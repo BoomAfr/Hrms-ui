@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { fetchLeaveBalance, applyForLeave, fetchMyApplications } from "../services/applyForLeaveServices";
 
@@ -8,7 +7,6 @@ export const useApplyLeave = () => {
   const [pagination, setPagination] = useState({});
   const [loading, setLoading] = useState(false);
 
-  // ✅ Fetch My Applications
   const fetchMyApplicationsHandler = async (page = 1, pageSize = 10, search = "") => {
     setLoading(true);
     try {
@@ -26,7 +24,6 @@ export const useApplyLeave = () => {
     }
   };
 
-  // ✅ Fetch Leave Balance
   const fetchLeaveBalanceHandler = async () => {
     try {
       const data = await fetchLeaveBalance();
@@ -36,7 +33,6 @@ export const useApplyLeave = () => {
     }
   };
 
-  // ✅ Apply for leave
   const applyForLeaveHandler = async (payload) => {
     await applyForLeave(payload);
   };

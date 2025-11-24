@@ -17,6 +17,7 @@ const Termination = () => {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [selectedTermination, setSelectedTermination] = useState(null);
   const { Toast, contextHolder } = useToast();
+  const [submitLoading,setSubmitLoading] = useState(false)
 
   const {
     terminations,
@@ -72,13 +73,27 @@ const Termination = () => {
     }
   };
 
-  const handleSubmit = (values) => {
+  const handleSubmit = async (values) => {
+  try {
+    setSubmitLoading(true);
+
     if (editingTermination) {
-      updateTermination(editingTermination.id, values, () => setIsModalOpen(false));
+      await updateTermination(editingTermination.id, values);
+      Toast.success("Termination updated successfully");
     } else {
-      addTermination(values, () => setIsModalOpen(false));
+      await addTermination(values);
+      Toast.success("Termination added successfully");
     }
-  };
+
+    setIsModalOpen(false);
+    fetchTerminations(currentPage, pageSize, searchText);
+
+  } catch (error) {
+    Toast.error("Something went wrong");
+  } finally {
+    setSubmitLoading(false);
+  }
+};
 
   const columns = [
     {
@@ -179,17 +194,17 @@ const Termination = () => {
 
         <Table
   columns={columns}
-  dataSource={terminations.map((t, i) => ({
-    key: t.id,
-    id: t.id,
-    employee_name: t.terminate_to?.profile?.full_name || t.terminate_to?.name,
-    subject: t.subject,
-    termination_type: t.termination_type,
-    notice_date: t.notice_date,
-    termination_date: t.termination_date,
-    terminated_by_name: t.terminate_by?.profile?.full_name || t.terminate_by?.name,
-    description: t.description,
-  }))}
+  dataSource={terminations.map(t => ({
+  key: t.id,
+  id: t.id,
+  employee_name: t.employee_name,        // ⬅ DIRECT FROM BACKEND
+  subject: t.subject,
+  termination_type: t.termination_type,
+  notice_date: t.notice_date,
+  termination_date: t.termination_date,
+  terminated_by_name: t.terminated_by_name, // ⬅ DIRECT FROM BACKEND
+  description: t.description,
+}))}
   loading={loading}
   pagination={paginationProps}
   size="middle"
@@ -206,6 +221,7 @@ const Termination = () => {
           employees={employees}
           editingData={editingTermination}
           loading={loading}
+          submitLoading={submitLoading}
         />
       )}
 

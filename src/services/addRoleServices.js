@@ -1,12 +1,11 @@
 import API from "./api";
 
 export const addRoleAPI = {
-  //false endpoints
-  getAll: (params) => API.get('/company/addrole/', { params }),
-  getAllActive: () => API.get('/company/addrole/'),
-  create: (data) => API.post('/company/addrole/', data),
-  getById: (id) => API.get(`/company/addrole/${id}/`),
-  update: (id, data) => API.put(`/company/addrole/${id}/`, data),
-  patch: (id, data) => API.patch(`/company/addrole/${id}/`, data),
-  delete: (id) => API.delete(`/company/addrole/${id}/`),
+  getAll: (params) => API.get('/company/roles/', { params }),
+  getAllActive: () => API.get('/company/roles/'),
+  create: (data) => API.post('/company/roles/', data),
+  getById: (id) => API.get(`/company/roles/${id}/`),
+  update: (id, data) => API.put(`/company/roles/${id}/`, data),
+  patch: (id, data) => API.patch(`/company/roles/${id}/`, data),
+  delete: (id) => API.delete(`/company/roles/${id}/`),
 };

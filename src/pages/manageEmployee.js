@@ -6,6 +6,7 @@ import {  useNavigate } from 'react-router-dom';
 import { EditOutlined, DeleteOutlined, PlusOutlined, EyeOutlined } from '@ant-design/icons';
 import { Select } from 'antd';
 import { useToast } from '../hooks/useToast';
+import { useRef } from 'react';
 const { Option } = Select;
 
 const ManageEmployee = () => {
@@ -13,8 +14,9 @@ const ManageEmployee = () => {
      const [isOpenModal,setIsOpenModal] = useState(false);
      const [deleteId,setDeleteId] = useState();
 
-    const { employees,deleteEmployee} = useManageEmployee();
+    const { employees,deleteEmployee,filters, setFilters, pagination, setPagination} = useManageEmployee();
     const {Toast, contextHolder} = useToast();
+    const searchTimeout = useRef(null);
     // Job status color mapping
     const getStatusColor = (status) => {
         const statusColors = {
@@ -193,13 +195,28 @@ const handleEmptyData = (data) => (data || "--")
         }
     ];
 
-    const handleSearch = (value) => {
-        console.log('Search employees:', value);
-    };
+const handleSearch = (value) => {
+    if (searchTimeout.current) clearTimeout(searchTimeout.current);
+
+    searchTimeout.current = setTimeout(() => {
+        setFilters(prev => ({ ...prev, search: value }));
+        setPagination(prev => ({ ...prev, current: 1 })); // reset page
+    }, 300); // 300ms debounce
+};
 
     const handleFilterChange = (filterKey, value) => {
-        console.log('Filter changed:', filterKey, value);
+    // Map filterKey to hook filters
+    const keyMap = {
+        department: 'department_id',
+        designation: 'designation_id',
+        role: 'role'
     };
+
+    const apiKey = keyMap[filterKey] || filterKey;
+
+    setFilters(prev => ({ ...prev, [apiKey]: value }));
+    setPagination(prev => ({ ...prev, current: 1 })); // Reset page
+};
 
     const handleRefresh = () => {
         console.log('Refresh employee data');

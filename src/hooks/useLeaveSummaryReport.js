@@ -14,7 +14,6 @@ export const useLeaveSummaryReport = () => {
 
   const [loading, setLoading] = useState(false);
 
-  // Fetch employee list
   const fetchEmployees = async () => {
     try {
       const res = await leaveSummaryReportAPI.getEmployees();
@@ -24,23 +23,33 @@ export const useLeaveSummaryReport = () => {
     }
   };
 
-  // Fetch summary report
   const fetchSummary = async () => {
-    setLoading(true);
-    try {
-      const params = {
-        employee_id: filters.employee_id || undefined,
-        from_date: filters.from_date || undefined,
-        to_date: filters.to_date || undefined,
-      };
+  setLoading(true);
+  try {
+    const params = {
+      employee_id: filters.employee_id || undefined,
+      from_date: filters.from_date || undefined,
+      to_date: filters.to_date || undefined,
+    };
 
-      const res = await leaveSummaryReportAPI.getSummary(params);
-      setSummary(res.data?.results || []);
-    } catch (err) {
-      message.error("Failed to load summary report");
-    }
-    setLoading(false);
-  };
+    const res = await leaveSummaryReportAPI.getSummary(params);
+
+    const summaryData = res.data?.summary_data || [];
+
+    
+    const mappedSummary = summaryData.map((s) => ({
+      leave_type: s.leave_type_name,
+      number_of_day: s.Number_of_Day,
+      leave_consume: s.Leave_Consume,
+      current_balance: s.Current_Balance,
+    }));
+
+    setSummary(mappedSummary);
+  } catch (err) {
+    message.error("Failed to load summary report");
+  }
+  setLoading(false);
+};
 
   const handleFilter = () => {
     fetchSummary();

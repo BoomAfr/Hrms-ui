@@ -40,13 +40,13 @@ const DesignationModal = ({
   }, [editingDesignation, form]);
 
    const handleSubmit = async (values) => {
-    setSaving(true); // start loader
+    setSaving(true); 
     try {
       await onSubmit(values);
       form.resetFields();
       setIsModalOpen(false);
     } finally {
-      setSaving(false); // stop loader
+      setSaving(false); 
     }
   };
 

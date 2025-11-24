@@ -40,8 +40,10 @@ const Warning = () => {
   const handleAddWarning = (values) => {
     if (editingWarning) {
       updateWarning(editingWarning.id, values, Toast);
+      Toast.success("Warning Update Succesfully")
     } else {
       addWarning(values, Toast);
+      Toast.success("Warning Added Succesfully")
     }
     setIsModalOpen(false);
     setEditingWarning(null);
