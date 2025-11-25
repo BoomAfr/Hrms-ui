@@ -30,11 +30,11 @@ const AddRole = () => {
     console.log(values, 'values');
     if (editingRole) {
       updateRole(editingRole.id, values, Toast);
-      Toast?.success('Role Added Successfully');
+      Toast?.success('Role Updated Successfully');
     }
     else {
       addRole(values);
-      Toast?.error('Role Not Added');
+      Toast?.success('Role Added Successfully');
     }
     setEditingRole(null);
   };
@@ -112,9 +112,11 @@ const AddRole = () => {
     if (!selectedRole) return;
     try {
       await deleteRole(selectedRole.id);
+      Toast.success(`Deleted: ${selectedRole.name}`)
       message.success(`Deleted: ${selectedRole.name}`);
       refetch();
     } catch (error) {
+      Toast.error('Failed to delete department')
       message.error('Failed to delete department');
       console.error(error);
     } finally {

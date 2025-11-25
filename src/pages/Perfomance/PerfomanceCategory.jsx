@@ -4,6 +4,7 @@ import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import PerformanceCategoryModal from '../../components/common/SharedModal/PerfomanceCategoryModal';
 import ConfirmModal from '../../components/common/SharedModal/ConfirmModal';
 import { usePerformanceCategories } from '../../hooks/usePerfomanceCategory';
+import {useToast} from "../../hooks/useToast"
 
 const { Option } = Select;
 
@@ -15,6 +16,8 @@ const PerformanceCategory = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [editingCategory, setEditingCategory] = useState(null);
   const [searchText, setSearchText] = useState('');
+
+  const{Toast,contextHolder} = useToast();
 
   const { categories, loading, error, refetch, addCategory, updateCategory, deleteCategory } = usePerformanceCategories();
 
@@ -37,9 +40,11 @@ const PerformanceCategory = () => {
     if (!selectedCategory) return;
     try {
       await deleteCategory(selectedCategory.id);
+      Toast.success('Deleted successfully')
       message.success('Deleted successfully');
       refetch();
     } catch (err) {
+      Toast.error('Delete failed')
       message.error('Delete failed');
     } finally {
       setIsConfirmOpen(false);
@@ -51,15 +56,18 @@ const PerformanceCategory = () => {
     try {
       if (editingCategory) {
         await updateCategory(editingCategory.id, values);
+        Toast.success("Performance category updated successfully")
         message.success('Performance category updated successfully');
       } else {
         await addCategory(values);
+        Toast.success("Performance category added successfully")
         message.success('Performance category added successfully');
       }
       setIsModalOpen(false);
       setEditingCategory(null);
       refetch();
     } catch (err) {
+      Toast.error("Operation failed")
       message.error('Operation failed');
     }
   };
@@ -113,6 +121,7 @@ const PerformanceCategory = () => {
 
   return (
     <div style={{ padding: 24 }}>
+    {contextHolder}
       <Card
         title="Performance Category List"
         extra={
