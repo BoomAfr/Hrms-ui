@@ -98,7 +98,7 @@ punch_out_time: r.punch_out_time
       key: "punch_out_time",
       render: (value, record) => (
         <TimePicker
-          value={value ? moment(value, "HH:mm:ss") : null} // fix: parse HH:mm:ss only
+          value={value ? moment(value, "HH:mm:ss") : null} 
           format="HH:mm:ss"
           onChange={(time) =>
             updateRowLocal(record.employee_id, "punch_out_time", time ? time.format("HH:mm:ss") : null)

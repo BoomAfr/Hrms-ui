@@ -1,7 +1,20 @@
 import { useState } from "react";
 import { message } from "antd";
+import moment from "moment";
 import { manualAttendanceServices } from "../services/manualAttendanceServices";
 import { departmentAPI } from "../services/departmentServices";
+
+// 🔥 Normalize backend time here
+const normalizeTime = (t) => {
+  if (!t) return null;
+
+  if (/^\d{2}:\d{2}:\d{2}$/.test(t)) return t;      // HH:mm:ss
+  if (/^\d{2}:\d{2}$/.test(t)) return t + ":00";   // HH:mm
+  const m = moment(t);
+  if (m.isValid()) return m.format("HH:mm:ss");    // ISO -> HH:mm:ss
+
+  return null;
+};
 
 export function useManualAttendance() {
   const [departments, setDepartments] = useState([]);
@@ -10,11 +23,11 @@ export function useManualAttendance() {
   const [attendanceRows, setAttendanceRows] = useState([]);
   const [loadingAttendance, setLoadingAttendance] = useState(false);
 
+  // ---------------- Fetch Departments ----------------
   const fetchDepartments = async () => {
     setLoadingDepartments(true);
     try {
       const res = await departmentAPI.getAll({ page: 1, page_size: 1000 });
-      console.log("DEPT RES:", res.data);
       setDepartments(res.data.results || []);
     } catch (err) {
       console.error(err);
@@ -24,18 +37,19 @@ export function useManualAttendance() {
     }
   };
 
+  // ---------------- Fetch Attendance ----------------
   const fetchAttendance = async (params) => {
-    // params: { department_id, target_date }
     setLoadingAttendance(true);
     try {
       const res = await manualAttendanceServices.getManualAttendance(params);
-      // backend returns array as your Django view builds
+
+      // 🔥 APPLY NORMALIZED TIME HERE
       const rows = (res.data || []).map((r) => ({
         employee_id: r.employee_id,
         fingerprint_no: r.fingerprint_no,
         employee_name: r.employee_name,
-        punch_in_time: r.punch_in_time, // 'HH:mm:ss' or null
-        punch_out_time: r.punch_out_time,
+        punch_in_time: normalizeTime(r.punch_in_time),
+        punch_out_time: normalizeTime(r.punch_out_time),
         is_present: r.is_present,
         late_time: r.late_time,
         overtime: r.overtime,
@@ -51,14 +65,19 @@ export function useManualAttendance() {
     }
   };
 
+  // ---------------- Update Row Locally ----------------
   const updateRowLocal = (employee_id, key, value) => {
-    setAttendanceRows((prev) => prev.map((r) => (r.employee_id === employee_id ? { ...r, [key]: value } : r)));
+    setAttendanceRows((prev) =>
+      prev.map((r) =>
+        r.employee_id === employee_id ? { ...r, [key]: value } : r
+      )
+    );
   };
 
+  // ---------------- Save Attendance ----------------
   const saveAttendanceBatch = async (payloadArray) => {
     try {
       for (const item of payloadArray) {
-        // backend expects employee_id, target_date, punch_in_time, punch_out_time
         await manualAttendanceServices.patchAttendance(item);
       }
     } catch (err) {
@@ -71,9 +90,11 @@ export function useManualAttendance() {
     departments,
     loadingDepartments,
     fetchDepartments,
+
     attendanceRows,
     loadingAttendance,
     fetchAttendance,
+
     updateRowLocal,
     saveAttendanceBatch,
   };
