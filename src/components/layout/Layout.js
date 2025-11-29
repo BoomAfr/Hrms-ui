@@ -1,5 +1,4 @@
-// MainLayout.js
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
   Layout,
@@ -17,18 +16,32 @@ import {
   MenuUnfoldOutlined,
   LogoutOutlined,
   UserOutlined,
-  HomeOutlined,  
+  HomeOutlined, 
 } from '@ant-design/icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../store/slices/authSlice';
-// import { transformPagesToMenuItems } from '../../constants/menuItem';
 import BackButton from '../common/BackButton/BackButton';
 import { useToast } from '../../hooks/useToast';
 import ErrorBoundary from 'antd/es/alert/ErrorBoundary';
-import { transformPagesToMenuItems } from '../../utils/menuTransformer';
+import { getIconComponent } from '../../constants/menuItem';
 
 const { Header, Sider, Content } = Layout;
 const { useBreakpoint } = Grid;
+const transformToMenuItems = (data) => {
+  return data.map(item => {
+    const menuItem = {
+      key: item.key || item.id?.toString(),
+      icon: getIconComponent(item.icon),
+      label: item.label,
+    };
+
+    if (item.children && item.children.length > 0) {
+      menuItem.children = transformToMenuItems(item.children);
+    }
+
+    return menuItem;
+  });
+};
 
 const MainLayout = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -38,13 +51,10 @@ const MainLayout = () => {
   const screens = useBreakpoint();
   const { Toast, contextHolder } = useToast();
   
-  // Redux store se user data get karein
   const user = useSelector((state) => state.user);
-  console.log(user, 'user');
   const profile = user?.profile?.profile;
   const role = user?.profile?.role;
 
-  // Safe role formatting function
   const formatRole = (role) => {
     if (!role) return 'Employee';
     
@@ -56,36 +66,18 @@ const MainLayout = () => {
     return roleString.charAt(0).toUpperCase() + roleString.slice(1).toLowerCase();
   };
 
-  // Get user pages from Redux store
   const getUserPages = () => {
     if (role?.pages && Array.isArray(role.pages)) {
       return role.pages;
     }
     return [];
   };
-
-  // Directly userPages se menu items generate karein
-  const menuItems = useMemo(() => {
+  const sidebarMenuItems = useMemo(() => {
     const userPages = getUserPages();
-
-    console.log(userPages,'userPages',role)
+        const data = userPages.length > 0 ? userPages : [];
     
-    console.log('Building menu from userPages:', {
-      userPagesCount: userPages.length,
-      userPages
-    });
-
-    // Agar pages available hain to transform karein
-    if (userPages.length > 0) {
-      const transformedItems = transformPagesToMenuItems(userPages);
-      console.log('Transformed menu items:', transformedItems);
-      return transformedItems;
-    }
-
-    // Agar koi page nahi hai to empty array return karein
-    console.warn('No pages available for menu');
-    return [];
-  }, [role, role?.pages]); // Re-run when role or pages change
+    return transformToMenuItems(data);
+  }, [role]);
 
   const handleMenuClick = ({ key }) => {
     navigate(key);
@@ -93,7 +85,7 @@ const MainLayout = () => {
 
   const handleLogout = async () => {
     try {
-      const result = await dispatch(logout()).unwrap();
+      await dispatch(logout()).unwrap();
       Toast.success("Logout Successfully");
     } catch (error) {
       Toast.error("Something went wrong");
@@ -160,7 +152,7 @@ const MainLayout = () => {
     return items;
   };
 
-  const breadcrumbItems = getBreadcrumbItems(location.pathname, menuItems);
+  const breadcrumbItems = getBreadcrumbItems(location.pathname, sidebarMenuItems);
 
   const breadcrumb = (
     <Header
@@ -249,14 +241,20 @@ const MainLayout = () => {
             </div>
           )}
         </div>
-        <div className="logo">
+        <div className="logo" style={{ 
+          padding: '16px', 
+          color: 'white', 
+          textAlign: 'center',
+          fontSize: collapsed ? '16px' : '20px',
+          fontWeight: 'bold'
+        }}>
           {collapsed ? 'HR' : 'HRMS'}
         </div>
         <Menu
           theme="dark"
           mode="inline"
           selectedKeys={[location.pathname]}
-          items={menuItems}
+          items={sidebarMenuItems}
           onClick={handleMenuClick}
         />
       </Sider>
