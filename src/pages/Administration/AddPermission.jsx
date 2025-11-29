@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Table, Button, Space, Card, Row, Col, Select, message, Input, Checkbox, Tree } from 'antd';
+import { Button, Space, Card, Row, Col, Select, message, Checkbox, Tree } from 'antd';
 import { useToast } from '../../hooks/useToast';
 import { usePages } from '../../hooks/pages/usePages';
 import { useAddRoles } from '../../hooks/useAddRole';
@@ -11,7 +11,7 @@ const AddPermission = () => {
   const [selectedRoleId, setSelectedRoleId] = useState(null);
   const [checkedKeys, setCheckedKeys] = useState([]);
   const { Toast, contextHolder } = useToast();
-  const { loading: pagesLoading, allPages, allowedPages, error, updateRolePermission, fetchPagesByRole } = usePages();
+  const { loading: pagesLoading, allPages, allowedPages, updateRolePermission, fetchPagesByRole } = usePages();
   const { roles } = useAddRoles();
 
   // Transform API data to match our component structure

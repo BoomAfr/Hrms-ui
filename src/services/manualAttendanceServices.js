@@ -1,4 +1,4 @@
-import API from "../services/api"; // your axios instance
+import API from "../services/api";
 
 export const manualAttendanceServices = {
   getManualAttendance: (params) => API.get("/company/attendance/manual/", { params }),

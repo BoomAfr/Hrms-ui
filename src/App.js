@@ -30,7 +30,7 @@ import ManageWorkShift from './pages/Attendance/ManageWorkShift';
 import MonthlyPayGrade from './pages/Payroll/MonthlyPayGrade';
 import PerfomanceCategory from './pages/Perfomance/PerfomanceCategory';
 import PerfomanceCriteria from './pages/Perfomance/PerfomanceCriteria';
-import EmployeePerfomance from './pages/Perfomance/EmployeePerfomance';
+import EmployeePerfomance from './pages/Perfomance/EmployeePerfomanceList';
 import SummaryReport from './pages/Perfomance/SummaryReport';
 import ApplyForLeave from './pages/leaveManagement/ApplyForLeave';
 import RequestedApplication from './pages/leaveManagement/RequestedApplication';
@@ -61,6 +61,8 @@ import ApproveWorkHour from './pages/Payroll/ApproveWorkHour';
 import GenerateBonus from './pages/Payroll/GenerateBonus';
 import GenerateBulkSalarySheet from './pages/Payroll/GenerateBulkSalarySheet';
 import AddSalarySheet from './pages/Payroll/AddSalarySheet';
+import EmployeePerformanceForm from './pages/Perfomance/EmployeePerfomanceForm';
+import ViewEmployeePerformance from './pages/Perfomance/ViewEmployeePerfomance';
 
 function App() {
   return (
@@ -169,6 +171,9 @@ function App() {
               <Route path='performance-criteria' element={<PerfomanceCriteria/>}/>
               <Route path='employee-performance' element={<EmployeePerfomance/>}/>
               <Route path='performance-summary-report' element={<SummaryReport/>}/>
+              <Route path='add-employee-perfomance' element={<EmployeePerformanceForm/>} />
+              <Route path='employee-performance/edit/:id' element={<EmployeePerformanceForm />} />
+              <Route path='employee-performance/view/:id' element={<ViewEmployeePerformance/>} />
 
               
 
