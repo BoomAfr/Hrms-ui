@@ -13,19 +13,17 @@ const BonusSetting = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState(null);
 
-  // Open add modal
   const openAddModal = () => {
     setEditingRecord(null);
     setIsModalOpen(true);
   };
 
-  // Open edit modal
+
   const openEditModal = (record) => {
     setEditingRecord(record);
     setIsModalOpen(true);
   };
 
-  // On modal form submit
   const handleSubmit = async (values) => {
     if (editingRecord) {
       await updateBonus(editingRecord.id, values);
