@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Modal, Form, Input, Select, InputNumber } from "antd";
 
 const { Option } = Select;
@@ -6,16 +6,18 @@ const { Option } = Select;
 const BonusSettingModal = ({ open, onCancel, onSubmit, editingRecord }) => {
   const [form] = Form.useForm();
 
-  // Set values while editing
-  if (editingRecord) {
-    form.setFieldsValue(editingRecord);
-  }
+  useEffect(() => {
+    if (editingRecord) {
+      form.setFieldsValue(editingRecord);
+    } else {
+      form.resetFields();
+    }
+  }, [editingRecord, form]);
 
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
       onSubmit(values);
-      form.resetFields();
     } catch (err) {}
   };
 
