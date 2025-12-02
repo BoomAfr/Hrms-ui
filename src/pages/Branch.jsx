@@ -4,7 +4,7 @@ import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import CommonFormModal from '../components/common/SharedModal/BranchModal';
 import { useBranches } from '../hooks/useBranches';
 import ConfirmModal from '../components/common/SharedModal/ConfirmModal';
-import{useToast} from'../hooks/useToast';
+import { useToast } from '../hooks/useToast';
 const { Option } = Select;
 
 const Branch = () => {
@@ -18,7 +18,7 @@ const Branch = () => {
 
   const { branches, loading, error, refetch, addBranch, updateBranch, deleteBranch } = useBranches();
 
-  const {Toast, contextHolder}=useToast();  
+  const { Toast, contextHolder } = useToast();
 
   useEffect(() => {
     refetch(currentPage, pageSize, searchText.trim());
@@ -30,18 +30,18 @@ const Branch = () => {
       if (editingBranch) {
         await updateBranch(editingBranch.id, payload);
         Toast.success('Branch updated successfully');
-    
+
       } else {
         await addBranch(payload);
         Toast.success('Branch added successfully');
-   
+
       }
       refetch(currentPage, pageSize, searchText.trim());
       setEditingBranch(null);
       setIsModalOpen(false);
     } catch (err) {
       Toast.error(err.response?.data?.message || 'Operation failed');
-      
+
     }
   };
 
@@ -110,7 +110,7 @@ const Branch = () => {
       refetch(currentPage, pageSize, searchText.trim());
     } catch (error) {
       Toast.error('Failed to delete branch');
-     // message.error('Failed to delete branch');
+      // message.error('Failed to delete branch');
     } finally {
       setIsConfirmOpen(false);
       setSelectedBranch(null);
@@ -153,8 +153,8 @@ const Branch = () => {
           </Button>
         }
       >
-        <Row style={{ marginBottom: 16 }} align="middle" justify="space-between">
-          <Col>
+        <Row style={{ marginBottom: 16 }} align="middle" justify="space-between" gutter={[16, 16]}>
+          <Col xs={24} sm={12} md={8}>
             <span style={{ marginRight: 8 }}>Show</span>
             <Select
               value={pageSize}
@@ -168,12 +168,12 @@ const Branch = () => {
             </Select>
             <span>entries</span>
           </Col>
-          <Col>
+          <Col xs={24} sm={12} md={8}>
             <Input.Search
               placeholder="Search branch..."
               allowClear
               onChange={handleSearch}
-              style={{ width: 250 }}
+              style={{ width: '100%' }}
             />
           </Col>
         </Row>
@@ -201,13 +201,13 @@ const Branch = () => {
           onSubmit={handleAddBranch}
           editingDept={editingBranch}
           fieldLabel={[
-              {
-                label: 'Branch Name',
-                name: 'name',
-                isRequired: true,
-                component: <Input placeholder="Enter Branch Name" size="large" />,
-              },
-            ]}
+            {
+              label: 'Branch Name',
+              name: 'name',
+              isRequired: true,
+              component: <Input placeholder="Enter Branch Name" size="large" />,
+            },
+          ]}
         />
       )}
 

@@ -5,7 +5,7 @@ import DesignationModal from '../components/common/SharedModal/DesignationModal'
 import { useDesignations } from '../hooks/useDesignations';
 import { departmentAPI } from '../services/departmentServices';
 import ConfirmModal from '../components/common/SharedModal/ConfirmModal';
-import {useToast} from '../hooks/useToast'
+import { useToast } from '../hooks/useToast'
 
 const { Option } = Select;
 
@@ -30,7 +30,7 @@ const Designation = () => {
     deleteDesignation,
   } = useDesignations();
 
-  const {Toast, contextHolder} = useToast();
+  const { Toast, contextHolder } = useToast();
 
   useEffect(() => {
     const loadDepartments = async () => {
@@ -200,8 +200,8 @@ const Designation = () => {
           </Button>
         }
       >
-        <Row style={{ marginBottom: 16 }} align="middle" justify="space-between">
-          <Col>
+        <Row style={{ marginBottom: 16 }} align="middle" justify="space-between" gutter={[16, 16]}>
+          <Col xs={24} sm={12} md={8}>
             <span style={{ marginRight: 8 }}>Show</span>
             <Select
               value={pageSize}
@@ -215,13 +215,13 @@ const Designation = () => {
             </Select>
             <span>entries</span>
           </Col>
-          <Col>
+          <Col xs={24} sm={12} md={8}>
             <Input.Search
               placeholder="Search designation..."
               allowClear
               value={searchText}
               onChange={handleSearch}
-              style={{ width: 250 }}
+              style={{ width: '100%' }}
             />
           </Col>
         </Row>

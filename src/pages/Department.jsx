@@ -28,17 +28,17 @@ const Department = () => {
 
 
   const handleAddDepartment = async (values) => {
-  if (editingDept) {
-    await updateDepartment(editingDept.id, values, Toast);
-    
-  } else {
-    await addDepartment(values);
-    Toast.success("Department added successfully");
-  }
+    if (editingDept) {
+      await updateDepartment(editingDept.id, values, Toast);
 
-  setIsModalOpen(false);
-  setEditingDept(null);
-};
+    } else {
+      await addDepartment(values);
+      Toast.success("Department added successfully");
+    }
+
+    setIsModalOpen(false);
+    setEditingDept(null);
+  };
 
   const loadDepartments = async (page = currentPage, size = pageSize, search = searchText) => {
     const data = await refetch(page, size, search);
@@ -112,17 +112,17 @@ const Department = () => {
   const handleConfirmDelete = async () => {
     if (!selectedDept) return;
     try {
-       await deleteDepartment(selectedDept.id);
-    Toast.success(`Deleted: ${selectedDept.name}`);
+      await deleteDepartment(selectedDept.id);
+      Toast.success(`Deleted: ${selectedDept.name}`);
 
-    const result = await refetch(currentPage, pageSize, searchText);
+      const result = await refetch(currentPage, pageSize, searchText);
 
-    if (result?.results?.length === 0 && currentPage > 1) {
-      const newPage = currentPage - 1;
-      setCurrentPage(newPage);
+      if (result?.results?.length === 0 && currentPage > 1) {
+        const newPage = currentPage - 1;
+        setCurrentPage(newPage);
 
-      await refetch(newPage, pageSize, searchText);
-    }
+        await refetch(newPage, pageSize, searchText);
+      }
     } catch (error) {
       Toast.error('Failed to delete department')
       console.error(error);
@@ -172,8 +172,8 @@ const Department = () => {
           </Button>
         }
       >
-        <Row style={{ marginBottom: 16 }} align="middle" justify="space-between">
-          <Col>
+        <Row style={{ marginBottom: 16 }} align="middle" justify="space-between" gutter={[16, 16]}>
+          <Col xs={24} sm={12} md={8}>
             <span style={{ marginRight: 8 }}>Show</span>
             <Select
               value={pageSize}
@@ -187,12 +187,12 @@ const Department = () => {
             </Select>
             <span>entries</span>
           </Col>
-          <Col>
+          <Col xs={24} sm={12} md={8}>
             <Input.Search
               placeholder="Search department..."
               allowClear
               onChange={(e) => handleSearch(e.target.value)}
-              style={{ width: 250 }}
+              style={{ width: '100%' }}
             />
           </Col>
         </Row>

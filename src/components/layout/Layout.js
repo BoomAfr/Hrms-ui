@@ -9,14 +9,15 @@ import {
   Space,
   Grid,
   Breadcrumb,
-  Spin
+  Spin,
+  Drawer
 } from 'antd';
 import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   LogoutOutlined,
   UserOutlined,
-  HomeOutlined, 
+  HomeOutlined,
 } from '@ant-design/icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../store/slices/authSlice';
@@ -50,18 +51,18 @@ const MainLayout = () => {
   const location = useLocation();
   const screens = useBreakpoint();
   const { Toast, contextHolder } = useToast();
-  
+
   const user = useSelector((state) => state.user);
   const profile = user?.profile?.profile;
   const role = user?.profile?.role;
 
   const formatRole = (role) => {
     if (!role) return 'Employee';
-    
+
     if (typeof role === 'object' && role !== null) {
       return role.name || 'Employee';
     }
-    
+
     const roleString = String(role);
     return roleString.charAt(0).toUpperCase() + roleString.slice(1).toLowerCase();
   };
@@ -74,13 +75,17 @@ const MainLayout = () => {
   };
   const sidebarMenuItems = useMemo(() => {
     const userPages = getUserPages();
-        const data = userPages.length > 0 ? userPages : [];
-    
+    const data = userPages.length > 0 ? userPages : [];
+
     return transformToMenuItems(data);
   }, [role]);
 
   const handleMenuClick = ({ key }) => {
     navigate(key);
+    // Close drawer on mobile when menu item is clicked
+    if (!screens.lg) {
+      setCollapsed(true);
+    }
   };
 
   const handleLogout = async () => {
@@ -101,9 +106,7 @@ const MainLayout = () => {
       key: 'profile',
       icon: <UserOutlined />,
       label: 'Profile',
-    },
-    {
-      type: 'divider',
+      onClick: () => navigate('/profile'),
     },
     {
       key: 'logout',
@@ -113,70 +116,32 @@ const MainLayout = () => {
     },
   ];
 
-  const getBreadcrumbItems = (pathname, menuItems) => {
-    const items = [
-      {
-        title: <HomeOutlined />,
-        href: '/'
-      }
-    ];
-    
-    const findPath = (menuArray, path) => {
-      for (const item of menuArray) {
-        if (item.key === path) {
-          return [item];
-        }
-        if (item.children) {
-          const found = findPath(item.children, path);
-          if (found.length > 0) {
-            return [item, ...found];
-          }
-        }
-      }
-      return [];
-    };
-    
-    const pathItems = findPath(menuItems, pathname);
-    
-    pathItems.forEach(item => {
-      items.push({
-        title: (
-          <Space>
-            {item.icon}
-            <span>{item.label}</span>
-          </Space>
-        )
-      });
-    });
-
-    return items;
-  };
-
-  const breadcrumbItems = getBreadcrumbItems(location.pathname, sidebarMenuItems);
+  const breadcrumbItems = location.pathname.split('/').filter(i => i).map((i, index, arr) => ({
+    title: i.charAt(0).toUpperCase() + i.slice(1),
+    key: i,
+    href: index === arr.length - 1 ? null : `/${arr.slice(0, index + 1).join('/')}`,
+  }));
 
   const breadcrumb = (
-    <Header
+    <div
       style={{
-        padding: '0 16px',
-        background: '#f5f5f5',
-        borderBottom: '1px solid #d9d9d9',
+        padding: '16px 16px 0 16px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
       }}
     >
       <Breadcrumb
-        items={breadcrumbItems}
-        style={{ 
-          margin: '16px 0',
-          fontSize: '18px',
-          fontWeight: "600",
-          color: "rgba(0, 0, 0, 0.88);"
-        }}
+        items={[
+          { title: <HomeOutlined />, href: '/' },
+          ...breadcrumbItems
+        ]}
       />
-      {location.pathname !== '/' && <BackButton/>}
-    </Header>
+      {location.pathname !== '/' && <BackButton />}
+    </div>
   );
 
   const getFullName = () => {
-    if (!profile) return 'User';
     return `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || 'User';
   };
 
@@ -185,79 +150,106 @@ const MainLayout = () => {
 
   if (!user) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '100vh' 
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh'
       }}>
         <Spin size="large" tip="Loading..." />
       </div>
     );
   }
 
+  // Sidebar content to be reused in both Sider (Desktop) and Drawer (Mobile)
+  const SidebarContent = (
+    <>
+      <div
+        style={{
+          padding: collapsed && screens.lg ? '16px 8px' : '16px',
+          textAlign: 'center',
+          borderBottom: '1px solid rgba(255,255,255,0.1)'
+        }}
+      >
+        {collapsed && screens.lg ? (
+          <Avatar
+            size="large"
+            icon={<UserOutlined />}
+            style={{ backgroundColor: '#87d068' }}
+          />
+        ) : (
+          <div>
+            <Avatar
+              size={64}
+              icon={<UserOutlined />}
+              style={{
+                backgroundColor: '#87d068',
+                marginBottom: '12px'
+              }}
+            />
+            <div style={{ color: 'white' }}>
+              <div style={{ fontWeight: 'bold', fontSize: '16px' }}>
+                {displayName}
+              </div>
+              <div style={{ fontSize: '12px', opacity: 0.7 }}>
+                {formattedRole}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+      <div className="logo" style={{
+        padding: '16px',
+        color: 'white',
+        textAlign: 'center',
+        fontSize: collapsed && screens.lg ? '16px' : '20px',
+        fontWeight: 'bold'
+      }}>
+        {collapsed && screens.lg ? 'HR' : 'HRMS'}
+      </div>
+      <Menu
+        theme="dark"
+        mode="inline"
+        selectedKeys={[location.pathname]}
+        items={sidebarMenuItems}
+        onClick={handleMenuClick}
+      />
+    </>
+  );
+
   return (
     <Layout style={{ minHeight: '100vh' }}>
       {contextHolder}
-      <Sider
-        trigger={null}
-        collapsible
-        collapsed={collapsed}
-        breakpoint="lg"
-        collapsedWidth={screens.lg ? 80 : 0}
-        width={250}
-      >
-        <div 
-          style={{ 
-            padding: collapsed ? '16px 8px' : '16px', 
-            textAlign: 'center',
-            borderBottom: '1px solid rgba(255,255,255,0.1)'
-          }}
+
+      {/* Mobile Drawer */}
+      {!screens.lg && (
+        <Drawer
+          placement="left"
+          onClose={() => setCollapsed(true)}
+          open={!collapsed}
+          width={250}
+          styles={{ body: { padding: 0, backgroundColor: '#001529' } }}
+          closable={false}
+          maskClosable={true}
         >
-          {collapsed ? (
-            <Avatar 
-              size="large" 
-              icon={<UserOutlined />}
-              style={{ backgroundColor: '#87d068' }}
-            />
-          ) : (
-            <div>
-              <Avatar 
-                size={64} 
-                icon={<UserOutlined />}
-                style={{ 
-                  backgroundColor: '#87d068',
-                  marginBottom: '12px'
-                }}
-              />
-              <div style={{ color: 'white' }}>
-                <div style={{ fontWeight: 'bold', fontSize: '16px' }}>
-                  {displayName}
-                </div>
-                <div style={{ fontSize: '12px', opacity: 0.7 }}>
-                  {formattedRole}
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-        <div className="logo" style={{ 
-          padding: '16px', 
-          color: 'white', 
-          textAlign: 'center',
-          fontSize: collapsed ? '16px' : '20px',
-          fontWeight: 'bold'
-        }}>
-          {collapsed ? 'HR' : 'HRMS'}
-        </div>
-        <Menu
-          theme="dark"
-          mode="inline"
-          selectedKeys={[location.pathname]}
-          items={sidebarMenuItems}
-          onClick={handleMenuClick}
-        />
-      </Sider>
+          {SidebarContent}
+        </Drawer>
+      )}
+
+      {/* Desktop Sider */}
+      {screens.lg && (
+        <Sider
+          trigger={null}
+          collapsible
+          collapsed={collapsed}
+          breakpoint="lg"
+          collapsedWidth={80}
+          width={250}
+        >
+          {SidebarContent}
+        </Sider>
+      )}
+
       <Layout>
         <Header
           style={{
@@ -279,7 +271,7 @@ const MainLayout = () => {
               height: 64,
             }}
           />
-          
+
           <Dropdown
             menu={{ items: userMenuItems }}
             placement="bottomRight"
@@ -297,8 +289,8 @@ const MainLayout = () => {
         {breadcrumb}
         <Content
           style={{
-            margin: '24px 16px',
-            padding: 24,
+            margin: screens.lg ? '24px 16px' : '12px 8px',
+            padding: screens.lg ? 24 : 12,
             minHeight: 280,
             background: '#fff',
             borderRadius: 8,

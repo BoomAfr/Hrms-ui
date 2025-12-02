@@ -14,15 +14,15 @@ const Login = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const { loading, error, isAuthenticated } = useSelector((state) => state.auth);
-    const {Toast,contextHolder} = useToast();
-  
+  const { Toast, contextHolder } = useToast();
+
 
   useEffect(() => {
     if (isAuthenticated) {
-      setTimeout(()=>{
-      navigate('/');
+      setTimeout(() => {
+        navigate('/');
 
-      },[300])
+      }, [300])
     }
   }, [isAuthenticated, navigate]);
 
@@ -33,7 +33,7 @@ const Login = () => {
   //   }
   // }, [error, dispatch]);
 
-  const onFinish = async(values) => {
+  const onFinish = async (values) => {
     try {
       const result = await dispatch(login(values)).unwrap();
       Toast.success("Login Successfully")
@@ -56,29 +56,30 @@ const Login = () => {
       {contextHolder}
       <Card
         style={{
-          width: 380,
-          padding: '40px 30px',
+          width: '90%',
+          maxWidth: 380,
+          padding: '40px 20px',
           boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
           borderRadius: '6px',
           backgroundColor: '#f7f7f7',
         }}
       >
         <div style={{
-            position: 'absolute',
-            top: 20,
-            left: 30,
-          }}>
+          position: 'absolute',
+          top: 20,
+          left: 30,
+        }}>
           <Title level={4} style={{ color: '#333', marginBottom: 0 }}>
             LOG IN
           </Title>
-          
+
         </div>
         <div style={{ textAlign: 'center', marginBottom: 20 }}>
           <Image
             width={120}
             preview={false}
             src={logo}
-            style={{ marginTop: 25, height:100 }}
+            style={{ marginTop: 25, height: 100 }}
           />
         </div>
 
