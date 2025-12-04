@@ -19,7 +19,7 @@ export default function CSVAttendanceModal({ visible, onClose, onUploaded }) {
     fileList,
     beforeUpload: (file) => {
       setFileList([file]);
-      return false; // prevent auto upload
+      return false; 
     },
     onRemove: () => setFileList([]),
   };
@@ -30,7 +30,6 @@ export default function CSVAttendanceModal({ visible, onClose, onUploaded }) {
 
     const file = fileList[0];
 
-    // Parse CSV and map Finger ID → employee_id
     Papa.parse(file, {
     header: true,
     skipEmptyLines: true,
@@ -41,7 +40,7 @@ export default function CSVAttendanceModal({ visible, onClose, onUploaded }) {
         const punchOut = row["Out Time"] ? `${date.format("YYYY-MM-DD")}T${row["Out Time"]}` : null;
 
         return {
-          employee_id: Number(row["Finger ID"]), // map Finger ID
+          employee_id: Number(row["employee_id"]), 
           punch_in_time: punchIn,
           punch_out_time: punchOut,
           target_date: date.format("YYYY-MM-DD"),
