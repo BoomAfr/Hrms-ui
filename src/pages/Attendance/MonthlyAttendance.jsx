@@ -27,7 +27,6 @@ const MonthlyAttendanceReport = () => {
     { title: "Status", dataIndex: "status" },
   ];
 
-  // PDF generator
   const downloadPDF = () => {
     const doc = new jsPDF("p", "pt", "a4");
 
@@ -64,20 +63,19 @@ const MonthlyAttendanceReport = () => {
       startY: 70,
     });
 
-    // summary block
     doc.text("Summary", 40, doc.lastAutoTable.finalY + 30);
 
     const summaryRows = [
-      ["Total Working Days", summary.total_working_days],
-      ["Total Present", summary.total_present],
-      ["Total Absent", summary.total_absent],
-      ["Total Leave", summary.total_leave],
-      ["Total Late", summary.total_late],
-      ["Expected Working Hours", summary.expected_working_hours],
-      ["Actual Working Hours", summary.actual_working_hours],
-      ["Over Time", summary.over_time],
-      ["Deficiency", summary.deficiency],
-    ];
+  ["Total Working Days", summary["Total Working Days"]],
+  ["Total Present", summary["Total Present"]],
+  ["Total Absent", summary["Total Absence"]],
+  ["Total Leave", summary["Total Leave"]],
+  ["Total Late", summary["Total Late"]],
+  ["Expected Working Hours", summary["Expected Working Hour"]],
+  ["Actual Working Hours", summary["Actual Working Hour"]],
+  ["Over Time", summary["Over Time"]],
+  ["Deficiency", summary["Deficiency"]],
+];
 
     autoTable(doc, {
       body: summaryRows,
@@ -177,16 +175,16 @@ const MonthlyAttendanceReport = () => {
           <h3>Summary</h3>
           <table style={{ width: "100%", lineHeight: "30px" }}>
             <tbody>
-              <tr><td><strong>Total Working Days:</strong></td><td>{summary.total_working_days} Days</td></tr>
-              <tr><td><strong>Total Present:</strong></td><td>{summary.total_present} Days</td></tr>
-              <tr><td><strong>Total Absent:</strong></td><td>{summary.total_absent} Days</td></tr>
-              <tr><td><strong>Total Leave:</strong></td><td>{summary.total_leave} Days</td></tr>
-              <tr><td><strong>Total Late:</strong></td><td>{summary.total_late} Days</td></tr>
-              <tr><td><strong>Expected Working Hours:</strong></td><td>{summary.expected_working_hours} Hours</td></tr>
-              <tr><td><strong>Actual Working Hours:</strong></td><td>{summary.actual_working_hours} Hours</td></tr>
-              <tr><td><strong>Over Time:</strong></td><td>{summary.over_time} Hours</td></tr>
-              <tr><td><strong>Deficiency:</strong></td><td>{summary.deficiency} Hours</td></tr>
-            </tbody>
+  <tr><td><strong>Total Working Days:</strong></td><td>{summary["Total Working Days"]} Days</td></tr>
+  <tr><td><strong>Total Present:</strong></td><td>{summary["Total Present"]} Days</td></tr>
+  <tr><td><strong>Total Absent:</strong></td><td>{summary["Total Absence"]} Days</td></tr>
+  <tr><td><strong>Total Leave:</strong></td><td>{summary["Total Leave"]} Days</td></tr>
+  <tr><td><strong>Total Late:</strong></td><td>{summary["Total Late"]} Days</td></tr>
+  <tr><td><strong>Expected Working Hours:</strong></td><td>{summary["Expected Working Hour"]} Hours</td></tr>
+  <tr><td><strong>Actual Working Hours:</strong></td><td>{summary["Actual Working Hour"]} Hours</td></tr>
+  <tr><td><strong>Over Time:</strong></td><td>{summary["Over Time"]} Hours</td></tr>
+  <tr><td><strong>Deficiency:</strong></td><td>{summary["Deficiency"]} Hours</td></tr>
+</tbody>
           </table>
         </div>
       )}

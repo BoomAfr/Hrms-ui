@@ -22,8 +22,9 @@ export const useMyAttendanceReport = () => {
 
       const res = await myAttendanceAPI.getMyReport(params);
 
-      setReport(res.data?.attendance_list || []);
+      setReport(res.data?.daily_records || []);
       setSummary(res.data?.summary || {});
+      
     } catch {
       message.error("Failed to load attendance report.");
     }
