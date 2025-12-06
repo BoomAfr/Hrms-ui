@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { Row, Col, Select, DatePicker, Button, Table, TimePicker, message, Space } from "antd";
-import { UploadOutlined } from "@ant-design/icons";
 import moment from "moment";
 import { useManualAttendance } from "../../hooks/useManualAttendance";
 import CSVAttendanceModal from "../../components/common/SharedModal/CsvAttendanceModal";
@@ -30,6 +29,11 @@ export default function ManualAttendancePage() {
     fetchDepartments();
   }, []);
 
+  const normalizeTime = (t) => {
+    if (!t) return null;
+    return t.length === 5 ? t + ":00" : t; 
+  };
+
   const handleFilter = () => {
     if (!selectedDept) return message.error("Please select a department");
     if (!selectedDate) return message.error("Please select a date");
@@ -54,18 +58,17 @@ export default function ManualAttendancePage() {
       employee_id: r.employee_id,
       target_date: selectedDate.format("YYYY-MM-DD"),
       punch_in_time: r.punch_in_time
-  ? moment(`${selectedDate.format("YYYY-MM-DD")} ${r.punch_in_time}`, "YYYY-MM-DD HH:mm:ss").toISOString()
-  : null,
-punch_out_time: r.punch_out_time
-  ? moment(`${selectedDate.format("YYYY-MM-DD")} ${r.punch_out_time}`, "YYYY-MM-DD HH:mm:ss").toISOString()
-  : null,
+        ? `${selectedDate.format("YYYY-MM-DD")} ${normalizeTime(r.punch_in_time)}`
+        : null,
+      punch_out_time: r.punch_out_time
+        ? `${selectedDate.format("YYYY-MM-DD")} ${normalizeTime(r.punch_out_time)}`
+        : null,
       is_present: !!r.punch_in_time,
     }));
 
     try {
       await saveAttendanceBatch(payload);
       Toast.success("Attendance saved successfully");
-      message.success("Attendance saved successfully");
       fetchAttendance({ department_id: selectedDept, target_date: selectedDate.format("YYYY-MM-DD") });
     } catch (err) {
       Toast.error("Failed to save attendance");
@@ -83,7 +86,7 @@ punch_out_time: r.punch_out_time
       key: "punch_in_time",
       render: (value, record) => (
         <TimePicker
-          value={value ? moment(value, "HH:mm:ss") : null} // fix: parse HH:mm:ss only
+          value={value ? moment(value, "HH:mm:ss") : null}
           format="HH:mm:ss"
           onChange={(time) =>
             updateRowLocal(record.employee_id, "punch_in_time", time ? time.format("HH:mm:ss") : null)
@@ -144,7 +147,7 @@ punch_out_time: r.punch_out_time
 
         <Col style={{ marginLeft: "auto" }}>
           <Space>
-            <Button icon={<UploadOutlined />} onClick={() => setShowCSVModal(true)}>
+            <Button onClick={() => setShowCSVModal(true)}>
               CSV Attendance
             </Button>
           </Space>

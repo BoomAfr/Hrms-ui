@@ -14,6 +14,7 @@ const MyLeaveReport = () => {
     handleFilter,
     handlePageChange,
     savedUser,
+    filterApplied,
   } = useMyLeaveReport();
 
   const columns = [
@@ -22,125 +23,71 @@ const MyLeaveReport = () => {
       render: (_, __, index) =>
         (pagination.current - 1) * pagination.pageSize + index + 1,
     },
-    { title: "Leave Type", dataIndex: "leave_type" },
-    { title: "Applied Date", dataIndex: "applied_date" },
+    { title: "Leave Type", dataIndex: "leave_type_name" },
+    { title: "Applied Date", dataIndex: "application_date" },
     { title: "Request Duration", dataIndex: "request_duration" },
-    { title: "Approve BY", dataIndex: "approved_by" },
+    { title: "Approve BY", dataIndex: "approved_by_name" },
     { title: "Approve Date", dataIndex: "approved_date" },
     { title: "Purpose", dataIndex: "purpose" },
-    { title: "Number of Day", dataIndex: "day_count" },
+    { title: "Number of Day", dataIndex: "number_of_days" },
   ];
 
   const handleDownloadPDF = () => {
-  const doc = new jsPDF({
-    orientation: "portrait",
-    unit: "pt",
-    format: "A4",
-  });
+    const doc = new jsPDF({ orientation: "portrait", unit: "pt", format: "A4" });
 
-  // ---------- COMPANY HEADER ----------
-  doc.setFont("Helvetica", "bold");
-  doc.setFontSize(18);
-  doc.text("My Leave Report", 40, 40);
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(18);
+    doc.text("My Leave Report", 40, 40);
 
-  doc.setFontSize(11);
-  doc.setFont("Helvetica", "normal");
+    doc.setFontSize(11);
+    doc.setFont("Helvetica", "normal");
 
-  const today = new Date().toISOString().split("T")[0];
+    const today = new Date().toISOString().split("T")[0];
+    doc.text(`Generated On: ${today}`, 40, 60);
 
-  doc.text(`Generated On: ${today}`, 40, 60);
+    if (savedUser?.name) {
+      doc.text(`Employee: ${savedUser.name}`, 40, 75);
+    }
 
-  if (savedUser?.name) {
-    doc.text(`Employee: ${savedUser.name}`, 40, 75);
-  }
+    doc.setLineWidth(0.5);
+    doc.line(40, 85, 555, 85);
 
-  // Add a line separator
-  doc.setLineWidth(0.5);
-  doc.line(40, 85, 555, 85);
+    autoTable(doc, {
+      startY: 100,
+      head: [["S/L","Leave Type","Applied Date","Duration","Approved By","Approved Date","Purpose","Days"]],
+      body: reportData.map((item, index) => [
+        (pagination.current - 1) * pagination.pageSize + index + 1,
+        item.leave_type_name ?? "-",
+        item.application_date ?? "-",
+        item.request_duration ?? "-",
+        item.approved_by_name ?? "-",
+        item.approved_date ?? "-",
+        item.purpose ?? "-",
+        item.number_of_days ?? "-",
+      ]),
+      theme: "grid",
+      styles: { fontSize: 10, cellPadding: 4, valign: "middle" },
+      headStyles: { fillColor: [30, 144, 255], textColor: 255, fontSize: 11, fontStyle: "bold" },
+      alternateRowStyles: { fillColor: [245, 245, 245] },
+      margin: { left: 40, right: 40 },
+    });
 
-  // ---------- TABLE ----------
-  autoTable(doc, {
-    startY: 100,
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(10);
+      doc.setTextColor(100);
+      doc.text(`Page ${i} of ${pageCount}`, doc.internal.pageSize.width - 70, doc.internal.pageSize.height - 20);
+    }
 
-    head: [
-      [
-        "S/L",
-        "Leave Type",
-        "Applied Date",
-        "Duration",
-        "Approved By",
-        "Approved Date",
-        "Purpose",
-        "Days",
-      ],
-    ],
+    doc.save("my_leave_report.pdf");
+  };
 
-    body: reportData.map((item, index) => [
-      (pagination.current - 1) * pagination.pageSize + index + 1,
-      item.leave_type ?? "-",
-      item.applied_date ?? "-",
-      item.request_duration ?? "-",
-      item.approved_by ?? "-",
-      item.approved_date ?? "-",
-      item.purpose ?? "-",
-      item.day_count ?? "-",
-    ]),
-
-    theme: "grid", // cleaner table
-
-    styles: {
-      fontSize: 10,
-      cellPadding: 4,
-      valign: "middle",
-    },
-
-    headStyles: {
-      fillColor: [30, 144, 255], // modern blue header
-      textColor: 255,
-      fontSize: 11,
-      fontStyle: "bold",
-    },
-
-    alternateRowStyles: {
-      fillColor: [245, 245, 245], // light grey
-    },
-
-    margin: { left: 40, right: 40 },
-  });
-
-  // ---------- FOOTER ----------
-  const pageCount = doc.internal.getNumberOfPages();
-
-  for (let i = 1; i <= pageCount; i++) {
-    doc.setPage(i);
-    doc.setFontSize(10);
-    doc.setTextColor(100);
-
-    doc.text(
-      `Page ${i} of ${pageCount}`,
-      doc.internal.pageSize.width - 70,
-      doc.internal.pageSize.height - 20
-    );
-  }
-
-  // Save the file
-  doc.save("my_leave_report.pdf");
-};
-
-  // Prepare single-option employee dropdown: current logged-in user
-  const employeeOptions = savedUser
-    ? [
-        {
-          label: savedUser.name,
-          value: savedUser.user_id,
-        },
-      ]
-    : [];
+  const employeeOptions = savedUser ? [{ label: savedUser.name, value: savedUser.user_id }] : [];
 
   return (
     <Card title="My Leave Report">
       <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
-        {/* Employee dropdown: single option (current user) and disabled */}
         <Select
           placeholder="Employee Name"
           style={{ width: 250 }}
@@ -150,7 +97,6 @@ const MyLeaveReport = () => {
           disabled={true}
         />
 
-        {/* From Date */}
         <DatePicker
           placeholder="From Date"
           onChange={(date, dateString) =>
@@ -158,7 +104,6 @@ const MyLeaveReport = () => {
           }
         />
 
-        {/* To Date */}
         <DatePicker
           placeholder="To Date"
           onChange={(date, dateString) =>
@@ -166,28 +111,28 @@ const MyLeaveReport = () => {
           }
         />
 
-        <Button type="primary" onClick={handleFilter}>
-          Filter
-        </Button>
+        <Button type="primary" onClick={handleFilter}>Filter</Button>
 
-        <Button 
-        style={{ marginLeft: "auto", background: "blue", color: "#ffffffff" }} 
-         onClick={handleDownloadPDF}>
+        <Button
+          style={{ marginLeft: "auto", background: "blue", color: "#ffffffff" }}
+          onClick={handleDownloadPDF}
+          disabled={!filterApplied || reportData.length === 0}
+        >
           Download PDF
         </Button>
       </div>
 
       <Table
         columns={columns}
-        dataSource={reportData}
-        rowKey={(record, index) => record.id ?? index}
+        dataSource={filterApplied ? reportData : []}
+        rowKey={(record) => record.id}
         loading={loading}
-        pagination={{
+        pagination={filterApplied ? {
           current: pagination.current,
           pageSize: pagination.pageSize,
           total: pagination.total,
           onChange: handlePageChange,
-        }}
+        } : false}
       />
     </Card>
   );

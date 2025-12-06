@@ -4,14 +4,13 @@ import moment from "moment";
 import { manualAttendanceServices } from "../services/manualAttendanceServices";
 import { departmentAPI } from "../services/departmentServices";
 
-// 🔥 Normalize backend time here
 const normalizeTime = (t) => {
   if (!t) return null;
 
-  if (/^\d{2}:\d{2}:\d{2}$/.test(t)) return t;      // HH:mm:ss
-  if (/^\d{2}:\d{2}$/.test(t)) return t + ":00";   // HH:mm
+  if (/^\d{2}:\d{2}:\d{2}$/.test(t)) return t;      
+  if (/^\d{2}:\d{2}$/.test(t)) return t + ":00";  
   const m = moment(t);
-  if (m.isValid()) return m.format("HH:mm:ss");    // ISO -> HH:mm:ss
+  if (m.isValid()) return m.format("HH:mm:ss"); 
 
   return null;
 };
@@ -23,7 +22,6 @@ export function useManualAttendance() {
   const [attendanceRows, setAttendanceRows] = useState([]);
   const [loadingAttendance, setLoadingAttendance] = useState(false);
 
-  // ---------------- Fetch Departments ----------------
   const fetchDepartments = async () => {
     setLoadingDepartments(true);
     try {
@@ -37,13 +35,13 @@ export function useManualAttendance() {
     }
   };
 
-  // ---------------- Fetch Attendance ----------------
+
   const fetchAttendance = async (params) => {
     setLoadingAttendance(true);
     try {
       const res = await manualAttendanceServices.getManualAttendance(params);
 
-      // 🔥 APPLY NORMALIZED TIME HERE
+    
       const rows = (res.data || []).map((r) => ({
         employee_id: r.employee_id,
         fingerprint_no: r.fingerprint_no,
@@ -65,7 +63,7 @@ export function useManualAttendance() {
     }
   };
 
-  // ---------------- Update Row Locally ----------------
+
   const updateRowLocal = (employee_id, key, value) => {
     setAttendanceRows((prev) =>
       prev.map((r) =>
@@ -74,7 +72,6 @@ export function useManualAttendance() {
     );
   };
 
-  // ---------------- Save Attendance ----------------
   const saveAttendanceBatch = async (payloadArray) => {
     try {
       for (const item of payloadArray) {
