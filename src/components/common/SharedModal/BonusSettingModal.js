@@ -3,7 +3,7 @@ import { Modal, Form, Input, Select, InputNumber } from "antd";
 
 const { Option } = Select;
 
-const BonusSettingModal = ({ open, onCancel, onSubmit, editingRecord }) => {
+const BonusSettingModal = ({ open, onCancel, onSubmit, editingRecord, confirmLoading }) => {
   const [form] = Form.useForm();
 
   useEffect(() => {
@@ -28,6 +28,7 @@ const BonusSettingModal = ({ open, onCancel, onSubmit, editingRecord }) => {
       onCancel={onCancel}
       onOk={handleSubmit}
       okText={editingRecord ? "Update" : "Create"}
+      confirmLoading={confirmLoading}   // 👈 added
     >
       <Form form={form} layout="vertical">
         <Form.Item
@@ -51,7 +52,7 @@ const BonusSettingModal = ({ open, onCancel, onSubmit, editingRecord }) => {
 
         <Form.Item
           label="Percentage of Bonus"
-          name="percentage"
+          name="percentage_of_basic"
           rules={[{ required: true, message: "Enter percentage" }]}
         >
           <InputNumber

@@ -1,14 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useSelector } from "react-redux";
 import { myLeaveReportAPI } from "../services/myLeaveReportServices";
 import { message } from "antd";
 
 export const useMyLeaveReport = () => {
-
   const { user: reduxUser } = useSelector((state) => state.auth);
 
   const [reportData, setReportData] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [filterApplied, setFilterApplied] = useState(false);
 
   const savedUser = reduxUser || (() => {
     try {
@@ -46,10 +46,10 @@ export const useMyLeaveReport = () => {
       };
 
       const res = await myLeaveReportAPI.getMyLeave(params);
-      setReportData(res.data?.results || []);
+      setReportData(res.data || []);
       setPagination((prev) => ({
         ...prev,
-        total: res.data?.count || 0,
+        total: res.data?.length || 0,
         current: page,
         pageSize,
       }));
@@ -62,16 +62,13 @@ export const useMyLeaveReport = () => {
   };
 
   const handleFilter = () => {
+    setFilterApplied(true); 
     fetchReport(1, pagination.pageSize);
   };
 
   const handlePageChange = (page, pageSize) => {
     fetchReport(page, pageSize);
   };
-
-  useEffect(() => {
-    fetchReport(1, pagination.pageSize);
-  }, []);
 
   return {
     reportData,
@@ -81,6 +78,7 @@ export const useMyLeaveReport = () => {
     pagination,
     handleFilter,
     handlePageChange,
-    savedUser, 
+    savedUser,
+    filterApplied, 
   };
 };

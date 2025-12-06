@@ -63,6 +63,7 @@ import GenerateBulkSalarySheet from './pages/Payroll/GenerateBulkSalarySheet';
 import AddSalarySheet from './pages/Payroll/AddSalarySheet';
 import EmployeePerformanceForm from './pages/Perfomance/EmployeePerfomanceForm';
 import ViewEmployeePerformance from './pages/Perfomance/ViewEmployeePerfomance';
+import AddGenerateBonus from './pages/Payroll/AddGenerateBonus';
 
 function App() {
   return (
@@ -160,6 +161,8 @@ function App() {
                   <Route path='bonus-setting' element={<BonusSetting/>}/>
                   <Route path='generate-bonus' element={<GenerateBonus/>}/>
                 </Route>
+                <Route path='add-generate-bonus' element={<AddGenerateBonus/>}/>
+
                 <Route path='salary'>
                   <Route path='generate-bulk' element={<GenerateBulkSalarySheet/>} />
                   <Route path='generate' element={<AddSalarySheet/>} />
@@ -188,7 +191,6 @@ function App() {
              <Route path='notice' element={<Notice/>}/>
              </Route>
             
-          {/* </Route> */}
         </Routes>
       </Router>
     </ConfigProvider>

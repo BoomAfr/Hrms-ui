@@ -5,7 +5,7 @@ export const manualAttendanceServices = {
 
   patchAttendance: (data) => API.patch("/company/attendance/manual/", data),
 
-  uploadCSV: (formData) => API.patch("/company/attendance/manual/", formData, {
+  uploadCSV: (formData) => API.patch("/company/attendance/upload-csv/", formData, {
     headers: { "Content-Type": "multipart/form-data" },
   }),
 };
