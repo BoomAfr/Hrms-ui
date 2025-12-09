@@ -20,13 +20,13 @@ const LeaveReport = () => {
       render: (_, __, index) =>
         (pagination.current - 1) * pagination.pageSize + index + 1,
     },
-    { title: "Leave Type", dataIndex: "leave_type" },
-    { title: "Applied Date", dataIndex: "applied_date" },
+    { title: "Leave Type", dataIndex: "leave_type_name" },
+    { title: "Applied Date", dataIndex: "application_date" },
     { title: "Request Duration", dataIndex: "request_duration" },
-    { title: "Approve By", dataIndex: "approved_by" },
+    { title: "Approve By", dataIndex: "approved_by_name" },
     { title: "Approve Date", dataIndex: "approved_date" },
     { title: "Purpose", dataIndex: "purpose" },
-    { title: "Number of Day", dataIndex: "day_count" },
+    { title: "Number of Day", dataIndex: "number_of_days" },
   ];
 
   return (

@@ -1,45 +1,71 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { awardAPI } from '../services/awardServices';
-import  {manageEmployeeApi}  from '../services/manageEmployeeServices';
+import { manageEmployeeApi } from '../services/manageEmployeeServices';
 
-export const useAwards = () => {
+export const useAwards = ({ initialPage = 1, initialPageSize = 10, initialSearch = '' } = {}) => {
   const [awards, setAwards] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(initialPage);
+  const [pageSize, setPageSize] = useState(initialPageSize);
+  const [search, setSearch] = useState(initialSearch);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const fetchAwards = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await awardAPI.getAll();
-      setAwards(response.data.results);
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to fetch awards');
-    } finally {
-      setLoading(false);
-    }
+  const fetchAwards = useCallback(
+    async ({ page: p = page, page_size: ps = pageSize, search: s = search } = {}) => {
+      try {
+        setLoading(true);
+        setError(null);
+        const params = { page: p, page_size: ps };
+        if (s) params.search = s;
+        const res = await awardAPI.getAll(params);
+        const data = res.data;
+        const results = Array.isArray(data.results) ? data.results : [];
+        setAwards(results);
+        setTotal(typeof data.count === 'number' ? data.count : results.length);
+        setPage(p);
+        setPageSize(ps);
+        setSearch(s);
+      } catch (err) {
+        setError(err);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [page, pageSize, search]
+  );
+
+  useEffect(() => {
+    fetchAwards({ page, page_size: pageSize, search });
+  }, []);
+
+  const refetch = (opts = {}) => {
+    const p = opts.page ?? page;
+    const ps = opts.page_size ?? pageSize;
+    const s = opts.search ?? search;
+    fetchAwards({ page: p, page_size: ps, search: s });
   };
 
-  const addAward = async (awardData) => {
+  const addAward = async (payload) => {
     try {
       setLoading(true);
-      await awardAPI.create(awardData);
-      await fetchAwards();
+      await awardAPI.create(payload);
+      await fetchAwards({ page: 1, page_size: pageSize, search });
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to add award');
+      setError(err);
       throw err;
     } finally {
       setLoading(false);
     }
   };
 
-  const updateAward = async (id, data) => {
+  const updateAward = async (id, payload) => {
     try {
       setLoading(true);
-      await awardAPI.update(id, data);
-      await fetchAwards();
+      await awardAPI.update(id, payload);
+      await fetchAwards({ page, page_size: pageSize, search });
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to update award');
+      setError(err);
       throw err;
     } finally {
       setLoading(false);
@@ -50,46 +76,53 @@ export const useAwards = () => {
     try {
       setLoading(true);
       await awardAPI.delete(id);
-      await fetchAwards();
+      // refetch current page (server may adjust results)
+      await fetchAwards({ page, page_size: pageSize, search });
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to delete award');
+      setError(err);
       throw err;
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchAwards();
-  }, []);
-
   return {
     awards,
+    total,
+    page,
+    pageSize,
+    search,
     loading,
     error,
-    refetch: fetchAwards,
+    setPage,
+    setPageSize,
+    setSearch,
+    fetchAwards,
+    refetch,
     addAward,
     updateAward,
     deleteAward,
   };
 };
+
 export const useEmployees = () => {
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const fetchEmployees = async () => {
     try {
-      setLoading(true); 
+      setLoading(true);
       const res = await manageEmployeeApi.getAll();
       if (Array.isArray(res?.data?.results)) {
         setEmployees(res.data.results);
       } else if (Array.isArray(res?.data)) {
         setEmployees(res.data);
-      } else if (Array.isArray(res)) {
-        setEmployees(res);
+      } else {
+        setEmployees([]);
       }
     } catch (err) {
       console.error('Failed to fetch employees:', err);
+      setEmployees([]);
     } finally {
       setLoading(false);
     }
