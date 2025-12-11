@@ -1,60 +1,83 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { monthlyPayGradeAPI } from "../services/monthlyPayGradeServices";
 
 export const useMonthlyPayGrades = () => {
   const [paygrades, setPaygrades] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0
+  });
 
-  const fetchPaygrades = async () => {
+  const fetchPaygrades = useCallback(async (page = 1, pageSize = 10, search = "") => {
     try {
       setLoading(true);
-      const response = await monthlyPayGradeAPI.getAll();
-      setPaygrades(response.data.results);
+      const params = {
+        page,
+        page_size: pageSize,
+      };
+      if (search) {
+        params.search = search;
+      }
+
+      const response = await monthlyPayGradeAPI.getAll(params);
+
+      
+      if (response.data && response.data.results) {
+        setPaygrades(response.data.results);
+        setPagination({
+          current: page,
+          pageSize: pageSize,
+          total: response.data.count || 0
+        });
+      } else {
+        setPaygrades(response.data || []);
+      }
+
     } catch (err) {
       setError(err);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const addPaygrade = async (data) => {
     try {
-      const response = await monthlyPayGradeAPI.create(data);
-      setPaygrades((prev) => [...prev, response.data]);
+      await monthlyPayGradeAPI.create(data);
+      fetchPaygrades(pagination.current, pagination.pageSize);
     } catch (err) {
       setError(err);
+      throw err; 
     }
   };
 
   const updatePaygrade = async (id, data) => {
     try {
-      const response = await monthlyPayGradeAPI.update(id, data);
-      setPaygrades((prev) =>
-        prev.map((item) => (item.id === id ? response.data : item))
-      );
+      await monthlyPayGradeAPI.update(id, data);
+      fetchPaygrades(pagination.current, pagination.pageSize);
     } catch (err) {
       setError(err);
+      throw err;
     }
   };
 
   const deletePaygrade = async (id) => {
     try {
       await monthlyPayGradeAPI.delete(id);
-      setPaygrades((prev) => prev.filter((item) => item.id !== id));
+      fetchPaygrades(pagination.current, pagination.pageSize);
     } catch (err) {
       setError(err);
+      throw err;
     }
   };
-
-  useEffect(() => {
-    fetchPaygrades();
-  }, []);
 
   return {
     paygrades,
     loading,
     error,
+    pagination,
     addPaygrade,
     updatePaygrade,
     deletePaygrade,

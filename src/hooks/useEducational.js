@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import  {manageEmployeeApi}  from '../services/manageEmployeeServices';
+import { manageEmployeeApi } from '../services/manageEmployeeServices';
 import { educationAPI } from '../services/educationServices';
 
 export const useEducational = () => {
@@ -14,45 +14,45 @@ export const useEducational = () => {
       const response = await educationAPI.getById(id);
       setEducationals(response.data.results);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to fetch awards');
+      setError(err.response?.data?.message || 'Failed to fetch education');
     } finally {
       setLoading(false);
     }
   };
 
-  const addEducation = async (id) => {
+  const addEducation = async (id, data) => {
     try {
       setLoading(true);
-      await educationAPI.create(id);
-      await fetchEducation();
+      await educationAPI.create(id, data);
+      await fetchEducation(id);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to add award');
+      setError(err.response?.data?.message || 'Failed to add education');
       throw err;
     } finally {
       setLoading(false);
     }
   };
 
-  const updateEducation = async (id, data) => {
+  const updateEducation = async (empId, eduId, data) => {
     try {
       setLoading(true);
-      await educationAPI.update(id, data);
-      await fetchEducation();
+      await educationAPI.patch(empId, eduId, data);
+      await fetchEducation(empId);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to update award');
+      setError(err.response?.data?.message || 'Failed to update education');
       throw err;
     } finally {
       setLoading(false);
     }
   };
 
-  const deleteEducation = async (id) => {
+  const deleteEducation = async (empId, eduId) => {
     try {
       setLoading(true);
-      await educationAPI.delete(id);
-      await fetchEducation();
+      await educationAPI.delete(empId, eduId);
+      await fetchEducation(empId);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to delete award');
+      setError(err.response?.data?.message || 'Failed to delete education');
       throw err;
     } finally {
       setLoading(false);
@@ -71,7 +71,7 @@ export const useEducational = () => {
     addEducation,
     updateEducation,
     deleteEducation,
-    
+
   };
 };
 export const useEmployees = () => {
@@ -80,7 +80,7 @@ export const useEmployees = () => {
 
   const fetchEmployees = async () => {
     try {
-      setLoading(true); 
+      setLoading(true);
       const res = await manageEmployeeApi.getAll();
       if (Array.isArray(res?.data?.results)) {
         setEmployees(res.data.results);

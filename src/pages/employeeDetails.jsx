@@ -5,24 +5,27 @@ import { useParams } from 'react-router-dom';
 import { useManageEmployee } from '../hooks/useManageEmployee';
 import { useEducational } from '../hooks/useEducational';
 import { useExperiences } from '../hooks/useExperiences';
+import { useAccounts } from '../hooks/useAccounts';
 
 const Profile = () => {
   const { id } = useParams();
-  const { fetchEmployeeById, loading,profile } = useManageEmployee();
+  const { fetchEmployeeById, loading, profile } = useManageEmployee();
   const { educationals, refetch } = useEducational();
   const { experiences, fetchExperience } = useExperiences();
+  const { accounts, fetchAccounts } = useAccounts();
 
   useEffect(() => {
-    if(id){
-    fetchEmployeeById(id);
-    fetchExperience(id)
-    refetch(id)
+    if (id) {
+      fetchEmployeeById(id);
+      fetchExperience(id)
+      fetchAccounts(id);
+      refetch(id)
     }
-        
-  }, [id])
-  
 
-  
+  }, [id])
+
+
+
 
   const educationColumns = [
     {
@@ -39,8 +42,8 @@ const Profile = () => {
     },
     {
       title: 'Board / University',
-      dataIndex: 'boardUniversity',
-      key: 'boardUniversity',
+      dataIndex: 'board',
+      key: 'board',
       render: (text) => text || '--',
     },
     {
@@ -57,8 +60,8 @@ const Profile = () => {
     },
     {
       title: 'Passing Year',
-      dataIndex: 'passingYear',
-      key: 'passingYear',
+      dataIndex: 'passing_year',
+      key: 'passing_year',
       render: (text) => text || '--',
     },
   ];
@@ -105,6 +108,53 @@ const Profile = () => {
       dataIndex: 'responsibility',
       key: 'responsibility',
       render: (text) => text || '--',
+    },
+  ];
+
+  const accountColumns = [
+    {
+      title: 'Account Holder Name',
+      dataIndex: 'account_holder_name',
+      key: 'account_holder_name',
+      render: (text) => text || '--',
+    },
+    {
+      title: 'Bank Name',
+      dataIndex: 'bank_name',
+      key: 'bank_name',
+      render: (text) => text || '--',
+    },
+    {
+      title: 'Account Number',
+      dataIndex: 'account_number',
+      key: 'account_number',
+      render: (text) => text || '--',
+    },
+    {
+      title: 'IFSC Code',
+      dataIndex: 'ifsc_code',
+      key: 'ifsc_code',
+      render: (text) => text || '--',
+    },
+    {
+      title: 'Branch Name',
+      dataIndex: 'branch_name',
+      key: 'branch_name',
+      render: (text) => text || '--',
+    },
+    {
+      title: 'Account Type',
+      dataIndex: 'account_type',
+      key: 'account_type',
+      render: (text) => text || '--',
+    },
+    {
+      title: 'Primary',
+      dataIndex: 'is_primary',
+      key: 'is_primary',
+      render: (is_primary) => (
+        is_primary ? <Tag color="green">Yes</Tag> : <Tag color="orange">No</Tag>
+      ),
     },
   ];
 
@@ -236,6 +286,39 @@ const Profile = () => {
 
       <Divider />
 
+      {/* Account Details Section */}
+      <Card
+        title="ACCOUNT DETAILS"
+        style={{ marginBottom: '24px' }}
+      >
+        {loading ? (
+          <>
+            <Skeleton
+              active
+              title={false}
+              paragraph={{ rows: 1, width: '150px' }}
+              style={{ marginBottom: '16px' }}
+            />
+            <Skeleton
+              active
+              title={false}
+              paragraph={{ rows: 5, width: '100%' }}
+            />
+          </>
+        ) : (
+          <Table
+            columns={accountColumns}
+            dataSource={accounts}
+            pagination={false}
+            bordered
+            size="middle"
+            locale={{ emptyText: 'No account details available' }}
+          />
+        )}
+      </Card>
+
+      <Divider />
+
       {/* Personal Information Section */}
       <Card title="PERSONAL INFORMATION">
         {loading ? (
@@ -247,7 +330,7 @@ const Profile = () => {
         ) : (
           <Descriptions bordered column={1}>
             <Descriptions.Item label="Name">
-                                {profile?.first_name || '--'}{' '}{profile?.last_name || '--'}
+              {profile?.first_name || '--'}{' '}{profile?.last_name || '--'}
 
             </Descriptions.Item>
             <Descriptions.Item label="Email">

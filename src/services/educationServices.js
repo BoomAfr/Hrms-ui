@@ -1,11 +1,9 @@
 import API from './api';
 
 export const educationAPI = {
-//   getAll: () => API.get('/company/employee-awards/'),
-//   getAllActive: () => API.get('/company/employee-awards/'),
-  create: (id) => API.post(`/company/${id}/education/`),
-  getById: (id) => API.get(`/company/${id}/education/`),
-  update: (id, data) => API.put(`/company/${id}/education/`, data),
-  patch: (id, data) => API.patch(`/company/${id}/education/`, data),
-  delete: (id) => API.delete(`/company/${id}/education/`),
+  create: (id, data) => API.post(`/company/employees/${id}/education/`, data),
+  getById: (id) => API.get(`/company/employees/${id}/education/`),
+  update: (id, eduId, data) => API.put(`/company/employees/${id}/education/${eduId}/`, data),
+  patch: (id, eduId, data) => API.patch(`/company/employees/${id}/education/${eduId}/`, data),
+  delete: (id, eduId) => API.delete(`/company/employees/${id}/education/${eduId}/`),
 };

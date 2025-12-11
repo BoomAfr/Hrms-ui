@@ -1,22 +1,47 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Table, Button, Space, Card, Row, Col, Select, Input, message } from "antd";
 import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import MonthlyPayGradeModal from "../../components/common/SharedModal/MonthlyPayGradeModal";
 import ConfirmModal from "../../components/common/SharedModal/ConfirmModal";
 import { useMonthlyPayGrades } from "../../hooks/useMonthlyPayGrade";
+import { useToast } from "../../hooks/useToast";
 
 const { Option } = Select;
 
 const MonthlyPayGrade = () => {
-  const [pageSize, setPageSize] = useState(10);
-  const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPaygrade, setEditingPaygrade] = useState(null);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [selectedPaygrade, setSelectedPaygrade] = useState(null);
   const [searchText, setSearchText] = useState("");
+  const { Toast, contextHolder } = useToast();
 
-  const { paygrades, loading, fetchPaygrades, addPaygrade, updatePaygrade, deletePaygrade } = useMonthlyPayGrades();
+  const {
+    paygrades,
+    loading,
+    pagination,
+    fetchPaygrades,
+    addPaygrade,
+    updatePaygrade,
+    deletePaygrade
+  } = useMonthlyPayGrades();
+
+  
+  useEffect(() => {
+    fetchPaygrades(1, 10, "");
+  }, [fetchPaygrades]);
+
+ 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchPaygrades(1, pagination.pageSize, searchText);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchText]);
+
+  const handleTableChange = (newPagination) => {
+    fetchPaygrades(newPagination.current, newPagination.pageSize, searchText);
+  };
 
   const handleAddNew = () => {
     setEditingPaygrade(null);
@@ -37,10 +62,9 @@ const MonthlyPayGrade = () => {
     if (!selectedPaygrade) return;
     try {
       await deletePaygrade(selectedPaygrade.id);
-      message.success("Deleted successfully");
-      fetchPaygrades();
+      Toast.success("Deleted successfully");
     } catch (err) {
-      message.error("Delete failed");
+      Toast.error("Delete failed");
     } finally {
       setIsConfirmOpen(false);
       setSelectedPaygrade(null);
@@ -49,41 +73,39 @@ const MonthlyPayGrade = () => {
 
   const handleModalSubmit = async (formData) => {
     try {
-      // calculate basic salary here if not already calculated
-      const basic_salary = formData.gross_salary - ((formData.gross_salary * (100 - formData.percentage_of_basic)) / 100);
-      const payload = { ...formData, basic_salary };
+      const payload = { ...formData };
 
       if (editingPaygrade) {
         await updatePaygrade(editingPaygrade.id, payload);
-        message.success("Pay Grade updated successfully");
+        Toast.success("Pay Grade updated successfully");
       } else {
         await addPaygrade(payload);
-        message.success("Pay Grade added successfully");
+        Toast.success("Pay Grade added successfully");
       }
       setIsModalOpen(false);
       setEditingPaygrade(null);
-      fetchPaygrades();
     } catch (err) {
-      message.error("Operation failed");
+      Toast.error("Operation failed");
     }
   };
 
   const columns = [
-    { title: "S/L", dataIndex: "sl", key: "sl", width: 80, align: "center", render: (_, __, index) => index + 1 },
+    {
+      title: "S/L",
+      dataIndex: "sl",
+      key: "sl",
+      width: 80,
+      align: "center",
+      render: (_, __, index) => (pagination.current - 1) * pagination.pageSize + index + 1
+    },
     { title: "Pay Grade Name", dataIndex: "grade_name", key: "grade_name" },
-    { title: "Gross Salary", dataIndex: "gross_salary", key: "gross_salary" },
-    { 
-      title: "Percentage of Basic", 
-      dataIndex: "percentage_of_basic", 
-      key: "percentage_of_basic", 
-      render: (_, record) => (record.percentage_of_basic !== undefined ? `${record.percentage_of_basic}%` : "-")
-    },
-    { 
-      title: "Basic Salary", 
-      dataIndex: "basic_salary", 
+    {
+      title: "Basic Salary",
+      dataIndex: "basic_salary",
       key: "basic_salary",
-      render: (_, record) => record.basic_salary || 0
+      render: (val) => val || 0
     },
+    { title: "Gross Salary", dataIndex: "gross_salary", key: "gross_salary" },
     { title: "Overtime Rate", dataIndex: "overtime_rate", key: "overtime_rate" },
     {
       title: "Action",
@@ -99,33 +121,9 @@ const MonthlyPayGrade = () => {
     },
   ];
 
-  const filteredData = paygrades
-    .map((t) => {
-      // ensure all fields exist
-      return {
-        ...t,
-        grade_name: t.grade_name || t.pay_grade_name, // fallback if different key
-        basic_salary: t.basic_salary ?? (t.gross_salary && t.percentage_of_basic ? t.gross_salary - ((t.gross_salary * (100 - t.percentage_of_basic)) / 100) : 0)
-      };
-    })
-    .filter((t) => (t.grade_name ?? "").toLowerCase().includes(searchText.toLowerCase()));
-
-  const pagination = {
-    current: currentPage,
-    pageSize,
-    total: filteredData.length,
-    showSizeChanger: true,
-    showQuickJumper: true,
-    pageSizeOptions: ["10", "20", "50", "100"],
-    onChange: (page, size) => {
-      setCurrentPage(page);
-      setPageSize(size);
-    },
-    showTotal: (total, range) => `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-  };
-
   return (
     <div style={{ padding: 24 }}>
+      {contextHolder}
       <Card
         title="Monthly Pay Grade"
         extra={
@@ -136,14 +134,6 @@ const MonthlyPayGrade = () => {
       >
         <Row style={{ marginBottom: 16 }} align="middle" justify="space-between">
           <Col>
-            <span style={{ marginRight: 8 }}>Show</span>
-            <Select value={pageSize} onChange={(value) => setPageSize(value)} style={{ width: 80, marginRight: 8 }}>
-              <Option value={10}>10</Option>
-              <Option value={20}>20</Option>
-              <Option value={50}>50</Option>
-              <Option value={100}>100</Option>
-            </Select>
-            <span>entries</span>
           </Col>
           <Col>
             <Input.Search
@@ -157,12 +147,22 @@ const MonthlyPayGrade = () => {
 
         <Table
           columns={columns}
-          dataSource={filteredData.map((t, i) => ({ ...t, key: t.id || i }))}
+          dataSource={paygrades}
           loading={loading}
-          pagination={pagination}
+          pagination={{
+            current: pagination.current,
+            pageSize: pagination.pageSize,
+            total: pagination.total,
+            showSizeChanger: true,
+            showQuickJumper: true,
+            showTotal: (total, range) => `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+            pageSizeOptions: ["10", "20", "50", "100"]
+          }}
+          onChange={handleTableChange}
           size="middle"
           bordered
           scroll={{ x: 900 }}
+          rowKey="id"
         />
       </Card>
 
