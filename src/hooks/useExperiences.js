@@ -7,24 +7,24 @@ export const useExperiences = () => {
   const [error, setError] = useState(null);
 
   const fetchExperience = async (id) => {
-    if(id){
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await experienceAPI.getById(id);
-      setExperiences(response.data.results);
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to fetch awards');
-    } finally {
-      setLoading(false);
-    }
+    if (id) {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await experienceAPI.getById(id);
+        setExperiences(response.data.results);
+      } catch (err) {
+        setError(err.response?.data?.message || 'Failed to fetch awards');
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
-  const addExperience = async (id,payload) => {
+  const addExperience = async (id, payload) => {
     try {
       setLoading(true);
-      await experienceAPI.create(id,payload);
+      await experienceAPI.create(id, payload);
       // await fetchExperience(id);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to add award');
@@ -34,26 +34,26 @@ export const useExperiences = () => {
     }
   };
 
-  const updateExperience = async (id, data) => {
+  const updateExperience = async (employeeId, expId, data) => {
     try {
       setLoading(true);
-      await experienceAPI.update(id, data);
-      await fetchExperience(id);
+      await experienceAPI.update(employeeId, expId, data);
+      await fetchExperience(employeeId);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to update award');
+      setError(err.response?.data?.message || 'Failed to update Experience');
       throw err;
     } finally {
       setLoading(false);
     }
   };
 
-  const deleteExperience = async (id) => {
+  const deleteExperience = async (employeeId, expId) => {
     try {
       setLoading(true);
-      await experienceAPI.delete(id);
-      await fetchExperience();
+      await experienceAPI.delete(employeeId, expId);
+      await fetchExperience(employeeId);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to delete award');
+      setError(err.response?.data?.message || 'Failed to delete Experience');
       throw err;
     } finally {
       setLoading(false);
@@ -72,6 +72,6 @@ export const useExperiences = () => {
     addExperience,
     updateExperience,
     deleteExperience,
-    
+
   };
 };

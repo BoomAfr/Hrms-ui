@@ -42,7 +42,7 @@ import LeaveSummaryReport from './pages/leaveManagement/LeaveSummaryReport';
 import DashboardAttendance from './pages/Attendance/DashboardAttendance';
 import ManualAttendance from './pages/Attendance/ManualAttendance';
 import AttendanceSummaryReport from './pages/Attendance/AttendanceSummaryReport';
-import DailyAttendance from './pages/Attendance/DailyAttendance'; 
+import DailyAttendance from './pages/Attendance/DailyAttendance';
 import MonthlyAttendance from './pages/Attendance/MonthlyAttendance';
 import MyAttendanceReport from './pages/Attendance/MyAttendanceReport';
 import ChangePassword from './pages/Administration/ChangePassword';
@@ -64,10 +64,11 @@ import AddSalarySheet from './pages/Payroll/AddSalarySheet';
 import EmployeePerformanceForm from './pages/Perfomance/EmployeePerfomanceForm';
 import ViewEmployeePerformance from './pages/Perfomance/ViewEmployeePerfomance';
 import AddGenerateBonus from './pages/Payroll/AddGenerateBonus';
+import EmployeePayslip from './pages/Payroll/EmployeePayslip';
 
 function App() {
   return (
-      <ConfigProvider
+    <ConfigProvider
       theme={{
         token: {
           colorPrimary: '#1890ff',
@@ -85,10 +86,10 @@ function App() {
             <Route index element={<Dashboard />} />
             <Route path='administration'>
               <Route path='manage-role' >
-               <Route path='add-role' element={<AddRole />} />
-               <Route path='add-role-permission' element={<AddPermission />} />
+                <Route path='add-role' element={<AddRole />} />
+                <Route path='add-role-permission' element={<AddPermission />} />
               </Route>
-              <Route path='change-password' element={<ChangePassword/>} />
+              <Route path='change-password' element={<ChangePassword />} />
             </Route>
             <Route path='employee-management'>
               <Route path='department' element={<Department />} />
@@ -106,91 +107,94 @@ function App() {
 
 
             </Route>
-             <Route path='leave-management'>
+            <Route path='leave-management'>
               <Route path='setup'>
-                <Route path='manage-holiday' element={<ManageHoliday/>}/>
-                <Route path='public-holiday' element={<PublicHoliday/>}/>
-                <Route path='weekly-holiday' element={<WeeklyHoliday/>}/>
-                <Route path='leave-type' element={<LeaveType/>}/>
-                <Route path='earn-leave-configure' element={<EarnLeaveConfigure/>}/>
+                <Route path='manage-holiday' element={<ManageHoliday />} />
+                <Route path='public-holiday' element={<PublicHoliday />} />
+                <Route path='weekly-holiday' element={<WeeklyHoliday />} />
+                <Route path='leave-type' element={<LeaveType />} />
+                <Route path='earn-leave-configure' element={<EarnLeaveConfigure />} />
               </Route>
               <Route path='leave-application'>
-                <Route path='apply-for-leave' element={<ApplyForLeave/>} />
-                <Route path='requested-application' element={<RequestedApplication/>} />
+                <Route path='apply-for-leave' element={<ApplyForLeave />} />
+                <Route path='requested-application' element={<RequestedApplication />} />
               </Route>
               <Route path='report'>
-                <Route path='leave-report' element={<LeaveReport/>} />
+                <Route path='leave-report' element={<LeaveReport />} />
                 <Route path='summary-report' element={<LeaveSummaryReport />} />
-                <Route path='my-leave-report' element={<MyLeaveReport/>} />
+                <Route path='my-leave-report' element={<MyLeaveReport />} />
               </Route>
 
-             </Route>
-             <Route path='attendance'>
-               <Route path='setup'>
-                  <Route path='manage-work-shift' element={<ManageWorkShift/>}/>
-                  <Route path='dashboard-attendance' element={<DashboardAttendance/>}/>
-                </Route>
-                <Route path='report' >
-                  <Route path='daily-attendance' element={<DailyAttendance/>}/>
-                  <Route path='monthly-attendance' element={<MonthlyAttendance/>}/>
-                  <Route path='my-attendance-report' element={<MyAttendanceReport/>}/>
-                  <Route path='summary-report' element={<AttendanceSummaryReport/>}/> 
-                </Route>
-                <Route path='manual-attendance' element={<ManualAttendance/>} />
-             </Route>
-
-             <Route path='payroll'>
-               <Route path='setup'>
-              
-              <Route path='tax-rule-setup' element={<TaxRuleSetup/>}/>
-              <Route path='late-configuration' element={<LateConfiguration/>} />
-             </Route>
-              <Route path='allowance' element={<Allowance/>} />
-              <Route path='deduction' element={<Deductions/>} />
-              <Route path='monthly-pay-grade' element={<MonthlyPayGrade/>}/>
-              <Route path='hourly-pay-grade' element={<HourlyPayGrade/>} />
-              <Route path='generate-salary-sheet'element={<GenerateSalarySheet/>} />
+            </Route>
+            <Route path='attendance'>
+              <Route path='setup'>
+                <Route path='manage-work-shift' element={<ManageWorkShift />} />
+                <Route path='dashboard-attendance' element={<DashboardAttendance />} />
+              </Route>
               <Route path='report' >
-                  <Route path='payment-history' element={<PaymentHistory/>}/>
-                  <Route path='my-payroll' element={<MyPayroll/>}/>
-                </Route>
-                 <Route path='manage-work-hour'>
-                  <Route path='approve-work-hour' element={<ApproveWorkHour/>}/>
-                </Route>
-                <Route path='manage-bonus' >
-                  <Route path='bonus-setting' element={<BonusSetting/>}/>
-                  <Route path='generate-bonus' element={<GenerateBonus/>}/>
-                </Route>
-                <Route path='add-generate-bonus' element={<AddGenerateBonus/>}/>
+                <Route path='daily-attendance' element={<DailyAttendance />} />
+                <Route path='monthly-attendance' element={<MonthlyAttendance />} />
+                <Route path='my-attendance-report' element={<MyAttendanceReport />} />
+                <Route path='summary-report' element={<AttendanceSummaryReport />} />
+              </Route>
+              <Route path='manual-attendance' element={<ManualAttendance />} />
+            </Route>
 
-                <Route path='salary'>
-                  <Route path='generate-bulk' element={<GenerateBulkSalarySheet/>} />
-                  <Route path='generate' element={<AddSalarySheet/>} />
-                </Route>
-                       
-             </Route>
-             
-              <Route path='performance-category' element={<PerfomanceCategory/>}/>
-              <Route path='performance-criteria' element={<PerfomanceCriteria/>}/>
-              <Route path='employee-performance' element={<EmployeePerfomance/>}/>
-              <Route path='performance-summary-report' element={<SummaryReport/>}/>
-              <Route path='add-employee-perfomance' element={<EmployeePerformanceForm/>} />
-              <Route path='employee-performance/edit/:id' element={<EmployeePerformanceForm />} />
-              <Route path='employee-performance/view/:id' element={<ViewEmployeePerformance/>} />
+            <Route path='payroll'>
+              <Route path='setup'>
 
+                <Route path='tax-rule-setup' element={<TaxRuleSetup />} />
+                <Route path='late-configuration' element={<LateConfiguration />} />
+              </Route>
+              <Route path='allowance' element={<Allowance />} />
+              <Route path='deduction' element={<Deductions />} />
+              <Route path='monthly-pay-grade' element={<MonthlyPayGrade />} />
+              <Route path='hourly-pay-grade' element={<HourlyPayGrade />} />
+              <Route path='generate-salary-sheet' element={<GenerateSalarySheet />} />
+              <Route path='report' >
+                <Route path='payment-history' element={<PaymentHistory />} />
+                <Route path='my-payroll' element={<MyPayroll />} />
+              </Route>
+              <Route path='manage-work-hour'>
+                <Route path='approve-work-hour' element={<ApproveWorkHour />} />
+              </Route>
+              <Route path='manage-bonus' >
+                <Route path='bonus-setting' element={<BonusSetting />} />
+                <Route path='generate-bonus' element={<GenerateBonus />} />
+              </Route>
+              <Route path='add-generate-bonus' element={<AddGenerateBonus />} />
+               <Route path='salary'>
+                <Route path='payslip/:id' element={<EmployeePayslip />} />
+               </Route>
               
+            </Route>
+            <Route path='salary'>
+                <Route path='generate-bulk' element={<GenerateBulkSalarySheet />} />
+                <Route path='generate' element={<AddSalarySheet />} />
+                <Route path='payslip/:id' element={<EmployeePayslip />} />
+              </Route>
 
-              <Route path='job-post' element={<JobPost/>}/>
-              <Route path='job-candidate' element={<JobCandidate/>}/>
+            <Route path='performance-category' element={<PerfomanceCategory />} />
+            <Route path='performance-criteria' element={<PerfomanceCriteria />} />
+            <Route path='employee-performance' element={<EmployeePerfomance />} />
+            <Route path='performance-summary-report' element={<SummaryReport />} />
+            <Route path='add-employee-perfomance' element={<EmployeePerformanceForm />} />
+            <Route path='employee-performance/edit/:id' element={<EmployeePerformanceForm />} />
+            <Route path='employee-performance/view/:id' element={<ViewEmployeePerformance />} />
 
-             <Route path='training-type' element={<TrainingType/>}/>
-             <Route path='training-list' element={<TrainingList/>}/>
-             <Route path='training-report' element={<TrainingReport/>}/>
 
-             <Route path='award' element={<Award/>}/>
-             <Route path='notice' element={<Notice/>}/>
-             </Route>
-            
+
+            <Route path='job-post' element={<JobPost />} />
+            <Route path='job-candidate' element={<JobCandidate />} />
+
+            <Route path='training-type' element={<TrainingType />} />
+            <Route path='training-list' element={<TrainingList />} />
+            <Route path='training-report' element={<TrainingReport />} />
+
+            <Route path='award' element={<Award />} />
+            <Route path='notice' element={<Notice />} />
+          </Route>
+
         </Routes>
       </Router>
     </ConfigProvider>

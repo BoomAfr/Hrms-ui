@@ -26,7 +26,7 @@ const TrainingReport = () => {
       title: "Training Type",
       dataIndex: "training_type_name",
       key: "training_type_name",
-      render: (_, record) => record.training_type_name ?? record.training_type?.training_type_name ?? record.training_type?.name,
+      render: (_, record) => record.training_type_name,
     },
     {
       title: "Training Duration",
@@ -57,8 +57,8 @@ const TrainingReport = () => {
               }
             >
               {employees.map((e) => (
-                <Option key={e.id} value={e.id}>
-                  {e.name ?? e.employee_name ?? `${e.first_name ?? ""} ${e.last_name ?? ""}`.trim()}
+                <Option key={e.user_id} value={e.user_id}>
+                  {e.name}
                 </Option>
               ))}
             </Select>

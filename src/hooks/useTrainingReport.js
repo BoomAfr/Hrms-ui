@@ -20,7 +20,7 @@ export const useTrainingReport = () => {
     try {
       setLoading(true);
       const res = await trainingReportAPI.getReport(employeeId);
-      setReportData(Array.isArray(res.data) ? res.data : []);
+      setReportData(Array.isArray(res.data.results) ? res.data.results : []);
     } catch (err) {
       setError(err);
     } finally {
