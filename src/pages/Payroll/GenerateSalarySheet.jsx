@@ -14,10 +14,11 @@ import {
   Avatar,
   message
 } from "antd";
-import { UserOutlined,PlusOutlined } from "@ant-design/icons";
+import { UserOutlined, PlusOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import { useSalarySheets } from "../../hooks/useSalary";
+import { markPaymentPaid } from "../../services/salaryService";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -40,9 +41,6 @@ const GenerateSalarySheet = () => {
   const handleFilterChange = (key, value) => {
     const newFilters = { ...filters, [key]: value };
     setFilters(newFilters);
-    // Optionally fetch immediately or wait for a button? 
-    // Screenshot logic implies immediate or explicit. 
-    // Usually immediate for Select/Date in dashboards.
     fetchSalarySheets({ ...newFilters, page: 1 });
   };
 
@@ -55,20 +53,27 @@ const GenerateSalarySheet = () => {
       // View Payslip
       navigate(`/payroll/salary/payslip/${record.payslip_id}`);
     } else {
-      // Generate Payslip (Go to AddSalarySheet with pre-filled?) 
-      // Or trigger generate API directly? 
-      // Screenshot shows "Generate Payslip". 
-      // User said: "on clicking generate payslip button... should open another page... last photo"
-      // But if it's not generated, we can't show the payslip view yet!
-      // The last photo IS the result.
-      // So clicking it naturally implies we view the result. 
-      // But if `payslip_id` is null, it means we haven't generated it.
-      // So we probably go to `AddSalarySheet` (Generate page) for that employee?
-      // OR we just generate it on the fly and THEN show it?
-      // Since `AddSalarySheet` (single) requires inputting employee again, better to navigate there?
-      // However, the text "Generate Payslip" implies an action.
-      // If I go to `AddSalarySheet`, I should pass state.
       navigate('/payroll/salary/generate', { state: { employeeId: record.employee_id, month: filters.month } });
+    }
+  };
+
+  const handleMakePayment = async (payslipIds) => {
+    const ids = Array.isArray(payslipIds) ? payslipIds : [payslipIds];
+    try {
+      const payload = {
+        payment_type: 'salary',
+        item_ids: ids,
+        payment_method: 'Bank Transfer',
+        payment_date: new Date().toISOString().split('T')[0]
+      };
+
+      await markPaymentPaid(payload);
+      message.success('Payment marked successfully');
+
+      // Refresh the list
+      fetchSalarySheets({ ...filters, page: pagination.current });
+    } catch (error) {
+      message.error(error.response?.data?.error || 'Failed to mark payment');
     }
   };
 
@@ -81,13 +86,13 @@ const GenerateSalarySheet = () => {
     },
     {
       title: "Month",
-      dataIndex: "month", // Not in API response explicitly, but filters.month
+      dataIndex: "month",
       render: () => dayjs(filters.month).format("MMMM YYYY"),
     },
     {
       title: "Photo",
       key: "photo",
-      render: () => <Avatar icon={<UserOutlined />} />, // Placeholder
+      render: () => <Avatar icon={<UserOutlined />} />,
     },
     {
       title: "Employee Name",
@@ -105,11 +110,11 @@ const GenerateSalarySheet = () => {
       dataIndex: "pay_grade",
       key: "pay_grade",
     },
-    // Note: Basic Salary not in API, omitting to match data availability or showing '0' matches API
+
     {
       title: "Basic Salary",
       key: "basic_salary",
-      render: () => "0", // Placeholder as per API limitation discussed
+      render: () => "0",
     },
     {
       title: "Gross Salary",
@@ -131,16 +136,48 @@ const GenerateSalarySheet = () => {
     {
       title: "Action",
       key: "action",
-      render: (_, record) => (
-        <Button
-          type="primary"
-          style={{ backgroundColor: "#87d068", borderColor: "#87d068", fontSize: "12px" }}
-          onClick={() => handleAction(record)}
-        >
-          {record.action || "Generate Payslip"}
-          {/* Even if API returns text, user wants specifically "Generate Payslip" button logic */}
-        </Button>
-      ),
+      render: (_, record) => {
+        if (record.status === 'Calculated') {
+          return (
+            <Space>
+              <Button
+                type="primary"
+                size="small"
+                onClick={() => handleAction(record)}
+              >
+                View/Re-generate
+              </Button>
+              <Button
+                type="primary"
+                size="small"
+                style={{ backgroundColor: "#52c41a", borderColor: "#52c41a" }}
+                onClick={() => handleMakePayment(record.payslip_id)}
+              >
+                Make Payment
+              </Button>
+            </Space>
+          );
+        }
+
+        if (record.status === 'Paid') {
+          return (
+            <Button
+              type="primary"
+              size="small"
+              onClick={() => handleAction(record)}
+            >
+              View Payslip
+            </Button>
+          );
+        }
+
+        // Pending or no payslip_id
+        return (
+          <span style={{ color: '#faad14', fontSize: '12px' }}>
+            Generate Salary Sheet First
+          </span>
+        );
+      },
     },
   ];
 
@@ -151,8 +188,21 @@ const GenerateSalarySheet = () => {
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px', gap: '8px' }}>
         <Button
           type="primary"
+          style={{ backgroundColor: "#eafff5ff", borderColor: "#000000ff", color: "#000000ff" }}
+          onClick={() => {
+            const calculatedRecords = data.filter(r => r.status === 'Calculated' && r.payslip_id);
+            const ids = calculatedRecords.map(r => r.payslip_id);
+            if (ids.length > 0) handleMakePayment(ids);
+          }}
+          disabled={!data.some(r => r.status === 'Calculated')}
+        >
+          Make Bulk Payment
+        </Button>
+        <Button
+          type="primary"
           style={{ backgroundColor: "#87d068", borderColor: "#87d068" }}
           onClick={() => navigate('/salary/generate-bulk')}
+          icon={<PlusOutlined />}
         >
           Generate Bulk Salary Sheet
         </Button>
@@ -162,7 +212,7 @@ const GenerateSalarySheet = () => {
           icon={<PlusOutlined />}
           onClick={() => navigate('/salary/generate')}
         >
-          Add Salary Sheet
+          Generate Single Salary Sheet
         </Button>
       </div>
 

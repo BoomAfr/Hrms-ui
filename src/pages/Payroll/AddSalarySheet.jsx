@@ -78,14 +78,7 @@ const AddSalarySheet = () => {
         <Button
           type="primary"
           style={{ backgroundColor: "#87d068", borderColor: "#87d068" }}
-          onClick={() => navigate('/payroll/generate-salary-sheet')} // Use bulk link or list? Screenshot shows "Generate Payslip" on bulk page too.
-        // Actually usually "Back" or "List". I'll put "Generate List" logic if needed.
-        // But matching screenshot 2? Screenshot 2 has "Generate Payslip" button on top right too? 
-        // No, screenshot 2 header button says "Generate Payslip". 
-        // Wait, screenshot 2 IS "Generate Payslip" page. 
-        // The button on top right says "Generate Payslip" -> Self link?
-        // Maybe it goes to List? Or Bulk? 
-        // I will replicate screenshot: "Generate Payslip" button on top right.
+          onClick={() => navigate('/payroll/generate-salary-sheet')} 
         >
           Generate Payslip
         </Button>

@@ -8,7 +8,7 @@ const AwardModal = ({ isModalOpen, setIsModalOpen, onSubmit, editingAward, emplo
   const [saving, setSaving] = useState(false);
 
   const awardOptions = [
-    { label: 'Employee of the month', value: '"EMPLOYEE_OF_THE_MONTH' },
+    { label: 'Employee of the month', value: 'EMPLOYEE_OF_THE_MONTH' },
     { label: 'Employee of the year', value: 'EMPLOYEE_OF_THE_YEAR' },
     { label: 'Best Employee', value: 'BEST_EMPLOYEE' },
   ];

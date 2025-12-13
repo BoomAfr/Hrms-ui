@@ -106,7 +106,10 @@ const MainLayout = () => {
       key: 'profile',
       icon: <UserOutlined />,
       label: 'Profile',
-      onClick: () => navigate('/profile'),
+      onClick: () => {
+        const userId = user?.profile?.user_id || user?.profile?.profile?.user_id || user?.profile?.id;
+        navigate(`/employee-management/manage-employee/profile/${userId}`);
+      },
     },
     {
       key: 'logout',
