@@ -4,6 +4,7 @@ import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import TrainingTypeModal from '../../components/common/SharedModal/TrainingTypeModal';
 import ConfirmModal from '../../components/common/SharedModal/ConfirmModal';
 import { trainingTypeAPI } from '../../services/trainingTypeServices';
+import {useToast} from '../../hooks/useToast';
 
 const { Option } = Select;
 
@@ -19,6 +20,7 @@ const TrainingType = () => {
 
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [selectedTrainingType, setSelectedTrainingType] = useState(null);
+  const { Toast, contextHolder } = useToast();
 
   const fetchTrainingTypes = async () => {
     try {
@@ -58,11 +60,13 @@ const TrainingType = () => {
     if (!selectedTrainingType) return;
     try {
       await trainingTypeAPI.delete(selectedTrainingType.id);
-      message.success('Deleted successfully');
+      Toast.success('Training Type deleted successfully');
+      //message.success('Deleted successfully');
       fetchTrainingTypes();
     } catch (err) {
-      console.error(err);
-      message.error('Delete failed');
+      //console.error(err);
+      Toast.error('Failed to delete Training Type');
+      //message.error('Delete failed');
     } finally {
       setIsConfirmOpen(false);
       setSelectedTrainingType(null);
@@ -73,10 +77,12 @@ const TrainingType = () => {
     try {
       if (editingTrainingType) {
         await trainingTypeAPI.update(editingTrainingType.id, values);
-        message.success('Training Type updated successfully');
+        Toast.success('Training Type updated successfully');
+        //message.success('Training Type updated successfully');
       } else {
         await trainingTypeAPI.create(values);
-        message.success('Training Type added successfully');
+        Toast.success('Training Type added successfully');
+        //message.success('Training Type added successfully');
       }
       setIsModalOpen(false);
       setEditingTrainingType(null);
@@ -125,6 +131,7 @@ const TrainingType = () => {
 
   return (
     <div style={{ padding: '24px' }}>
+      {contextHolder}
       <Card
         title="Training Type List"
         extra={

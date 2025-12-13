@@ -2,7 +2,7 @@ import API from "./api";
 
 export const trainingReportAPI = {
   getReport: (employeeId) => API.get("/company/employee-training-report/", {
-    params: { employee: employeeId },
+    params: { employee_id: employeeId },
   }),
 };
 

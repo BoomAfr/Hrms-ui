@@ -1,53 +1,31 @@
-import React, { useState } from "react";
-import { Table, Card, Button, Space, Row, Col, Image } from "antd";
-import { FilePdfOutlined } from "@ant-design/icons";
+import React, { useEffect } from "react";
+import { Table, Card, Button, Image, Tag } from "antd";
+import { FilePdfOutlined, EyeOutlined } from "@ant-design/icons";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { useMyPayroll } from "../../hooks/useMyPayroll";
+import { useNavigate } from "react-router-dom";
 
 const MyPayroll = () => {
-  // Dummy data
-  const [data, setData] = useState([
-    {
-      key: 1,
-      month: "November 2025",
-      photo: "https://i.pravatar.cc/40?img=1",
-      employeeName: "Admin",
-      payGrade: "A1",
-      basicSalary: 50000,
-      grossSalary: 65000,
-      status: "Paid",
-    },
-    {
-      key: 2,
-      month: "October 2025",
-      photo: "https://i.pravatar.cc/40?img=2",
-      employeeName: "Admin",
-      payGrade: "A1",
-      basicSalary: 50000,
-      grossSalary: 65000,
-      status: "Unpaid",
-    },
-    {
-      key: 3,
-      month: "September 2025",
-      photo: "https://i.pravatar.cc/40?img=3",
-      employeeName: "Admin",
-      payGrade: "A1",
-      basicSalary: 50000,
-      grossSalary: 65000,
-      status: "Paid",
-    },
-  ]);
+  const { payrollHistory, loading, pagination, fetchMyPayroll } = useMyPayroll();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    fetchMyPayroll(1, 10);
+  }, [fetchMyPayroll]);
+
+  const handleTableChange = (pagination) => {
+    fetchMyPayroll(pagination.current, pagination.pageSize);
+  };
 
   // Table columns
   const columns = [
     {
       title: "S/L",
-      dataIndex: "sl",
       key: "sl",
       width: 60,
       align: "center",
-      render: (_, __, index) => index + 1,
+      render: (_, __, index) => (pagination.current - 1) * pagination.pageSize + index + 1,
     },
     {
       title: "Month",
@@ -60,43 +38,38 @@ const MyPayroll = () => {
       dataIndex: "photo",
       key: "photo",
       align: "center",
-      render: (photo) => <Image src={photo} width={40} height={40} preview={false} />,
+      render: (photo) => photo ? <Image src={photo} width={40} height={40} preview={false} /> : '--',
     },
     {
       title: "Employee Name",
-      dataIndex: "employeeName",
-      key: "employeeName",
+      dataIndex: "employee_name",
+      key: "employee_name",
     },
     {
       title: "Pay Grade",
-      dataIndex: "payGrade",
-      key: "payGrade",
+      dataIndex: "pay_grade",
+      key: "pay_grade",
     },
     {
       title: "Basic Salary",
-      dataIndex: "basicSalary",
-      key: "basicSalary",
-      render: (val) => `₹${val.toLocaleString()}`,
+      dataIndex: "basic_salary",
+      key: "basic_salary",
+      render: (val) => val ? `₹${parseFloat(val).toLocaleString()}` : '0',
     },
     {
       title: "Gross Salary",
-      dataIndex: "grossSalary",
-      key: "grossSalary",
-      render: (val) => `₹${val.toLocaleString()}`,
+      dataIndex: "gross_salary",
+      key: "gross_salary",
+      render: (val) => val ? `₹${parseFloat(val).toLocaleString()}` : '0',
     },
     {
       title: "Status",
       dataIndex: "status",
       key: "status",
       render: (status) => (
-        <span
-          style={{
-            color: status === "Paid" ? "green" : "red",
-            fontWeight: "bold",
-          }}
-        >
+        <Tag color={status === "Paid" ? "green" : "red"}>
           {status}
-        </span>
+        </Tag>
       ),
     },
     {
@@ -104,7 +77,13 @@ const MyPayroll = () => {
       key: "action",
       align: "center",
       render: (_, record) => (
-        <Button type="primary">Generate Payslip</Button>
+        <Button
+          type="primary"
+          icon={<EyeOutlined />}
+          onClick={() => navigate(`/payroll/salary/payslip/${record.id || record.payslip_id}`)}
+        >
+          View Payslip
+        </Button>
       ),
     },
   ];
@@ -112,7 +91,7 @@ const MyPayroll = () => {
   // Generate PDF
   const downloadPDF = () => {
     const doc = new jsPDF();
-    doc.text("Payroll Report", 14, 16);
+    doc.text("My Payroll Report", 14, 16);
     autoTable(doc, {
       startY: 20,
       head: [
@@ -126,17 +105,17 @@ const MyPayroll = () => {
           "Status",
         ],
       ],
-      body: data.map((item, index) => [
+      body: payrollHistory.map((item, index) => [
         index + 1,
         item.month,
-        item.employeeName,
-        item.payGrade,
-        item.basicSalary,
-        item.grossSalary,
+        item.employee_name,
+        item.pay_grade,
+        item.basic_salary,
+        item.gross_salary,
         item.status,
       ]),
     });
-    doc.save("payroll.pdf");
+    doc.save("my_payroll.pdf");
   };
 
   return (
@@ -151,10 +130,18 @@ const MyPayroll = () => {
       >
         <Table
           columns={columns}
-          dataSource={data}
+          dataSource={payrollHistory}
+          rowKey={(record) => record.payslip_id}
           bordered
           size="middle"
-          pagination={{ pageSize: 5 }}
+          pagination={{
+            current: pagination.current,
+            pageSize: pagination.pageSize,
+            total: pagination.total,
+            showSizeChanger: true,
+          }}
+          loading={loading}
+          onChange={handleTableChange}
           scroll={{ x: 800 }}
         />
       </Card>

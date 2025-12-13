@@ -14,11 +14,11 @@ const ViewEmployeePerformance = () => {
         const res = await getEmployeePerformanceDetail(id);
         const d = res.data || res;
 
-        // Minimal changes: use criteria_name for criteria, leave category blank
+        
         const mappedRatings = (d.ratings || []).map((r) => ({
           key: r.criteria,
           category: "", // backend does not provide category
-          criteria: r.criteria_name || r.criteria, // show name instead of ID
+          criteria: r.criteria_name || r.criteria, 
           rating: r.rating_value ?? r.rating ?? r.value ?? "",
         }));
 

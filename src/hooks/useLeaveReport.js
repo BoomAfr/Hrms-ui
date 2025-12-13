@@ -23,18 +23,17 @@ export const useLeaveReport = () => {
     try {
       const res = await leaveReportAPI.getEmployees();
       setEmployees(res.data.results || []);
-      console.log("EMPLOYEE API:", res.data);
+      //console.log("EMPLOYEE API:", res.data);
     } catch (err) {
       message.error("Failed to load employee list");
     }
   };
 
-  // Fetch report data with filters + pagination
   const fetchReport = async () => {
     setLoading(true);
     try {
       const params = {
-        employee: filters.employee_id || undefined,
+        employee_id: filters.employee_id || undefined,
         from_date: filters.from_date || undefined,
         to_date: filters.to_date || undefined,
         page: pagination.current,
@@ -42,17 +41,28 @@ export const useLeaveReport = () => {
       };
 
       const res = await leaveReportAPI.getReport(params);
+      const data = res.data;
 
-      setReportData(res.data?.results || []);
+    // Case 1: Backend returns list []
+    if (Array.isArray(data)) {
+      setReportData(data);
       setPagination((prev) => ({
         ...prev,
-        total: res.data?.count || 0,
+        total: data.length,
       }));
-    } catch (err) {
-      message.error("Failed to load leave report");
+    } else {
+      // Case 2: Backend returns paginated object {count, results}
+      setReportData(data.results || []);
+      setPagination((prev) => ({
+        ...prev,
+        total: data.count || 0,
+      }));
     }
-    setLoading(false);
-  };
+  } catch (err) {
+    message.error("Failed to load leave report");
+  }
+  setLoading(false);
+};
 
   const handleFilter = () => {
     setPagination({ ...pagination, current: 1 });
@@ -68,8 +78,10 @@ export const useLeaveReport = () => {
   }, []);
 
   useEffect(() => {
+  if (filters.from_date || filters.to_date || filters.employee_id) {
     fetchReport();
-  }, [pagination.current, pagination.pageSize]);
+  }
+}, [pagination.current, pagination.pageSize, filters]);
 
   return {
     employees,

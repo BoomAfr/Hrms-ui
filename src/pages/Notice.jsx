@@ -10,6 +10,7 @@ import NoticeModal from "../components/common/SharedModal/NoticeModal";
 import ConfirmModal from "../components/common/SharedModal/ConfirmModal";
 import { useNotices } from "../hooks/useNotice";
 import { noticeAPI } from "../services/noticeServices";
+import { useToast } from "../hooks/useToast";
 
 const Notice = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -17,6 +18,7 @@ const Notice = () => {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [selectedNotice, setSelectedNotice] = useState(null);
   const [isViewMode, setIsViewMode] = useState(false);
+  const { Toast, contextHolder } = useToast();
 
   const { notices, loading, refetch, addNotice, updateNotice, deleteNotice } =
     useNotices();
@@ -52,11 +54,13 @@ const Notice = () => {
   const handleConfirmDelete = async () => {
     try {
       await deleteNotice(selectedNotice.id);
-      message.success("Deleted successfully");
+      Toast.success("Notice deleted successfully");
+      //message.success("Deleted successfully");
       setIsConfirmOpen(false);
       setSelectedNotice(null);
     } catch (err) {
-      message.error("Delete failed");
+      Toast.error("Failed to delete Notice");
+      //message.error("Delete failed");
     }
   };
 
@@ -64,15 +68,18 @@ const Notice = () => {
     try {
       if (editingNotice) {
         await updateNotice(editingNotice.id, formData);
-        message.success("Notice updated successfully");
+        Toast.success("Notice updated successfully");
+        //message.success("Notice updated successfully");
       } else {
         await addNotice(formData);
-        message.success("Notice added successfully");
+        Toast.success("Notice added successfully");
+        //message.success("Notice added successfully");
       }
       setIsModalOpen(false);
       setEditingNotice(null);
     } catch (err) {
-      message.error("Operation failed");
+      Toast.error("Operation failed");
+      //message.error("Operation failed");
     }
   };
 
@@ -112,6 +119,7 @@ const Notice = () => {
 
   return (
     <div style={{ padding: 24 }}>
+      {contextHolder}
       <Card
         title="Notice List"
         extra={

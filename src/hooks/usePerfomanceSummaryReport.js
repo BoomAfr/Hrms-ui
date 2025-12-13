@@ -2,8 +2,8 @@ import { useState, useEffect, useCallback } from "react";
 import { performanceSummaryAPI } from "../services/perfomanceSummaryReportServices";
 
 export const usePerformanceSummary = () => {
-  const [rows, setRows] = useState([]);      
-  const [employees, setEmployees] = useState([]); 
+  const [rows, setRows] = useState([]);
+  const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(false);
   const [employeesLoading, setEmployeesLoading] = useState(false);
   const [total, setTotal] = useState(0);
@@ -18,7 +18,10 @@ export const usePerformanceSummary = () => {
       setTotal(res.data.count ?? data?.length ?? 0);
     } catch (err) {
       console.error("Error fetching performance summary:", err);
-      throw err;
+
+      // Handle all errors gracefully by showing empty data
+      setRows([]);
+      setTotal(0);
     } finally {
       setLoading(false);
     }

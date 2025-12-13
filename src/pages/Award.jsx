@@ -1,114 +1,71 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Table, Button, Space, Card, Row, Col, Select, message, Input } from 'antd';
 import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import AwardModal from '../components/common/SharedModal/AwardModal';
 import ConfirmModal from '../components/common/SharedModal/ConfirmModal';
-import { useAwards } from '../hooks/useAward';
-import { useEmployees } from '../hooks/useAward';
+import { useAwards, useEmployees } from '../hooks/useAward';
+import { useToast } from '../hooks/useToast';
+
 const { Option } = Select;
 
 const Award = () => {
-  const [pageSize, setPageSize] = useState(10);
-  const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [selectedAward, setSelectedAward] = useState(null);
-
   const [editingAward, setEditingAward] = useState(null);
-
   const [searchText, setSearchText] = useState('');
+  const {Toast,contextHolder} = useToast();
 
-  const { awards, loading, refetch, addAward, updateAward, deleteAward } = useAwards();
+  const {
+    awards,
+    total,
+    page,
+    pageSize,
+    loading,
+    error,
+    setPage,
+    setPageSize,
+    setSearch,
+    fetchAwards,
+    refetch,
+    addAward,
+    updateAward,
+    deleteAward,
+  } = useAwards({ initialPage: 1, initialPageSize: 10 });
+
   const { employees } = useEmployees();
 
-  // handle form submit (called from AwardModal)
+  useEffect(() => {
+    if (error) message.error('Failed to load awards');
+  }, [error]);
+
   const handleAddOrUpdate = async (values) => {
     try {
-      if (editingAward) {
+      if (editingAward && editingAward.id) {
         await updateAward(editingAward.id, values);
+        Toast.success('Award updated successfully');
         message.success('Award updated successfully');
       } else {
         await addAward(values);
+        Toast.success('Award added successfully');
         message.success('Award added successfully');
       }
-      refetch();
       setEditingAward(null);
       setIsModalOpen(false);
     } catch (err) {
-      message.error(err.response?.data?.message || 'Operation failed');
+      Toast.error(err.response?.data || 'Operation failed');
+      message.error(err.response?.data || 'Operation failed');
     }
   };
 
-  const handleSearch = (value) => {
-    setSearchText(value.toLowerCase());
-  };
-
-  const columns = [
-    {
-      title: 'S/L',
-      dataIndex: 'sl',
-      key: 'sl',
-      width: 80,
-      align: 'center',
-      render: (_, __, index) => index + 1,
-    },
-    {
-      title: 'Employee Name',
-      dataIndex: 'employee_name',
-      key: 'employee_name',
-      align: 'left',
-    },
-    {
-      title: 'Award Name',
-      dataIndex: 'award_name',
-      key: 'award_name',
-      align: 'left',
-    },
-    {
-      title: 'Gift Name',
-      dataIndex: 'gift_name',
-      key: 'gift_name',
-      align: 'left',
-    },
-    {
-      title: 'Month',
-      dataIndex: 'month',
-      key: 'month',
-      align: 'left',
-    },
-    {
-      title: 'Action',
-      key: 'action',
-      width: 120,
-      align: 'center',
-      render: (_, record) => (
-        <Space size="small">
-          <Button
-            type="primary"
-            icon={<EditOutlined />}
-            size="small"
-            onClick={() => handleEdit(record)}
-          />
-          <Button
-            type="primary"
-            danger
-            icon={<DeleteOutlined />}
-            size="small"
-            onClick={() => handleDelete(record)}
-          />
-        </Space>
-      ),
-    },
-  ];
-
   const handleEdit = (record) => {
+
     setEditingAward({
-      id: record.id ?? record.key,
+      id: record.id,
       award_name: record.award_name,
-      employee_name: record.employee_name,
-      gift_name: record.gift_name,
-      month: record.month,
+      employee: record.employee, 
+      gift_item: record.gift_item,
+      award_month: record.award_month, 
     });
     setIsModalOpen(true);
   };
@@ -122,47 +79,86 @@ const Award = () => {
     if (!selectedAward) return;
     try {
       await deleteAward(selectedAward.id);
+      Toast.success("Deleted Succesfully");
       message.success(`Deleted: ${selectedAward.award_name}`);
-      refetch();
-    } catch (error) {
-      message.error('Failed to delete award');
-    } finally {
       setIsConfirmOpen(false);
       setSelectedAward(null);
+    } catch (err) {
+      Toast.error('Failed to delete award');
+      message.error('Failed to delete award');
     }
   };
 
-  const handleCancelDelete = () => {
-    setIsConfirmOpen(false);
-    setSelectedAward(null);
+  const handleSearch = (val) => {
+    const s = (val || '').trim();
+    setSearchText(s);
+    setSearch(s);
+    // fetch page 1 with new search
+    fetchAwards({ page: 1, page_size: pageSize, search: s });
   };
 
-  const handleAddNew = () => {
-    setEditingAward(null);
-    setIsModalOpen(true);
+  const handleTableChange = (pagination) => {
+    const newPage = pagination.current;
+    const newSize = pagination.pageSize;
+    setPage(newPage);
+    setPageSize(newSize);
+    fetchAwards({ page: newPage, page_size: newSize, search: searchText });
   };
 
-  const pagination = {
-    current: currentPage,
-    pageSize: pageSize,
-    total: awards.length,
-    showSizeChanger: true,
-    showQuickJumper: true,
-    showTotal: (total, range) =>
-      `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-    pageSizeOptions: ['10', '20', '50', '100'],
-    onChange: (page, size) => {
-      setCurrentPage(page);
-      setPageSize(size);
+  const columns = [
+    {
+      title: 'S/L',
+      dataIndex: 'sl',
+      key: 'sl',
+      width: 80,
+      align: 'center',
+      render: (_, __, index) => (page - 1) * pageSize + index + 1,
     },
-  };
+    {
+      title: 'Employee Name',
+      dataIndex: 'employee_name',
+      key: 'employee_name',
+      align: 'left',
+    },
+    {
+      title: 'Award Name',
+      dataIndex: 'display_award_name',
+      key: 'display_award_name',
+      align: 'left',
+    },
+    {
+      title: 'Gift Item',
+      dataIndex: 'gift_item',
+      key: 'gift_item',
+      align: 'left',
+    },
+    {
+      title: 'Month',
+      dataIndex: 'display_month',
+      key: 'display_month',
+      align: 'left',
+    },
+    {
+      title: 'Action',
+      key: 'action',
+      width: 120,
+      align: 'center',
+      render: (_, record) => (
+        <Space size="small">
+          <Button type="primary" icon={<EditOutlined />} size="small" onClick={() => handleEdit(record)} />
+          <Button type="primary" danger icon={<DeleteOutlined />} size="small" onClick={() => handleDelete(record)} />
+        </Space>
+      ),
+    },
+  ];
 
   return (
     <div style={{ padding: '24px' }}>
+      {contextHolder}
       <Card
         title="Award List"
         extra={
-          <Button type="primary" icon={<PlusOutlined />} onClick={handleAddNew}>
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => { setEditingAward(null); setIsModalOpen(true); }}>
             Add New Award
           </Button>
         }
@@ -172,7 +168,10 @@ const Award = () => {
             <span style={{ marginRight: 8 }}>Show</span>
             <Select
               value={pageSize}
-              onChange={(value) => setPageSize(value)}
+              onChange={(value) => {
+                setPageSize(value);
+                fetchAwards({ page: 1, page_size: value, search: searchText });
+              }}
               style={{ width: 80, marginRight: 8 }}
             >
               <Option value={10}>10</Option>
@@ -184,42 +183,33 @@ const Award = () => {
           </Col>
           <Col>
             <Input.Search
-              placeholder="Search award..."
+              placeholder="Search awards..."
               allowClear
-              onChange={(e) => handleSearch(e.target.value)}
-              style={{ width: 250 }}
+              onSearch={handleSearch}
+              style={{ width: 300 }}
             />
           </Col>
         </Row>
 
         <Table
           columns={columns}
-          dataSource={awards
-            .filter((d) =>
-              (
-                String(d.employee_name ?? '').toLowerCase() +
-                ' ' +
-                String(d.award_name ?? '').toLowerCase() +
-                ' ' +
-                String(d.gift_name ?? '').toLowerCase()
-              ).includes(searchText)
-            )
-            .map((d, i) => ({
-              key: d.id ?? i,
-              id: d.id,
-              sl: i + 1,
-              employee_name: d.employee_name,
-              award_name: d.award_name,
-              gift_name: d.gift_name,
-              month: d.month,
-            }))}
+          dataSource={awards.map((d, i) => ({ ...d, key: d.id ?? i }))}
           loading={loading}
-          pagination={pagination}
+          pagination={{
+            current: page,
+            pageSize,
+            total,
+            showSizeChanger: false,
+            showQuickJumper: true,
+            showTotal: (totalCount, range) => `Showing ${range[0]} to ${range[1]} of ${totalCount} entries`,
+          }}
+          onChange={handleTableChange}
           size="middle"
           bordered
-          scroll={{ x: 700 }}
+          scroll={{ x: 900 }}
         />
       </Card>
+
       {isModalOpen && (
         <AwardModal
           isModalOpen={isModalOpen}
@@ -235,7 +225,7 @@ const Award = () => {
         title="Delete Award"
         message={`Are you sure you want to delete "${selectedAward?.award_name}"?`}
         onOk={handleConfirmDelete}
-        onCancel={handleCancelDelete}
+        onCancel={() => { setIsConfirmOpen(false); setSelectedAward(null); }}
       />
     </div>
   );

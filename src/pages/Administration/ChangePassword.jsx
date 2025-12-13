@@ -1,4 +1,3 @@
-// ChangePassword.jsx
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Form, Input, Button, Card, Typography } from 'antd';
@@ -10,17 +9,17 @@ const { Title } = Typography;
 
 const ChangePassword = () => {
     const dispatch = useDispatch();
-    const { user } = useSelector((state) => state.auth);
+    const { profile } = useSelector((state) => state.user);
     const { Toast, contextHolder } = useToast();
     const [loading, setLoading] = useState(false);
 
     const [username, setUsername] = useState('');
 
     useEffect(() => {
-        if (user) {
-            setUsername(`${user.first_name || ''} ${user.last_name || ''}`.trim());
+        if (profile?.profile) {
+            setUsername(`${profile.profile.first_name || ''} ${profile.profile.last_name || ''}`.trim());
         }
-    }, [user]);
+    }, [profile]);
 
     const handleChangePassword = async (values) => {
         const { old_password, new_password, confirm_password } = values;
@@ -29,15 +28,15 @@ const ChangePassword = () => {
         try {
             await changePasswordAPI.changePassword({ old_password, new_password, confirm_password });
             Toast.success('Success', 'Password changed successfully. Please log in again.');
-            
+
             // Logout user after password change
             dispatch(logout());
         } catch (error) {
             const msg = error.response?.data?.old_password ||
-                        error.response?.data?.new_password ||
-                        error.response?.data?.confirm_password ||
-                        error.response?.data?.message ||
-                        'Something went wrong';
+                error.response?.data?.new_password ||
+                error.response?.data?.confirm_password ||
+                error.response?.data?.message ||
+                'Something went wrong';
             Toast.error('Error', msg);
         } finally {
             setLoading(false);

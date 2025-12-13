@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 
 const { Option } = Select;
 
-const PromotionModal = ({ open, onClose, onSubmit, employees = [], departments = [], designations = [], paygrades = [], loading,saveLoading, editingData, viewMode }) => {
+const PromotionModal = ({ open, onClose, onSubmit, employees = [], departments = [], designations = [], paygrades = [], loading, saveLoading, editingData, viewMode }) => {
   const [form] = Form.useForm();
   const [currentDepartment, setCurrentDepartment] = useState('');
   const [currentDesignation, setCurrentDesignation] = useState('');
@@ -46,25 +46,25 @@ const PromotionModal = ({ open, onClose, onSubmit, employees = [], departments =
   const handleEmployeeChange = (employeeId) => {
     const emp = employees.find(e => e.user_id === employeeId);
     if (emp) {
-  setCurrentDepartment(emp.department || "");
-  setCurrentDesignation(emp.designation || "");
-  setCurrentPaygrade(emp.pay_grade || "");
- const cleanName = emp.pay_grade?.split(" ")[0]?.split("(")[0]?.trim();
+      setCurrentDepartment(emp.department || "");
+      setCurrentDesignation(emp.designation || "");
+      setCurrentPaygrade(emp.pay_grade || "");
+      const cleanName = emp.pay_grade?.split("(")[0]?.trim();
 
-    // Find paygrade by cleaned name
-    const matchedPg = paygrades.find(
-      pg => pg.grade_name.toLowerCase() === cleanName?.toLowerCase()
-    );
+      // Find paygrade by cleaned name
+      const matchedPg = paygrades.find(
+        pg => pg.grade_name.toLowerCase() === cleanName?.toLowerCase()
+      );
 
-    const salaryValue = matchedPg?.gross_salary || "";
+      const salaryValue = matchedPg?.gross_salary || "";
 
-    setCurrentSalary(salaryValue);
-} else {
-  setCurrentDepartment("");
-  setCurrentDesignation("");
-  setCurrentPaygrade("");
-  setCurrentSalary("");
-}
+      setCurrentSalary(salaryValue);
+    } else {
+      setCurrentDepartment("");
+      setCurrentDesignation("");
+      setCurrentPaygrade("");
+      setCurrentSalary("");
+    }
 
 
     form.setFieldsValue({ promoted_pay_grade: undefined, promoted_salary: undefined });
@@ -73,12 +73,12 @@ const PromotionModal = ({ open, onClose, onSubmit, employees = [], departments =
 
   // When promoted paygrade selected, auto-fill promoted_salary
   const handlePaygradeChange = (pgId) => {
-   const pg = paygrades.find(p => p.id === pgId);
+    const pg = paygrades.find(p => p.id === pgId);
 
-  const salaryVal = pg?.gross_salary || "";
+    const salaryVal = pg?.gross_salary || "";
 
-  setNewSalary(salaryVal);
-  form.setFieldsValue({ promoted_salary: salaryVal });
+    setNewSalary(salaryVal);
+    form.setFieldsValue({ promoted_salary: salaryVal });
   };
 
   const handleFinish = (values) => {
@@ -93,8 +93,8 @@ const PromotionModal = ({ open, onClose, onSubmit, employees = [], departments =
       description: values.description,
 
       current_department_name: currentDepartment,
-  current_designation_name: currentDesignation,
-  current_salary: currentSalary,
+      current_designation_name: currentDesignation,
+      current_salary: currentSalary,
     };
     onSubmit(payload);
   };
@@ -111,24 +111,24 @@ const PromotionModal = ({ open, onClose, onSubmit, employees = [], departments =
     >
       <Form layout="vertical" form={form} onFinish={handleFinish}>
         <Form.Item
-  label="Employee Name*"
-  name="employee"
-  rules={[{ required: !viewMode }]}
->
-  <Select
-    disabled={viewMode}
-    placeholder="Select employee"
-    showSearch
-    optionFilterProp="children"
-    onChange={handleEmployeeChange}
-  >
-    {employees.map(emp => (
-      <Option key={emp.user_id} value={emp.user_id}>
-  {emp.name}
-</Option>
-    ))}
-  </Select>
-</Form.Item>
+          label="Employee Name*"
+          name="employee"
+          rules={[{ required: !viewMode }]}
+        >
+          <Select
+            disabled={viewMode}
+            placeholder="Select employee"
+            showSearch
+            optionFilterProp="children"
+            onChange={handleEmployeeChange}
+          >
+            {employees.map(emp => (
+              <Option key={emp.user_id} value={emp.user_id}>
+                {emp.name}
+              </Option>
+            ))}
+          </Select>
+        </Form.Item>
 
         <Form.Item label="Current Department*">
           <Input disabled value={currentDepartment} />
@@ -150,7 +150,7 @@ const PromotionModal = ({ open, onClose, onSubmit, employees = [], departments =
           <Select disabled={viewMode} placeholder="Select pay grade" onChange={handlePaygradeChange} showSearch optionFilterProp="children">
             {paygrades.map(pg => (
               <Option key={pg.id} value={pg.id}>
-                {pg.name ?? pg.title ?? `Paygrade ${pg.id}`}
+                {pg.grade_name}
               </Option>
             ))}
           </Select>
@@ -188,7 +188,7 @@ const PromotionModal = ({ open, onClose, onSubmit, employees = [], departments =
           <Input disabled={viewMode} />
         </Form.Item>
       </Form>
-    </Modal>
+    </Modal >
   );
 };
 
