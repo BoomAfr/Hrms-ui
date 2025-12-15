@@ -6,13 +6,14 @@ import { persistor, store } from './store';
 import App from './App';
 import 'antd/dist/reset.css';
 import './index.css';
+import './styles/landing.css';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
-      <App />
+        <App />
       </PersistGate>
     </Provider>
   </React.StrictMode>

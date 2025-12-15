@@ -20,7 +20,7 @@ const Login = () => {
   useEffect(() => {
     if (isAuthenticated) {
       setTimeout(() => {
-        navigate('/');
+        navigate('/app');
 
       }, [300])
     }

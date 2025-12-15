@@ -61,9 +61,9 @@ const GenerateSalarySheet = () => {
   const handleAction = (record) => {
     if (record.payslip_id) {
       // View Payslip
-      navigate(`/payroll/salary/payslip/${record.payslip_id}`);
+      navigate(`/app/payroll/salary/payslip/${record.payslip_id}`);
     } else {
-      navigate('/payroll/salary/generate', { state: { employeeId: record.employee_id, month: filters.month } });
+      navigate('/app/salary/generate', { state: { employeeId: record.employee_id, month: filters.month } });
     }
   };
 
@@ -239,7 +239,7 @@ const GenerateSalarySheet = () => {
         <Button
           type="primary"
           className="table-page-add-btn"
-          onClick={() => navigate('/salary/generate-bulk')}
+          onClick={() => navigate('/app/salary/generate-bulk')}
           icon={<PlusOutlined />}
         >
           Generate Bulk Salary Sheet
@@ -248,7 +248,7 @@ const GenerateSalarySheet = () => {
           type="primary"
           className="table-page-add-btn"
           icon={<PlusOutlined />}
-          onClick={() => navigate('/salary/generate')}
+          onClick={() => navigate('/app/salary/generate')}
         >
           Generate Single Salary Sheet
         </Button>

@@ -107,7 +107,7 @@ const MyPayroll = () => {
         <Button
           type="primary"
           icon={<EyeOutlined />}
-          onClick={() => navigate(`/payroll/salary/payslip/${record.id || record.payslip_id}`)}
+          onClick={() => navigate(`/app/payroll/salary/payslip/${record.id || record.payslip_id}`)}
           className="table-action-btn table-action-btn-edit"
         >
           View Payslip
