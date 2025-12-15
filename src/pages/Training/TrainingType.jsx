@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Space, Card, Row, Col, Select, message } from 'antd';
+import { Table, Button, Space, Card, Row, Col, Select } from 'antd';
 import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import TrainingTypeModal from '../../components/common/SharedModal/TrainingTypeModal';
 import ConfirmModal from '../../components/common/SharedModal/ConfirmModal';
 import { trainingTypeAPI } from '../../services/trainingTypeServices';
-import {useToast} from '../../hooks/useToast';
+import { useToast } from '../../hooks/useToast';
 
 const { Option } = Select;
 
@@ -13,25 +13,23 @@ const TrainingType = () => {
   const [loading, setLoading] = useState(false);
 
   const [pageSize, setPageSize] = useState(10);
-  const [currentPage, setCurrentPage] = useState(1);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTrainingType, setEditingTrainingType] = useState(null);
 
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [selectedTrainingType, setSelectedTrainingType] = useState(null);
+
   const { Toast, contextHolder } = useToast();
 
   const fetchTrainingTypes = async () => {
     try {
       setLoading(true);
       const res = await trainingTypeAPI.getAll();
-      // backend might return array or paginated {results: []}
       const data = Array.isArray(res.data) ? res.data : (res.data.results || []);
       setTrainingTypes(data);
-    } catch (err) {
-      console.error(err);
-      message.error('Failed to fetch training types');
+    } catch {
+      Toast.error('Failed to fetch training types');
     } finally {
       setLoading(false);
     }
@@ -61,12 +59,9 @@ const TrainingType = () => {
     try {
       await trainingTypeAPI.delete(selectedTrainingType.id);
       Toast.success('Training Type deleted successfully');
-      //message.success('Deleted successfully');
       fetchTrainingTypes();
-    } catch (err) {
-      //console.error(err);
+    } catch {
       Toast.error('Failed to delete Training Type');
-      //message.error('Delete failed');
     } finally {
       setIsConfirmOpen(false);
       setSelectedTrainingType(null);
@@ -78,43 +73,22 @@ const TrainingType = () => {
       if (editingTrainingType) {
         await trainingTypeAPI.update(editingTrainingType.id, values);
         Toast.success('Training Type updated successfully');
-        //message.success('Training Type updated successfully');
       } else {
         await trainingTypeAPI.create(values);
         Toast.success('Training Type added successfully');
-        //message.success('Training Type added successfully');
       }
       setIsModalOpen(false);
       setEditingTrainingType(null);
       fetchTrainingTypes();
-    } catch (err) {
-      console.error(err);
-      message.error('Save failed');
+    } catch {
+      Toast.error('Save failed');
     }
   };
 
   const columns = [
-    {
-      title: 'S/L',
-      dataIndex: 'sl',
-      key: 'sl',
-      width: 80,
-      align: 'center',
-      render: (_, __, index) => index + 1,
-    },
-    {
-      title: 'Training Type Name',
-      dataIndex: 'training_type_name',
-      key: 'training_type_name',
-      align: 'left',
-    },
-    {
-      title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
-      align: 'center',
-      render: (status) => status,
-    },
+    { title: 'S/L', key: 'sl', width: 80, align: 'center', render: (_, __, index) => index + 1 },
+    { title: 'Training Type Name', dataIndex: 'training_type_name', key: 'training_type_name', align: 'left' },
+    { title: 'Status', dataIndex: 'status', key: 'status', align: 'center' },
     {
       title: 'Action',
       key: 'action',
@@ -130,17 +104,15 @@ const TrainingType = () => {
   ];
 
   return (
-    <div style={{ padding: '24px' }}>
+    <div className="table-page-container">
       {contextHolder}
-      <Card
-        title="Training Type List"
-        extra={
-          <Button type="primary" icon={<PlusOutlined />} onClick={handleAddNew}>
-            Add Training Type
-          </Button>
-        }
-      >
-        <Row style={{ marginBottom: 16 }} align="middle" justify="space-between">
+
+      <Card className="table-page-card" title="Training Type List" extra={
+        <Button type="primary" icon={<PlusOutlined />} onClick={handleAddNew}>
+          Add Training Type
+        </Button>
+      }>
+        <Row className="table-page-filters" style={{ marginBottom: 16 }} align="middle" justify="space-between">
           <Col>
             <span style={{ marginRight: 8 }}>Show</span>
             <Select
@@ -153,22 +125,21 @@ const TrainingType = () => {
               <Option value={50}>50</Option>
               <Option value={100}>100</Option>
             </Select>
-            <span>entries</span>
-          </Col>
-          <Col>
-            {/* Department had a Search input sometimes — you asked earlier to remove search/entries/pagination; keep these UI bits but they don't change functionality */}
+            entries
           </Col>
         </Row>
 
-        <Table
-          columns={columns}
-          dataSource={trainingTypes.map((t, i) => ({ ...t, key: t.id || i }))}
-          loading={loading}
-          pagination={false}
-          size="middle"
-          bordered
-          scroll={{ x: 600 }}
-        />
+        <div className="table-page-table">
+          <Table
+            columns={columns}
+            dataSource={trainingTypes.map((t, i) => ({ ...t, key: t.id || i }))}
+            loading={loading}
+            pagination={false}
+            size="middle"
+            bordered
+            scroll={{ x: 600 }}
+          />
+        </div>
       </Card>
 
       {isModalOpen && (

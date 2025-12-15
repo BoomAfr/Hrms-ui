@@ -4,7 +4,8 @@ import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import LeaveTypeModal from '../../components/common/SharedModal/LeaveTypeModal';
 import ConfirmModal from '../../components/common/SharedModal/ConfirmModal';
 import { useLeaveTypes } from '../../hooks/useLeaveType';
-import {useToast} from '../../hooks/useToast';  
+import { useToast } from '../../hooks/useToast';
+
 const { Option } = Select;
 
 const LeaveType = () => {
@@ -15,28 +16,25 @@ const LeaveType = () => {
   const [selectedLeaveType, setSelectedLeaveType] = useState(null);
   const [editingLeaveType, setEditingLeaveType] = useState(null);
   const [searchText, setSearchText] = useState('');
+  const [total, setTotal] = useState(0);
 
   const { leaveTypes, loading, refetch, addLeaveType, updateLeaveType, deleteLeaveType } = useLeaveTypes();
-
-  const {Toast,contextHolder} = useToast();
+  const { Toast, contextHolder } = useToast();
 
   const handleAddLeaveType = async (values) => {
     try {
       if (editingLeaveType) {
         await updateLeaveType(editingLeaveType.id, values);
         Toast.success('Leave type updated successfully');
-       // message.success('Leave type updated successfully');
       } else {
         await addLeaveType(values);
         Toast.success('Leave type added successfully');
-        //message.success('Leave type added successfully');
       }
       refetch();
       setEditingLeaveType(null);
       setIsModalOpen(false);
     } catch (err) {
       Toast.error(err.response?.data?.message || 'Operation failed');
-      //message.error(err.response?.data?.message || 'Operation failed');
     }
   };
 
@@ -59,11 +57,9 @@ const LeaveType = () => {
     try {
       await deleteLeaveType(selectedLeaveType.id);
       Toast.success(`Deleted: ${selectedLeaveType.name}`);
-    //  message.success(`Deleted: ${selectedLeaveType.name}`);
       refetch();
     } catch (error) {
       Toast.error('Failed to delete leave type');
-     // message.error('Failed to delete leave type');
     } finally {
       setIsConfirmOpen(false);
       setSelectedLeaveType(null);
@@ -79,19 +75,19 @@ const LeaveType = () => {
     setEditingLeaveType(null);
     setIsModalOpen(true);
   };
+
   const loadLeaveType = async (page = currentPage, size = pageSize, search = searchText) => {
     const data = await refetch(page, size, search);
     if (data && data.count !== undefined) setTotal(data.count);
   };
-  const [total, setTotal] = useState(0);
-  
+
   useEffect(() => {
     loadLeaveType(currentPage, pageSize, searchText);
   }, [currentPage, pageSize, searchText]);
 
   const handleSearch = (value) => {
     setSearchText(value.toLowerCase());
-    setCurrentPage(1); // reset to page 1
+    setCurrentPage(1);
   };
 
   const columns = [
@@ -122,28 +118,53 @@ const LeaveType = () => {
       align: 'center',
       render: (_, record) => (
         <Space size="small">
-          <Button type="primary" icon={<EditOutlined />} size="small" onClick={() => handleEdit(record)} />
-          <Button type="primary" danger icon={<DeleteOutlined />} size="small" onClick={() => handleDelete(record)} />
+          <Button
+            type="primary"
+            icon={<EditOutlined />}
+            size="small"
+            onClick={() => handleEdit(record)}
+            className="table-action-btn table-action-btn-edit"
+          />
+          <Button
+            type="primary"
+            danger
+            icon={<DeleteOutlined />}
+            size="small"
+            onClick={() => handleDelete(record)}
+            className="table-action-btn table-action-btn-delete"
+          />
         </Space>
       ),
     },
   ];
 
   return (
-    <div style={{ padding: '24px' }}>
+    <div className="table-page-container">
       {contextHolder}
+
       <Card
         title="Leave Type List"
+        className="table-page-card"
         extra={
-          <Button type="primary" icon={<PlusOutlined />} onClick={handleAddNew}>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={handleAddNew}
+            className="table-page-add-btn"
+          >
             Add New Leave Type
           </Button>
         }
       >
-        <Row style={{ marginBottom: 16 }} align="middle" justify="space-between">
+        <Row className="table-page-filters" align="middle" justify="space-between">
           <Col>
             <span style={{ marginRight: 8 }}>Show</span>
-            <Select value={pageSize} onChange={(value) => setPageSize(value)} style={{ width: 80, marginRight: 8 }}>
+            <Select
+              value={pageSize}
+              onChange={(value) => setPageSize(value)}
+              className="table-page-select"
+              style={{ width: 80, marginRight: 8 }}
+            >
               <Option value={10}>10</Option>
               <Option value={20}>20</Option>
               <Option value={50}>50</Option>
@@ -152,39 +173,49 @@ const LeaveType = () => {
             <span>entries</span>
           </Col>
           <Col>
-            <Input.Search placeholder="Search leave type..." allowClear onChange={(e) => handleSearch(e.target.value)} style={{ width: 250 }} />
+            <Input.Search
+              placeholder="Search leave type..."
+              allowClear
+              onChange={(e) => handleSearch(e.target.value)}
+              className="table-page-search"
+              style={{ width: 250 }}
+            />
           </Col>
         </Row>
 
-        <Table
-          columns={columns}
-          dataSource={leaveTypes
-            .filter((d) => (String(d.name).toLowerCase() + ' ' + String(d.number_of_days)).includes(searchText))
-            .map((d, i) => ({
-              key: d.id ?? i,
-              id: d.id,
-              sl: i + 1,
-              name: d.name,
-              number_of_days: d.number_of_days,
-            }))}
-          loading={loading}
-          pagination={{
-            current: currentPage,
-            pageSize,
-            total: leaveTypes.length,
-            showSizeChanger: true,
-            showQuickJumper: true,
-            showTotal: (total, range) => `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-            pageSizeOptions: ['10', '20', '50', '100'],
-            onChange: (page, size) => {
-              setCurrentPage(page);
-              setPageSize(size);
-            },
-          }}
-          size="middle"
-          bordered
-          scroll={{ x: 500 }}
-        />
+        <div className="table-page-table">
+          <Table
+            columns={columns}
+            dataSource={leaveTypes
+              .filter((d) =>
+                (String(d.name).toLowerCase() + ' ' + String(d.number_of_days)).includes(searchText)
+              )
+              .map((d, i) => ({
+                key: d.id ?? i,
+                id: d.id,
+                sl: i + 1,
+                name: d.name,
+                number_of_days: d.number_of_days,
+              }))}
+            loading={loading}
+            pagination={{
+              current: currentPage,
+              pageSize,
+              total: leaveTypes.length,
+              showSizeChanger: true,
+              showQuickJumper: true,
+              showTotal: (total, range) => `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+              pageSizeOptions: ['10', '20', '50', '100'],
+              onChange: (page, size) => {
+                setCurrentPage(page);
+                setPageSize(size);
+              },
+            }}
+            size="middle"
+            bordered
+            scroll={{ x: 500 }}
+          />
+        </div>
       </Card>
 
       {isModalOpen && (

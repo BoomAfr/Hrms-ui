@@ -1,7 +1,7 @@
 import React from "react";
-import { Table, Card, Button, InputNumber, Space,  } from "antd";
+import { Table, Card, Button, InputNumber } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
-import {useTaxRules} from "../../../hooks/payroll/useTaxRuleSetup"
+import { useTaxRules } from "../../../hooks/payroll/useTaxRuleSetup";
 
 const TaxRuleSetup = () => {
   const {
@@ -85,9 +85,7 @@ const TaxRuleSetup = () => {
       title: "Taxable Amount",
       dataIndex: "taxable_amount_fixed",
       align: "center",
-      render: (_, record) => (
-        <span>{record.taxable_amount_fixed}</span>
-      ),
+      render: (_, record) => <span>{record.taxable_amount_fixed}</span>,
     },
     {
       title: "Update",
@@ -101,46 +99,63 @@ const TaxRuleSetup = () => {
   ];
 
   return (
-    <div style={{ padding: 20 }}>
+    <div className="table-page-container">
+      {/* MALE TAX RULES */}
       <Card
+        className="table-page-card"
         title="Tax Rules (Male)"
         extra={
-          <Button type="primary" onClick={() => addNewRow("Male")}icon={<PlusOutlined/>}>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            className="table-page-add-btn"
+            onClick={() => addNewRow("Male")}
+          >
             Add Tax Rule for Male
           </Button>
         }
         style={{ marginBottom: 32 }}
       >
-        <Table
-          bordered
-          loading={loading}
-          rowKey={(record, index) => index}
-          columns={columns("Male")}
-          dataSource={maleRules}
-          pagination={false}
-        />
+        <div className="table-page-table">
+          <Table
+            bordered
+            loading={loading}
+            rowKey={(record, index) => index}
+            columns={columns("Male")}
+            dataSource={maleRules}
+            pagination={false}
+          />
+        </div>
       </Card>
 
+      {/* FEMALE TAX RULES */}
       <Card
+        className="table-page-card"
         title="Tax Rules (Female)"
         extra={
-          <Button type="primary" onClick={() => addNewRow("Female")}icon={<PlusOutlined/>}>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            className="table-page-add-btn"
+            onClick={() => addNewRow("Female")}
+          >
             Add Tax Rule for Female
           </Button>
         }
       >
-        <Table
-          bordered
-          loading={loading}
-          rowKey={(record, index) => index}
-          columns={columns("Female")}
-          dataSource={femaleRules}
-          pagination={false}
-        />
+        <div className="table-page-table">
+          <Table
+            bordered
+            loading={loading}
+            rowKey={(record, index) => index}
+            columns={columns("Female")}
+            dataSource={femaleRules}
+            pagination={false}
+          />
+        </div>
       </Card>
     </div>
   );
 };
 
 export default TaxRuleSetup;
-

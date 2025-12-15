@@ -20,7 +20,16 @@ const Warning = () => {
   const [editingWarning, setEditingWarning] = useState(null);
   const [searchText, setSearchText] = useState('');
 
-  const { warnings, employees, loading, pagination, fetchWarnings, addWarning, updateWarning, deleteWarning } = useWarning();
+  const {
+    warnings,
+    employees,
+    loading,
+    fetchWarnings,
+    addWarning,
+    updateWarning,
+    deleteWarning,
+  } = useWarning();
+
   const [total, setTotal] = useState(0);
 
   const loadWarnings = async (page = currentPage, size = pageSize, search = searchText) => {
@@ -40,10 +49,10 @@ const Warning = () => {
   const handleAddWarning = (values) => {
     if (editingWarning) {
       updateWarning(editingWarning.id, values, Toast);
-      Toast.success("Warning Update Succesfully")
+      Toast.success('Warning Update Successfully');
     } else {
       addWarning(values, Toast);
-      Toast.success("Warning Added Succesfully")
+      Toast.success('Warning Added Successfully');
     }
     setIsModalOpen(false);
     setEditingWarning(null);
@@ -66,7 +75,7 @@ const Warning = () => {
       Toast.success(`Deleted: ${selectedWarning.employee_name}`);
       const result = await fetchWarnings(currentPage, pageSize, searchText);
       if (result?.length === 0 && currentPage > 1) setCurrentPage(currentPage - 1);
-    } catch (err) {
+    } catch {
       Toast.error('Failed to delete warning');
     } finally {
       setIsConfirmOpen(false);
@@ -74,20 +83,9 @@ const Warning = () => {
     }
   };
 
-  const handleCancelDelete = () => {
-    setIsConfirmOpen(false);
-    setSelectedWarning(null);
-  };
-
-  const handleAddNew = () => {
-    setEditingWarning(null);
-    setIsModalOpen(true);
-  };
-
   const columns = [
     {
       title: 'S/L',
-      dataIndex: 'sl',
       key: 'sl',
       width: 80,
       align: 'center',
@@ -130,6 +128,7 @@ const Warning = () => {
             icon={<EditOutlined />}
             size="small"
             onClick={() => handleEdit(record)}
+            className="table-action-btn table-action-btn-edit"
           />
           <Button
             type="primary"
@@ -137,47 +136,41 @@ const Warning = () => {
             icon={<DeleteOutlined />}
             size="small"
             onClick={() => handleDelete(record)}
+            className="table-action-btn table-action-btn-delete"
           />
         </Space>
       ),
     },
   ];
 
-  const paginationProps = {
-    current: currentPage,
-    pageSize: pageSize,
-    total: total,
-    showSizeChanger: true,
-    showQuickJumper: true,
-    showTotal: (total, range) => `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-    pageSizeOptions: ['10', '20', '50', '100'],
-    onChange: (page, size) => {
-      setCurrentPage(page);
-      setPageSize(size);
-    },
-  };
-
   return (
-    <div style={{ padding: '24px' }}>
+    <div className="table-page-container">
       {contextHolder}
+
       <Card
         title="Warning List"
+        className="table-page-card"
         extra={
           <Button
             type="primary"
             icon={<PlusOutlined />}
-            onClick={handleAddNew}
+            onClick={() => {
+              setEditingWarning(null);
+              setIsModalOpen(true);
+            }}
+            className="table-page-add-btn"
           >
             Add Warning
           </Button>
         }
       >
-        <Row style={{ marginBottom: 16 }} align="middle" justify="space-between">
+        <Row className="table-page-filters" align="middle" justify="space-between">
           <Col>
             <span style={{ marginRight: 8 }}>Show</span>
             <Select
               value={pageSize}
               onChange={(value) => setPageSize(value)}
+              className="table-page-select"
               style={{ width: 80, marginRight: 8 }}
             >
               <Option value={10}>10</Option>
@@ -187,36 +180,46 @@ const Warning = () => {
             </Select>
             <span>entries</span>
           </Col>
+
           <Col>
             <Input.Search
               placeholder="Search warning..."
               allowClear
               onChange={(e) => handleSearch(e.target.value)}
+              className="table-page-search"
               style={{ width: 250 }}
             />
           </Col>
         </Row>
 
-        <Table
-          columns={columns}
-          dataSource={warnings
-            .filter((w) => w.employee_name?.toLowerCase().includes(searchText))
-            .map((w, i) => ({
-              key: w.id || i,
-              id: w.id,
-              employee_name: w.employee_name,
-              warning_type: w.warning_type,
-              subject: w.subject,
-              warning_date: w.warning_date,
-              warning_by_name: w.warning_by_name,
-            }))
-          }
-          loading={loading}
-          pagination={paginationProps}
-          size="middle"
-          bordered
-          scroll={{ x: 800 }}
-        />
+        <div className="table-page-table">
+          <Table
+            columns={columns}
+            dataSource={warnings
+              .filter((w) => w.employee_name?.toLowerCase().includes(searchText))
+              .map((w, i) => ({
+                key: w.id || i,
+                ...w,
+              }))}
+            loading={loading}
+            pagination={{
+              current: currentPage,
+              pageSize,
+              total,
+              showSizeChanger: true,
+              showQuickJumper: true,
+              pageSizeOptions: ['10', '20', '50', '100'],
+              showTotal: (total, range) =>
+                `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+              onChange: (page, size) => {
+                setCurrentPage(page);
+                setPageSize(size);
+              },
+            }}
+            bordered
+            scroll={{ x: 800 }}
+          />
+        </div>
       </Card>
 
       {isModalOpen && (
@@ -235,7 +238,7 @@ const Warning = () => {
         title="Delete Warning"
         message={`Are you sure you want to delete "${selectedWarning?.employee_name}"?`}
         onOk={handleConfirmDelete}
-        onCancel={handleCancelDelete}
+        onCancel={() => setIsConfirmOpen(false)}
       />
     </div>
   );

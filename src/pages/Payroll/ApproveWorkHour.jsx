@@ -162,12 +162,12 @@ const ApproveWorkHour = () => {
   ];
 
   return (
-    <div style={{ padding: 24 }}>
+    <div className="table-page-container">
       {contextHolder}
 
-      <Card title="Approve Work Hour">
+      <Card title="Approve Work Hour" className="table-page-card">
         {/* Filters */}
-        <Row style={{ marginBottom: 20 }} gutter={16} align="middle">
+        <Row className="table-page-filters" gutter={16} align="middle">
           <Col span={6}>
             <Select
               placeholder="Select Department"
@@ -206,12 +206,14 @@ const ApproveWorkHour = () => {
         </Row>
 
         {/* Table */}
-        <Table
-          columns={columns}
-          dataSource={data.map((d) => ({ ...d, key: d.id }))}
-          bordered
-          pagination={false}
-        />
+        <div className="table-page-table">
+          <Table
+            columns={columns}
+            dataSource={data.map((d) => ({ ...d, key: d.id }))}
+            bordered
+            pagination={false}
+          />
+        </div>
       </Card>
     </div>
   );

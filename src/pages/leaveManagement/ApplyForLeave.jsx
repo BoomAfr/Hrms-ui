@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Card, Button, Input, Table, message, Tag } from "antd";
+import { Card, Button, Input, Table, message, Tag, Row, Col } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import { useSelector } from "react-redux";
 import ApplyForLeaveModal from "../../components/common/SharedModal/ApplyForLeaveModal";
@@ -45,36 +45,36 @@ const ApplyForLeavePage = () => {
     },
     { title: "Number of Days", dataIndex: "number_of_days", key: "number_of_days" },
     {
-    title: "Approve Date", 
-    dataIndex: "approve_date",
-    key: "approve_date",
-    render: (val) => val ?? "-", 
-  },
-     {
-    title: "Reject Date", 
-    dataIndex: "reject_date",
-    key: "reject_date",
-    render: (val) => val ?? "-", 
-  },
-    {
-     title: "Status",
-    dataIndex: "status",
-    key: "status",
-    align: "center",
-    render: (status) => {
-      let color = "blue";
-      if (status === "Approved") color = "green";
-      else if (status === "Rejected") color = "red";
-      else if (status === "Pending") color = "gold";
-      return <Tag color={color}>{status}</Tag>;
+      title: "Approve Date",
+      dataIndex: "approve_date",
+      key: "approve_date",
+      render: (val) => val ?? "-",
     },
-  }
+    {
+      title: "Reject Date",
+      dataIndex: "reject_date",
+      key: "reject_date",
+      render: (val) => val ?? "-",
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      align: "center",
+      render: (status) => {
+        let color = "blue";
+        if (status === "Approved") color = "green";
+        else if (status === "Rejected") color = "red";
+        else if (status === "Pending") color = "gold";
+        return <Tag color={color}>{status}</Tag>;
+      },
+    },
   ];
 
   const dataSource = (applications || []).map((a, i) => ({
     key: a.id ?? i,
     sl: i + 1,
-    employee_name: savedUser?.name || "You", // ✅ always show logged-in user
+    employee_name: savedUser?.name || "You",
     leave_type_name: a.leave_type_name ?? a.leave_type?.name ?? a.leave_type ?? "",
     from_date: a.from_date ?? a.start_date ?? null,
     to_date: a.to_date ?? a.end_date ?? null,
@@ -100,37 +100,42 @@ const ApplyForLeavePage = () => {
   };
 
   return (
-    <div style={{ padding: 24 }}>
-      <Card
-        title="My Application List"
-        extra={
-          <div style={{ display: "flex", gap: 8 }}>
+    <div className="table-page-container">
+      <Card title="My Application List" className="table-page-card">
+        <Row className="table-page-filters" align="middle" justify="space-between">
+          <Col>
             <Input.Search
               placeholder="Search by leave type..."
               onSearch={handleSearch}
-              style={{ width: 260 }}
               allowClear
+              className="table-page-search"
+              style={{ width: 260 }}
             />
+          </Col>
+          <Col>
             <Button
               type="primary"
               icon={<PlusOutlined />}
               onClick={() => setOpenModal(true)}
+              className="table-page-add-btn"
             >
               Apply For Leave
             </Button>
-          </div>
-        }
-      >
-        <Table
-          columns={columns}
-          dataSource={dataSource}
-          pagination={paginationConfig}
-          loading={loading}
-          rowKey={(r) => r.key}
-          size="middle"
-          bordered
-          scroll={{ x: 1000 }}
-        />
+          </Col>
+        </Row>
+
+        <div className="table-page-table">
+          <Table
+            columns={columns}
+            dataSource={dataSource}
+            pagination={paginationConfig}
+            loading={loading}
+            rowKey={(r) => r.key}
+            size="middle"
+            bordered
+            scroll={{ x: 1000 }}
+          />
+        </div>
       </Card>
 
       {openModal && (

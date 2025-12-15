@@ -1,4 +1,4 @@
-import { Card, Select, DatePicker, Button, Table } from "antd";
+import { Card, Select, DatePicker, Button, Table, Row, Col } from "antd";
 import { useLeaveSummaryReport } from "../../hooks/useLeaveSummaryReport";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -17,17 +17,18 @@ const LeaveSummaryReport = () => {
     {
       title: "S/L",
       render: (_, __, index) => index + 1,
+      align: "center",
+      width: 70,
     },
-    { title: "Leave Type", dataIndex: "leave_type" },
-    { title: "Number of Day", dataIndex: "number_of_day" },
-    { title: "Leave Consume", dataIndex: "leave_consume" },
-    { title: "Current Balance", dataIndex: "current_balance" },
+    { title: "Leave Type", dataIndex: "leave_type", align: "center" },
+    { title: "Number of Day", dataIndex: "number_of_day", align: "center" },
+    { title: "Leave Consume", dataIndex: "leave_consume", align: "center" },
+    { title: "Current Balance", dataIndex: "current_balance", align: "center" },
   ];
 
-  // DOWNLOAD PDF FUNCTION
+  // DOWNLOAD PDF FUNCTION (UNCHANGED)
   const downloadPDF = () => {
     const doc = new jsPDF();
-
     doc.text("Summary Report", 14, 10);
 
     const tableColumn = [
@@ -56,57 +57,81 @@ const LeaveSummaryReport = () => {
   };
 
   return (
-    <Card title="Summary Report">
-      <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
-        
-        <Select
-          placeholder="Employee Name"
-          style={{ width: 200 }}
-          value={filters.employee_id}
-          onChange={(value) => setFilters({ ...filters, employee_id: value })}
-          options={employees.map((emp) => ({
-            label: emp.name,
-            value: emp.user_id,
-          }))}
-        />
+    <div className="table-page-container">
+      <Card title="Summary Report" className="table-page-card">
+        {/* FILTERS */}
+        <Row gutter={12} className="table-page-filters">
+          <Col>
+            <Select
+              placeholder="Employee Name"
+              className="table-page-select"
+              value={filters.employee_id}
+              onChange={(value) =>
+                setFilters({ ...filters, employee_id: value })
+              }
+              options={employees.map((emp) => ({
+                label: emp.name,
+                value: emp.user_id,
+              }))}
+            />
+          </Col>
 
-        
-        <DatePicker
-          placeholder="From Date"
-          onChange={(date, dateString) =>
-            setFilters({ ...filters, from_date: dateString })
-          }
-        />
+          <Col>
+            <DatePicker
+              placeholder="From Date"
+              className="table-page-date"
+              onChange={(date, dateString) =>
+                setFilters({ ...filters, from_date: dateString })
+              }
+            />
+          </Col>
 
-        
-        <DatePicker
-          placeholder="To Date"
-          onChange={(date, dateString) =>
-            setFilters({ ...filters, to_date: dateString })
-          }
-        />
+          <Col>
+            <DatePicker
+              placeholder="To Date"
+              className="table-page-date"
+              onChange={(date, dateString) =>
+                setFilters({ ...filters, to_date: dateString })
+              }
+            />
+          </Col>
 
-        <Button type="primary" onClick={handleFilter}>
-          Filter
-        </Button>
+          <Col>
+            <Button
+              type="primary"
+              className="table-page-add-btn"
+              onClick={handleFilter}
+            >
+              Filter
+            </Button>
+          </Col>
 
-        
-        <Button
-          style={{ marginLeft: "auto", background: "green", color: "#acff1dff" }}
-          onClick={downloadPDF}
-        >
-          Download PDF
-        </Button>
-      </div>
+          <Col flex="auto" />
 
-      <Table
-        columns={columns}
-        dataSource={summary}
-        rowKey={(record, index) => index}
-        loading={loading}
-        pagination={false}
-      />
-    </Card>
+          <Col>
+            <Button
+              className="table-page-add-btn"
+              style={{ background: "green", color: "#acff1dff" }}
+              onClick={downloadPDF}
+            >
+              Download PDF
+            </Button>
+          </Col>
+        </Row>
+
+        {/* TABLE */}
+        <div className="table-page-table">
+          <Table
+            columns={columns}
+            dataSource={summary}
+            rowKey={(record, index) => index}
+            loading={loading}
+            pagination={false}
+            bordered
+          />
+        </div>
+      </Card>
+    </div>
   );
 };
 

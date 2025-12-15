@@ -1,0 +1,11 @@
+.theme-toggle-button {
+  transition: all var(--transition-base);
+}
+
+.theme-toggle-button:hover {
+  transform: rotate(20deg) scale(1.1);
+}
+
+.theme-toggle-button:active {
+  transform: rotate(20deg) scale(0.95);
+}

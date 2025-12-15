@@ -108,6 +108,7 @@ const RequestedApplication = () => {
               setSelectedRow(record);
               setIsViewModalOpen(true);
             }}
+            className="table-action-btn table-action-btn-edit"
           >
             View
           </Button>
@@ -117,35 +118,45 @@ const RequestedApplication = () => {
   ];
 
   return (
-    <Card title="Requested Application" bordered={false}>
-      {loading ? (
-        <div className="flex justify-center items-center py-10">
-          <Spin size="large" />
-        </div>
-      ) : (
-        <Table
-          columns={columns}
-          dataSource={data}
-          rowKey={(record) => record.id || record.pk}
-          pagination={{
-            current: pagination.current,
-            pageSize: pagination.pageSize,
-            total: pagination.total,
-            showSizeChanger: true,
-            onChange: (page, pageSize) => fetchLeaveRequests(page, pageSize),
-          }}
-          bordered
-        />
-      )}
+    <div className="table-page-container">
+      <Card
+        title="Requested Application"
+        bordered={false}
+        className="table-page-card"
+      >
+        {loading ? (
+          <div className="flex justify-center items-center py-10">
+            <Spin size="large" />
+          </div>
+        ) : (
+          <div className="table-page-table">
+            <Table
+              columns={columns}
+              dataSource={data}
+              rowKey={(record) => record.id || record.pk}
+              pagination={{
+                current: pagination.current,
+                pageSize: pagination.pageSize,
+                total: pagination.total,
+                showSizeChanger: true,
+                onChange: (page, pageSize) =>
+                  fetchLeaveRequests(page, pageSize),
+              }}
+              bordered
+            />
+          </div>
+        )}
 
-      {/* VIEW MODAL */}
-      <ViewModal
-        open={isViewModalOpen}
-        onClose={() => setIsViewModalOpen(false)}
-        data={selectedRow}
-        onSuccess={() => fetchLeaveRequests(pagination.current, pagination.pageSize)}
-      />
-    </Card>
+        <ViewModal
+          open={isViewModalOpen}
+          onClose={() => setIsViewModalOpen(false)}
+          data={selectedRow}
+          onSuccess={() =>
+            fetchLeaveRequests(pagination.current, pagination.pageSize)
+          }
+        />
+      </Card>
+    </div>
   );
 };
 

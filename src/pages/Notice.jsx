@@ -105,12 +105,14 @@ const Notice = () => {
             icon={<EditOutlined />}
             size="small"
             onClick={() => handleEdit(record)}
+            className="table-action-btn table-action-btn-edit"
           />
           <Button
             icon={<DeleteOutlined />}
             danger
             size="small"
             onClick={() => handleDelete(record)}
+            className="table-action-btn table-action-btn-delete"
           />
         </Space>
       ),
@@ -118,23 +120,31 @@ const Notice = () => {
   ];
 
   return (
-    <div style={{ padding: 24 }}>
+    <div className="table-page-container">
       {contextHolder}
       <Card
+        className="table-page-card"
         title="Notice List"
         extra={
-          <Button type="primary" icon={<PlusOutlined />} onClick={handleAddNew}>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={handleAddNew}
+            className="table-page-add-btn"
+          >
             Add New Notice
           </Button>
         }
       >
-        <Table
-          columns={columns}
-          dataSource={notices.map((n, i) => ({ ...n, key: n.id, sl: i + 1 }))}
-          loading={loading}
-          bordered
-          scroll={{ x: 600 }}
-        />
+        <div className="table-page-table">
+          <Table
+            columns={columns}
+            dataSource={notices.map((n, i) => ({ ...n, key: n.id, sl: i + 1 }))}
+            loading={loading}
+            bordered
+            scroll={{ x: 600 }}
+          />
+        </div>
       </Card>
 
       {isModalOpen && (

@@ -72,21 +72,21 @@ const AddSalarySheet = () => {
   };
 
   return (
-    <div style={{ padding: "24px" }}>
+    <div className="table-page-container">
       {/* Top Button */}
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
         <Button
           type="primary"
-          style={{ backgroundColor: "#87d068", borderColor: "#87d068" }}
-          onClick={() => navigate('/payroll/generate-salary-sheet')} 
+          className="table-page-add-btn"
+          onClick={() => navigate('/payroll/generate-salary-sheet')}
         >
           Generate Payslip
         </Button>
       </div>
 
       <Card
-        title={<span style={{ color: 'white' }}>Generate Salary Sheet</span>}
-        headStyle={{ backgroundColor: "#1890ff", border: "none" }}
+        className="table-page-card"
+        title="Generate Salary Sheet"
       >
         <Form
           form={form}

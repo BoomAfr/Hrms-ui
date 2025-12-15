@@ -22,9 +22,11 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../store/slices/authSlice';
 import BackButton from '../common/BackButton/BackButton';
+import ThemeToggle from '../common/ThemeToggle/ThemeToggle';
 import { useToast } from '../../hooks/useToast';
 import ErrorBoundary from 'antd/es/alert/ErrorBoundary';
 import { getIconComponent } from '../../constants/menuItem';
+import './Layout.css';
 
 const { Header, Sider, Content } = Layout;
 const { useBreakpoint } = Grid;
@@ -46,6 +48,7 @@ const transformToMenuItems = (data) => {
 
 const MainLayout = () => {
   const [collapsed, setCollapsed] = useState(false);
+  const [openKeys, setOpenKeys] = useState([]);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -85,6 +88,69 @@ const MainLayout = () => {
     // Close drawer on mobile when menu item is clicked
     if (!screens.lg) {
       setCollapsed(true);
+    }
+  };
+
+  // Handle submenu open/close - accordion behavior at ALL levels
+  const onOpenChange = (keys) => {
+    // Find which key was just opened (the one that's new in the keys array)
+    const latestOpenKey = keys.find(key => openKeys.indexOf(key) === -1);
+
+    if (!latestOpenKey) {
+      // A menu was closed, just update the keys
+      setOpenKeys(keys);
+      return;
+    }
+
+    // Helper function to get all submenu keys from menu items recursively
+    const getAllSubmenuKeys = (items) => {
+      let allKeys = [];
+      items.forEach(item => {
+        if (item.children && item.children.length > 0) {
+          allKeys.push(item.key);
+          allKeys = allKeys.concat(getAllSubmenuKeys(item.children));
+        }
+      });
+      return allKeys;
+    };
+
+    // Get all possible submenu keys
+    const allSubmenuKeys = getAllSubmenuKeys(sidebarMenuItems);
+
+    // If the opened key is a submenu
+    if (allSubmenuKeys.includes(latestOpenKey)) {
+      // Find parent path for the opened key
+      const findParentKey = (items, targetKey, parent = null) => {
+        for (const item of items) {
+          if (item.key === targetKey) {
+            return parent;
+          }
+          if (item.children) {
+            const found = findParentKey(item.children, targetKey, item.key);
+            if (found !== undefined) return found;
+          }
+        }
+        return undefined;
+      };
+
+      const parentKey = findParentKey(sidebarMenuItems, latestOpenKey);
+
+      // Filter keys to only keep:
+      // 1. The newly opened key
+      // 2. All parent keys in the path to root
+      const newOpenKeys = [latestOpenKey];
+
+      // Add all parent keys by walking up the tree
+      let currentParent = parentKey;
+      while (currentParent) {
+        newOpenKeys.push(currentParent);
+        currentParent = findParentKey(sidebarMenuItems, currentParent);
+      }
+
+      setOpenKeys(newOpenKeys);
+    } else {
+      // Not a submenu, shouldn't happen but handle it
+      setOpenKeys(keys);
     }
   };
 
@@ -153,12 +219,7 @@ const MainLayout = () => {
 
   if (!user) {
     return (
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh'
-      }}>
+      <div className="hrms-layout-loading">
         <Spin size="large" tip="Loading..." />
       </div>
     );
@@ -167,17 +228,12 @@ const MainLayout = () => {
   // Sidebar content to be reused in both Sider (Desktop) and Drawer (Mobile)
   const SidebarContent = (
     <>
-      <div
-        style={{
-          padding: collapsed && screens.lg ? '16px 8px' : '16px',
-          textAlign: 'center',
-          borderBottom: '1px solid rgba(255,255,255,0.1)'
-        }}
-      >
+      <div className={`hrms-sidebar-profile ${collapsed && screens.lg ? 'hrms-sidebar-profile-collapsed' : ''}`}>
         {collapsed && screens.lg ? (
           <Avatar
             size="large"
             icon={<UserOutlined />}
+            className="hrms-sidebar-profile-avatar"
             style={{ backgroundColor: '#87d068' }}
           />
         ) : (
@@ -185,37 +241,32 @@ const MainLayout = () => {
             <Avatar
               size={64}
               icon={<UserOutlined />}
+              className="hrms-sidebar-profile-avatar"
               style={{
-                backgroundColor: '#87d068',
-                marginBottom: '12px'
+                backgroundColor: '#87d068'
               }}
             />
-            <div style={{ color: 'white' }}>
-              <div style={{ fontWeight: 'bold', fontSize: '16px' }}>
-                {displayName}
-              </div>
-              <div style={{ fontSize: '12px', opacity: 0.7 }}>
-                {formattedRole}
-              </div>
+            <div className="hrms-sidebar-profile-name">
+              {displayName}
+            </div>
+            <div className="hrms-sidebar-profile-role">
+              {formattedRole}
             </div>
           </div>
         )}
       </div>
-      <div className="logo" style={{
-        padding: '16px',
-        color: 'white',
-        textAlign: 'center',
-        fontSize: collapsed && screens.lg ? '16px' : '20px',
-        fontWeight: 'bold'
-      }}>
+      <div className="hrms-sidebar-logo">
         {collapsed && screens.lg ? 'HR' : 'HRMS'}
       </div>
       <Menu
         theme="dark"
         mode="inline"
         selectedKeys={[location.pathname]}
+        openKeys={openKeys}
+        onOpenChange={onOpenChange}
         items={sidebarMenuItems}
         onClick={handleMenuClick}
+        className="hrms-sidebar-menu"
       />
     </>
   );
@@ -231,7 +282,8 @@ const MainLayout = () => {
           onClose={() => setCollapsed(true)}
           open={!collapsed}
           width={250}
-          styles={{ body: { padding: 0, backgroundColor: '#001529' } }}
+          className="hrms-mobile-drawer"
+          styles={{ body: { padding: 0 } }}
           closable={false}
           maskClosable={true}
         >
@@ -248,59 +300,50 @@ const MainLayout = () => {
           breakpoint="lg"
           collapsedWidth={80}
           width={250}
+          className="hrms-layout-sider"
         >
           {SidebarContent}
         </Sider>
       )}
 
-      <Layout>
-        <Header
-          style={{
-            padding: '0 16px',
-            background: '#fff',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            boxShadow: '0 2px 8px #f0f1f2',
-          }}
-        >
+      <Layout className="hrms-layout-content-wrapper">
+        <Header className="hrms-layout-header">
           <Button
             type="text"
             icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
             onClick={() => setCollapsed(!collapsed)}
-            style={{
-              fontSize: '16px',
-              width: 64,
-              height: 64,
-            }}
+            className="hrms-header-trigger"
           />
 
-          <Dropdown
-            menu={{ items: userMenuItems }}
-            placement="bottomRight"
-            arrow
-          >
-            <Space style={{ cursor: 'pointer' }}>
-              <Avatar icon={<UserOutlined />} />
-              <span>{displayName}</span>
-              <span style={{ fontSize: '12px', color: '#666' }}>
-                ({formattedRole})
-              </span>
-            </Space>
-          </Dropdown>
+          <div className="hrms-header-actions">
+            <ThemeToggle />
+            <Dropdown
+              menu={{ items: userMenuItems }}
+              placement="bottomRight"
+              arrow
+            >
+              <Space className="hrms-header-user-dropdown">
+                <Avatar icon={<UserOutlined />} />
+                <span className="hrms-header-user-name">{displayName}</span>
+                <span className="hrms-header-user-role">({formattedRole})</span>
+              </Space>
+            </Dropdown>
+          </div>
         </Header>
-        {breadcrumb}
-        <Content
-          style={{
-            margin: screens.lg ? '24px 16px' : '12px 8px',
-            padding: screens.lg ? 24 : 12,
-            minHeight: 280,
-            background: '#fff',
-            borderRadius: 8,
-          }}
-        >
+        <div className="hrms-breadcrumb-container">
+          <Breadcrumb
+            items={[
+              { title: <HomeOutlined />, href: '/' },
+              ...breadcrumbItems
+            ]}
+          />
+          {location.pathname !== '/' && <BackButton />}
+        </div>
+        <Content className="hrms-layout-content">
           <ErrorBoundary>
-            <Outlet />
+            <div key={location.pathname} className="page-transition-enter">
+              <Outlet />
+            </div>
           </ErrorBoundary>
         </Content>
       </Layout>

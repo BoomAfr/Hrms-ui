@@ -14,7 +14,7 @@ const Award = () => {
   const [selectedAward, setSelectedAward] = useState(null);
   const [editingAward, setEditingAward] = useState(null);
   const [searchText, setSearchText] = useState('');
-  const {Toast,contextHolder} = useToast();
+  const { Toast, contextHolder } = useToast();
 
   const {
     awards,
@@ -63,9 +63,9 @@ const Award = () => {
     setEditingAward({
       id: record.id,
       award_name: record.award_name,
-      employee: record.employee, 
+      employee: record.employee,
       gift_item: record.gift_item,
-      award_month: record.award_month, 
+      award_month: record.award_month,
     });
     setIsModalOpen(true);
   };
@@ -145,25 +145,31 @@ const Award = () => {
       align: 'center',
       render: (_, record) => (
         <Space size="small">
-          <Button type="primary" icon={<EditOutlined />} size="small" onClick={() => handleEdit(record)} />
-          <Button type="primary" danger icon={<DeleteOutlined />} size="small" onClick={() => handleDelete(record)} />
+          <Button type="primary" icon={<EditOutlined />} size="small" onClick={() => handleEdit(record)} className="table-action-btn table-action-btn-edit" />
+          <Button type="primary" danger icon={<DeleteOutlined />} size="small" onClick={() => handleDelete(record)} className="table-action-btn table-action-btn-delete" />
         </Space>
       ),
     },
   ];
 
   return (
-    <div style={{ padding: '24px' }}>
+    <div className="table-page-container">
       {contextHolder}
       <Card
+        className="table-page-card"
         title="Award List"
         extra={
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => { setEditingAward(null); setIsModalOpen(true); }}>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => { setEditingAward(null); setIsModalOpen(true); }}
+            className="table-page-add-btn"
+          >
             Add New Award
           </Button>
         }
       >
-        <Row style={{ marginBottom: 16 }} align="middle" justify="space-between">
+        <Row className="table-page-filters" align="middle" justify="space-between">
           <Col>
             <span style={{ marginRight: 8 }}>Show</span>
             <Select
@@ -172,6 +178,7 @@ const Award = () => {
                 setPageSize(value);
                 fetchAwards({ page: 1, page_size: value, search: searchText });
               }}
+              className="table-page-select"
               style={{ width: 80, marginRight: 8 }}
             >
               <Option value={10}>10</Option>
@@ -186,28 +193,31 @@ const Award = () => {
               placeholder="Search awards..."
               allowClear
               onSearch={handleSearch}
+              className="table-page-search"
               style={{ width: 300 }}
             />
           </Col>
         </Row>
 
-        <Table
-          columns={columns}
-          dataSource={awards.map((d, i) => ({ ...d, key: d.id ?? i }))}
-          loading={loading}
-          pagination={{
-            current: page,
-            pageSize,
-            total,
-            showSizeChanger: false,
-            showQuickJumper: true,
-            showTotal: (totalCount, range) => `Showing ${range[0]} to ${range[1]} of ${totalCount} entries`,
-          }}
-          onChange={handleTableChange}
-          size="middle"
-          bordered
-          scroll={{ x: 900 }}
-        />
+        <div className="table-page-table">
+          <Table
+            columns={columns}
+            dataSource={awards.map((d, i) => ({ ...d, key: d.id ?? i }))}
+            loading={loading}
+            pagination={{
+              current: page,
+              pageSize,
+              total,
+              showSizeChanger: false,
+              showQuickJumper: true,
+              showTotal: (totalCount, range) => `Showing ${range[0]} to ${range[1]} of ${totalCount} entries`,
+            }}
+            onChange={handleTableChange}
+            size="middle"
+            bordered
+            scroll={{ x: 900 }}
+          />
+        </div>
       </Card>
 
       {isModalOpen && (

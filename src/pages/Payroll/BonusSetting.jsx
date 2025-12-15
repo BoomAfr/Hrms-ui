@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Table, Button, Space, Card, Row, Col, Input, message } from "antd";
+import { Table, Button, Space, Card, Row, Col, Input } from "antd";
 import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import BonusSettingModal from "../../components/common/SharedModal/BonusSettingModal";
 import ConfirmModal from "../../components/common/SharedModal/ConfirmModal";
@@ -11,15 +11,12 @@ const BonusSetting = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingBonus, setEditingBonus] = useState(null);
-  const {Toast,contextHolder}=useToast();
   const [submitLoading, setSubmitLoading] = useState(false);
-
-
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [selectedBonus, setSelectedBonus] = useState(null);
-
   const [searchText, setSearchText] = useState("");
 
+  const { Toast, contextHolder } = useToast();
   const { bonusList, loading, createBonus, updateBonus, deleteBonus } = useBonusSetting();
 
   const handleAddNew = () => {
@@ -39,13 +36,11 @@ const BonusSetting = () => {
 
   const handleConfirmDelete = async () => {
     if (!selectedBonus) return;
-
     try {
       await deleteBonus(selectedBonus.id);
       Toast.success("Bonus deleted successfully");
-    } catch (err) {
+    } catch {
       Toast.error("Delete failed");
-      message.error("Delete failed");
     } finally {
       setIsConfirmOpen(false);
       setSelectedBonus(null);
@@ -53,39 +48,40 @@ const BonusSetting = () => {
   };
 
   const handleModalSubmit = async (formData) => {
-  setSubmitLoading(true);
-
-  try {
-    if (editingBonus) {
-      await updateBonus(editingBonus.id, formData);
-      Toast.success("Bonus updated successfully");
-    } else {
-      await createBonus(formData);
-      Toast.success("Bonus created successfully");
+    setSubmitLoading(true);
+    try {
+      if (editingBonus) {
+        await updateBonus(editingBonus.id, formData);
+        Toast.success("Bonus updated successfully");
+      } else {
+        await createBonus(formData);
+        Toast.success("Bonus created successfully");
+      }
+      setIsModalOpen(false);
+      setEditingBonus(null);
+    } catch {
+      Toast.error("Operation failed");
+    } finally {
+      setSubmitLoading(false);
     }
+  };
 
-    setIsModalOpen(false);
-    setEditingBonus(null);
-  } catch (err) {
-    Toast.error("Operation failed");
-  } finally {
-    setSubmitLoading(false);
-  }
-};
-
+  const filteredData = bonusList.filter((b) =>
+    (b.festival_name || "").toLowerCase().includes(searchText.toLowerCase())
+  );
 
   const columns = [
-    { 
+    {
       title: "S/L",
       width: 80,
       align: "center",
-      render: (_, __, index) => index + 1 
+      render: (_, __, index) => (currentPage - 1) * pageSize + index + 1,
     },
     { title: "Festival Name", dataIndex: "festival_name" },
-    { 
+    {
       title: "Percentage of Bonus",
       dataIndex: "percentage_of_basic",
-      render: (val) => (val !== undefined ? `${val}%` : "-")
+      render: (val) => (val !== undefined ? `${val}%` : "-"),
     },
     {
       title: "Action",
@@ -98,58 +94,60 @@ const BonusSetting = () => {
             icon={<EditOutlined />}
             size="small"
             onClick={() => handleEdit(record)}
+            className="table-action-btn table-action-btn-edit"
           />
-
           <Button
             danger
             type="primary"
             icon={<DeleteOutlined />}
             size="small"
             onClick={() => handleDelete(record)}
+            className="table-action-btn table-action-btn-delete"
           />
         </Space>
       ),
     },
   ];
 
-  const filteredData = bonusList.filter((t) =>
-    (t.festival_name || "").toLowerCase().includes(searchText.toLowerCase())
-  );
-
-  const pagination = {
+  const paginationConfig = {
     current: currentPage,
     pageSize,
     total: filteredData.length,
     showSizeChanger: true,
     showQuickJumper: true,
     pageSizeOptions: ["10", "20", "50", "100"],
-
     onChange: (page, size) => {
       setCurrentPage(page);
       setPageSize(size);
     },
-
-    showTotal: (total, range) =>
-      `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+    showTotal: (total, range) => `Showing ${range[0]} to ${range[1]} of ${total} entries`,
   };
 
   return (
-    <div style={{ padding: 24 }}>
+    <div className="table-page-container">
       {contextHolder}
+
       <Card
+        className="table-page-card"
         title="Bonus Setting"
         extra={
-          <Button type="primary" icon={<PlusOutlined />} onClick={handleAddNew}>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={handleAddNew}
+            className="table-page-add-btn"
+          >
             Add Bonus
           </Button>
         }
       >
-        <Row style={{ marginBottom: 16 }} align="middle" justify="space-between">
+        <Row className="table-page-filters" align="middle" justify="space-between">
           <Col>
             <span style={{ marginRight: 8 }}>Show</span>
             <select
               value={pageSize}
               onChange={(e) => setPageSize(Number(e.target.value))}
+              className="table-page-select"
               style={{ width: 80, marginRight: 8, padding: "4px" }}
             >
               <option value={10}>10</option>
@@ -165,28 +163,31 @@ const BonusSetting = () => {
               placeholder="Search festival..."
               allowClear
               onChange={(e) => setSearchText(e.target.value)}
+              className="table-page-search"
               style={{ width: 250 }}
             />
           </Col>
         </Row>
 
-        <Table
-          columns={columns}
-          dataSource={filteredData.map((t, i) => ({ ...t, key: t.id || i }))}
-          loading={loading}
-          pagination={pagination}
-          size="middle"
-          bordered
-        />
+        <div className="table-page-table">
+          <Table
+            columns={columns}
+            dataSource={filteredData.map((b, i) => ({ ...b, key: b.id || i }))}
+            loading={loading}
+            pagination={paginationConfig}
+            size="middle"
+            bordered
+          />
+        </div>
       </Card>
 
       {isModalOpen && (
         <BonusSettingModal
-         open={isModalOpen}
-         onCancel={() => setIsModalOpen(false)}
-         editingRecord={editingBonus}
-         onSubmit={handleModalSubmit}
-         confirmLoading={submitLoading}
+          open={isModalOpen}
+          onCancel={() => setIsModalOpen(false)}
+          editingRecord={editingBonus}
+          onSubmit={handleModalSubmit}
+          confirmLoading={submitLoading}
         />
       )}
 

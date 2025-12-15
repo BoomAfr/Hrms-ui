@@ -85,6 +85,7 @@ const Department = () => {
             icon={<EditOutlined />}
             size="small"
             onClick={() => handleEdit(record)}
+            className="table-action-btn table-action-btn-edit"
           />
           <Button
             type="primary"
@@ -92,6 +93,7 @@ const Department = () => {
             icon={<DeleteOutlined />}
             size="small"
             onClick={() => handleDelete(record)}
+            className="table-action-btn table-action-btn-delete"
           />
         </Space>
       ),
@@ -158,26 +160,29 @@ const Department = () => {
   };
 
   return (
-    <div style={{ padding: '24px' }}>
+    <div className="table-page-container">
       {contextHolder}
       <Card
+        className="table-page-card"
         title="Department List"
         extra={
           <Button
             type="primary"
             icon={<PlusOutlined />}
             onClick={handleAddNew}
+            className="table-page-add-btn"
           >
             Add New Department
           </Button>
         }
       >
-        <Row style={{ marginBottom: 16 }} align="middle" justify="space-between" gutter={[16, 16]}>
+        <Row className="table-page-filters" align="middle" justify="space-between" gutter={[16, 16]}>
           <Col xs={24} sm={12} md={8}>
             <span style={{ marginRight: 8 }}>Show</span>
             <Select
               value={pageSize}
               onChange={(value) => setPageSize(value)}
+              className="table-page-select"
               style={{ width: 80, marginRight: 8 }}
             >
               <Option value={10}>10</Option>
@@ -192,29 +197,32 @@ const Department = () => {
               placeholder="Search department..."
               allowClear
               onChange={(e) => handleSearch(e.target.value)}
+              className="table-page-search"
               style={{ width: '100%' }}
             />
           </Col>
         </Row>
 
-        <Table
-          columns={columns}
-          dataSource={departments
-            .filter((d) => d.name.toLowerCase().includes(searchText))
-            .map((d, i) => ({
-              key: d.id || i,
-              id: d.id,
-              sl: i + 1,
-              name: d.name,
-            }))
-          }
+        <div className="table-page-table">
+          <Table
+            columns={columns}
+            dataSource={departments
+              .filter((d) => d.name.toLowerCase().includes(searchText))
+              .map((d, i) => ({
+                key: d.id || i,
+                id: d.id,
+                sl: i + 1,
+                name: d.name,
+              }))
+            }
 
-          loading={loading}
-          pagination={pagination}
-          size="middle"
-          bordered
-          scroll={{ x: 400 }}
-        />
+            loading={loading}
+            pagination={pagination}
+            size="middle"
+            bordered
+            scroll={{ x: 400 }}
+          />
+        </div>
       </Card>
       {isModalOpen && (
         <SharedModal

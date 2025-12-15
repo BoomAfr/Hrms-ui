@@ -17,7 +17,7 @@ const AddPermission = () => {
   // Transform API data to match our component structure
   const transformedMenuItems = useMemo(() => {
     if (!allPages || !Array.isArray(allPages)) return [];
-    
+
     const transformItems = (items) => {
       return items.map(item => ({
         key: item.key,
@@ -28,14 +28,14 @@ const AddPermission = () => {
         children: item.children ? transformItems(item.children) : [],
       }));
     };
-    
+
     return transformItems(allPages);
   }, [allPages]);
 
   // Get ONLY leaf nodes (actual pages, not modules/folders)
   const getAllLeafKeys = useMemo(() => {
     const leafKeys = new Set();
-    
+
     const extractLeafKeys = (items) => {
       items.forEach(item => {
         if (item.children && item.children.length > 0) {
@@ -50,7 +50,7 @@ const AddPermission = () => {
         }
       });
     };
-    
+
     extractLeafKeys(transformedMenuItems);
     return Array.from(leafKeys);
   }, [transformedMenuItems]);
@@ -58,7 +58,7 @@ const AddPermission = () => {
   // Get leaf keys for a specific module (only actual pages)
   const getModuleLeafKeys = (module) => {
     const leafKeys = [];
-    
+
     const extractLeafKeys = (items) => {
       items.forEach(item => {
         if (item.children && item.children.length > 0) {
@@ -71,7 +71,7 @@ const AddPermission = () => {
         }
       });
     };
-    
+
     extractLeafKeys([module]);
     return leafKeys;
   };
@@ -155,7 +155,7 @@ const AddPermission = () => {
   // Handle checkbox change for individual items
   const handleCheckboxChange = (key, checked) => {
     let newCheckedKeys = [...checkedKeys];
-    
+
     if (checked) {
       if (!newCheckedKeys.includes(key)) {
         newCheckedKeys.push(key);
@@ -163,14 +163,14 @@ const AddPermission = () => {
     } else {
       newCheckedKeys = newCheckedKeys.filter(k => k !== key);
     }
-    
+
     setCheckedKeys(newCheckedKeys);
   };
 
   // Handle module header checkbox change
   const handleModuleHeaderChange = (module) => {
     const moduleLeafKeys = getModuleLeafKeys(module);
-    
+
     if (isModuleFullySelected(module)) {
       // Remove all module leaf keys
       const newCheckedKeys = checkedKeys.filter(key => !moduleLeafKeys.includes(key));
@@ -184,42 +184,42 @@ const AddPermission = () => {
 
   // Handle select all - WITH VALIDATION
   const handleSelectAll = () => {
-  const allLeafKeys = getAllLeafKeys;
-  
-  // Find parent pages that are needed for module structure
-  const necessaryParentPages = new Set();
-  
-  const findNecessaryParents = (items) => {
-    items.forEach(item => {
-      if (item.children && item.children.length > 0) {
-        // Check if any child is selected
-        const hasSelectedChild = item.children.some(child => 
-          allLeafKeys.includes(child.key)
-        );
-        
-        if (hasSelectedChild && item.id && item.id >= 55) {
-          necessaryParentPages.add(item.key);
+    const allLeafKeys = getAllLeafKeys;
+
+    // Find parent pages that are needed for module structure
+    const necessaryParentPages = new Set();
+
+    const findNecessaryParents = (items) => {
+      items.forEach(item => {
+        if (item.children && item.children.length > 0) {
+          // Check if any child is selected
+          const hasSelectedChild = item.children.some(child =>
+            allLeafKeys.includes(child.key)
+          );
+
+          if (hasSelectedChild && item.id && item.id >= 55) {
+            necessaryParentPages.add(item.key);
+          }
+
+          // Recursively check children
+          findNecessaryParents(item.children);
         }
-        
-        // Recursively check children
-        findNecessaryParents(item.children);
-      }
+      });
+    };
+
+    findNecessaryParents(transformedMenuItems);
+
+    // Combine leaf keys with necessary parent pages
+    const allKeysToSelect = [...new Set([...allLeafKeys, ...necessaryParentPages])];
+
+    console.log('Selecting all keys:', {
+      leafKeys: allLeafKeys,
+      necessaryParents: Array.from(necessaryParentPages),
+      finalSelection: allKeysToSelect
     });
+
+    setCheckedKeys(allKeysToSelect);
   };
-  
-  findNecessaryParents(transformedMenuItems);
-  
-  // Combine leaf keys with necessary parent pages
-  const allKeysToSelect = [...new Set([...allLeafKeys, ...necessaryParentPages])];
-  
-  console.log('Selecting all keys:', {
-    leafKeys: allLeafKeys,
-    necessaryParents: Array.from(necessaryParentPages),
-    finalSelection: allKeysToSelect
-  });
-  
-  setCheckedKeys(allKeysToSelect);
-};
 
   // Handle deselect all
   const handleDeselectAll = () => {
@@ -264,7 +264,7 @@ const AddPermission = () => {
 
       // Call API to update permissions
       await updateRolePermission(selectedRoleId, { page_ids: selectedPageIds }, Toast);
-      
+
     } catch (error) {
       message.error('Failed to update permissions');
       console.error('Error updating permissions:', error);
@@ -281,7 +281,7 @@ const AddPermission = () => {
             {item.icon} {item.label}
           </span>
           {!item.children || item.children.length === 0 ? (
-            <Checkbox 
+            <Checkbox
               checked={checkedKeys.includes(item.key)}
               onChange={(e) => handleCheckboxChange(item.key, e.target.checked)}
               size="small"
@@ -307,18 +307,19 @@ const AddPermission = () => {
   }, [transformedMenuItems]);
 
   return (
-    <div style={{ padding: '24px' }}>
+    <div className="table-page-container">
       {contextHolder}
       <Card
+        className="table-page-card"
         title="Role Permission Management"
         extra={
           <Space>
             <Button disabled={!selectedRoleId} onClick={handleSelectAll}>Select All</Button>
             <Button disabled={!selectedRoleId} onClick={handleDeselectAll}>Deselect All</Button>
-            <Button 
-              disabled={!selectedRoleId} 
-              loading={pagesLoading} 
-              type="primary" 
+            <Button
+              disabled={!selectedRoleId}
+              loading={pagesLoading}
+              type="primary"
               onClick={handleSavePermissions}
             >
               Save Permissions
@@ -326,16 +327,17 @@ const AddPermission = () => {
           </Space>
         }
       >
-        <Row style={{ marginBottom: 16 }} align="middle" justify="space-between">
+        <Row className="table-page-filters" align="middle" justify="space-between">
           <Col>
-            <Select 
-              placeholder="Select Role" 
+            <Select
+              placeholder="Select Role"
+              className="table-page-select"
               style={{ width: 250 }}
               onChange={handleRoleChange}
               value={selectedRoleId}
               loading={pagesLoading}
             >
-              {Array.isArray(roles) && 
+              {Array.isArray(roles) &&
                 roles.map((role) => (
                   <Option key={role.id} value={role.id}>
                     {role.name}
@@ -353,16 +355,16 @@ const AddPermission = () => {
                 {rowModules.map((module) => {
                   const isFullySelected = isModuleFullySelected(module);
                   const isPartiallySelected = isModulePartiallySelected(module);
-                  
+
                   return (
                     <Col xs={24} sm={12} md={8} key={module.key}>
-                      <Card 
+                      <Card
                         size="small"
                         title={
-                          <div 
-                            style={{ 
-                              display: 'flex', 
-                              alignItems: 'center', 
+                          <div
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
                               justifyContent: 'space-between',
                               background: isFullySelected ? '#e6f7ff' : 'transparent',
                               padding: '4px 8px',
@@ -372,7 +374,7 @@ const AddPermission = () => {
                             }}
                           >
                             <div style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
-                              <Checkbox 
+                              <Checkbox
                                 checked={isFullySelected}
                                 indeterminate={isPartiallySelected}
                                 onChange={() => handleModuleHeaderChange(module)}
@@ -382,11 +384,11 @@ const AddPermission = () => {
                                 {module.icon} {module.label}
                               </span>
                             </div>
-                            <Button 
-                              size="small" 
+                            <Button
+                              size="small"
                               type={isFullySelected ? "primary" : "default"}
                               onClick={() => handleModuleHeaderChange(module)}
-                              style={{ 
+                              style={{
                                 fontSize: '10px',
                                 fontWeight: 'bold',
                                 background: isFullySelected ? '#1890ff' : undefined,
@@ -397,15 +399,15 @@ const AddPermission = () => {
                             </Button>
                           </div>
                         }
-                        style={{ 
+                        style={{
                           height: '100%',
                           border: '1px solid #d9d9d9',
                           borderTop: isFullySelected ? '2px solid #1890ff' : '1px solid #d9d9d9'
                         }}
-                        bodyStyle={{ 
-                          padding: '8px', 
-                          maxHeight: '300px', 
-                          overflow: 'auto' 
+                        bodyStyle={{
+                          padding: '8px',
+                          maxHeight: '300px',
+                          overflow: 'auto'
                         }}
                       >
                         {module.children && module.children.length > 0 ? (
@@ -419,8 +421,8 @@ const AddPermission = () => {
                             style={{ background: 'transparent' }}
                           />
                         ) : (
-                          <div style={{ 
-                            textAlign: 'center', 
+                          <div style={{
+                            textAlign: 'center',
                             color: '#999',
                             padding: '20px'
                           }}>
@@ -435,9 +437,9 @@ const AddPermission = () => {
             ))}
           </div>
         ) : (
-          <div style={{ 
-            textAlign: 'center', 
-            padding: '40px', 
+          <div style={{
+            textAlign: 'center',
+            padding: '40px',
             color: '#999',
             background: '#fafafa',
             borderRadius: 6

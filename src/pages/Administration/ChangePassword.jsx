@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Form, Input, Button, Card, Typography } from 'antd';
+import { LockOutlined, UserOutlined, KeyOutlined } from '@ant-design/icons';
 import { changePasswordAPI } from '../../services/changePasswordServices';
 import { logout } from '../../store/slices/authSlice';
 import { useToast } from '../../hooks/useToast';
+import './ChangePassword.css';
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 const ChangePassword = () => {
     const dispatch = useDispatch();
@@ -44,37 +46,44 @@ const ChangePassword = () => {
     };
 
     return (
-        <>
+        <div className="change-password-container">
             {contextHolder}
-            <Card
-                style={{
-                    maxWidth: 500,
-                    margin: '50px auto',
-                    borderRadius: 10,
-                    boxShadow: '0 6px 20px rgba(0,0,0,0.15)',
-                    padding: '30px 20px',
-                    backgroundColor: '#fff',
-                }}
-            >
-                <Title level={3} style={{ textAlign: 'center', marginBottom: 30, color: '#1890ff' }}>
-                    Change Password
-                </Title>
+            <Card className="change-password-card">
+                <div className="change-password-header">
+                    <Title level={2} className="change-password-title">
+                        Change Password
+                    </Title>
+                    <Text className="change-password-subtitle">
+                        Ensure your account is secure with a strong password
+                    </Text>
+                </div>
 
                 <Form
                     layout="vertical"
                     onFinish={handleChangePassword}
                     autoComplete="off"
+                    className="change-password-form"
+                    size="large"
                 >
                     <Form.Item label="User Name">
-                        <Input value={username || 'Loading...'} disabled />
+                        <Input
+                            prefix={<UserOutlined className="input-icon" />}
+                            value={username || 'Loading...'}
+                            disabled
+                            className="change-password-input"
+                        />
                     </Form.Item>
 
                     <Form.Item
-                        label="Old Password"
+                        label="Current Password"
                         name="old_password"
-                        rules={[{ required: true, message: 'Please enter your old password' }]}
+                        rules={[{ required: true, message: 'Please enter your current password' }]}
                     >
-                        <Input.Password placeholder="Old Password" />
+                        <Input.Password
+                            prefix={<LockOutlined className="input-icon" />}
+                            placeholder="Enter current password"
+                            className="change-password-input"
+                        />
                     </Form.Item>
 
                     <Form.Item
@@ -85,11 +94,15 @@ const ChangePassword = () => {
                             { min: 8, message: 'Password must be at least 8 characters' }
                         ]}
                     >
-                        <Input.Password placeholder="New Password" />
+                        <Input.Password
+                            prefix={<KeyOutlined className="input-icon" />}
+                            placeholder="Enter new password"
+                            className="change-password-input"
+                        />
                     </Form.Item>
 
                     <Form.Item
-                        label="Confirm Password"
+                        label="Confirm New Password"
                         name="confirm_password"
                         dependencies={['new_password']}
                         rules={[
@@ -104,7 +117,11 @@ const ChangePassword = () => {
                             }),
                         ]}
                     >
-                        <Input.Password placeholder="Confirm Password" />
+                        <Input.Password
+                            prefix={<KeyOutlined className="input-icon" />}
+                            placeholder="Confirm new password"
+                            className="change-password-input"
+                        />
                     </Form.Item>
 
                     <Form.Item>
@@ -113,14 +130,14 @@ const ChangePassword = () => {
                             htmlType="submit"
                             block
                             loading={loading}
-                            style={{ borderRadius: 5, backgroundColor: '#1890ff', borderColor: '#1890ff' }}
+                            className="change-password-btn"
                         >
                             Update Password
                         </Button>
                     </Form.Item>
                 </Form>
             </Card>
-        </>
+        </div>
     );
 };
 

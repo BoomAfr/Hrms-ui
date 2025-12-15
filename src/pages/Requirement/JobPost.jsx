@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import {
-  Card,Table,Button,Space,Input,Tag,Modal,Descriptions,Popconfirm,} from "antd";
+  Card, Table, Button, Space, Input, Tag, Modal, Descriptions, Popconfirm,
+} from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import JobPostModal from "../../components/common/SharedModal/JobPostModal";
@@ -11,7 +12,7 @@ const { Search } = Input;
 
 const JobPost = () => {
   const {
-    jobPosts,loading,pagination,fetchJobPosts,createJobPost,deleteJobPost,updateJobPost,search,setSearch,} = useJobPosts();
+    jobPosts, loading, pagination, fetchJobPosts, createJobPost, deleteJobPost, updateJobPost, search, setSearch, } = useJobPosts();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editData, setEditData] = useState(null);
@@ -88,17 +89,17 @@ const JobPost = () => {
       align: "center",
       render: (_, record) => (
         <Space>
-          <Button size="small" onClick={() => handleView(record.id)}>
+          <Button size="small" onClick={() => handleView(record.id)} className="table-action-btn table-action-btn-view">
             View
           </Button>
-          <Button size="small" onClick={() => handleEdit(record.id)}>
+          <Button size="small" onClick={() => handleEdit(record.id)} className="table-action-btn table-action-btn-edit">
             Edit
           </Button>
           <Popconfirm
             title="Are you sure?"
             onConfirm={() => deleteJobPost(record.id)}
           >
-            <Button size="small" danger>
+            <Button size="small" danger className="table-action-btn table-action-btn-delete">
               Delete
             </Button>
           </Popconfirm>
@@ -108,8 +109,9 @@ const JobPost = () => {
   ];
 
   return (
-    <div style={{ padding: 24 }}>
+    <div className="table-page-container">
       <Card
+        className="table-page-card"
         title="Job Posts"
         extra={
           <Space>
@@ -117,6 +119,7 @@ const JobPost = () => {
               placeholder="Search job..."
               allowClear
               onSearch={handleSearch}
+              className="table-page-search"
               style={{ width: 250 }}
             />
             <Button
@@ -126,25 +129,28 @@ const JobPost = () => {
                 setEditData(null);
                 setIsModalOpen(true);
               }}
+              className="table-page-add-btn"
             >
               Create Job Post
             </Button>
           </Space>
         }
       >
-        <Table
-          columns={columns}
-          dataSource={jobPosts}
-          loading={loading}
-          rowKey="id"
-          pagination={{
-            current: pagination.current,
-            pageSize: pagination.pageSize,
-            total: pagination.total,
-            onChange: (page, pageSize) => fetchJobPosts(page, pageSize, search),
-          }}
-          bordered
-        />
+        <div className="table-page-table">
+          <Table
+            columns={columns}
+            dataSource={jobPosts}
+            loading={loading}
+            rowKey="id"
+            pagination={{
+              current: pagination.current,
+              pageSize: pagination.pageSize,
+              total: pagination.total,
+              onChange: (page, pageSize) => fetchJobPosts(page, pageSize, search),
+            }}
+            bordered
+          />
+        </div>
       </Card>
 
       <JobPostModal

@@ -57,9 +57,9 @@ const GenerateBulkSalarySheet = () => {
 
     const payload = {
       month: dayjs(values.month).format('YYYY-MM'),
-      branch_id: values.branch, 
+      branch_id: values.branch,
       department_id: values.department,
-      designation_id: values.designation 
+      designation_id: values.designation
     };
 
     // Remove undefined keys
@@ -79,12 +79,12 @@ const GenerateBulkSalarySheet = () => {
   };
 
   return (
-    <div style={{ padding: "24px" }}>
+    <div className="table-page-container">
       {/* Top Button */}
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
         <Button
           type="primary"
-          style={{ backgroundColor: "#87d068", borderColor: "#87d068" }}
+          className="table-page-add-btn"
           onClick={() => navigate('/payroll/generate-salary-sheet')}
         >
           Generate Payslip
@@ -92,8 +92,8 @@ const GenerateBulkSalarySheet = () => {
       </div>
 
       <Card
-        title={<span style={{ color: 'white' }}>Generate Bulk Salary Sheet</span>}
-        headStyle={{ backgroundColor: "#1890ff", border: "none" }}
+        className="table-page-card"
+        title="Generate Bulk Salary Sheet"
       >
         <Form
           form={form}

@@ -1,0 +1,400 @@
+/* ====================================
+   Layout Component Styles
+   Modern Sidebar, Header & Content
+   Updated with Deep Indigo Gradient
+   Fixed: Collapsed Submenu Popup Visibility
+   ==================================== */
+
+/* ========== Sidebar Styles ========== */
+.hrms-layout-sider {
+  position: relative;
+  /* Deep Indigo to Midnight Blue Gradient */
+  background: linear-gradient(180deg, #312e81 0%, #1e1b4b 100%) !important;
+  box-shadow: 4px 0 12px rgba(0, 0, 0, 0.15);
+  transition: all var(--transition-base);
+}
+
+[data-theme="dark"] .hrms-layout-sider {
+  background: linear-gradient(180deg, #1e1b4b 0%, #0f172a 100%) !important;
+}
+
+/* Sidebar Logo */
+.hrms-sidebar-logo {
+  padding: 24px 16px;
+  color: white;
+  text-align: center;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(8px);
+  margin-bottom: 12px;
+  transition: all var(--transition-base);
+  text-transform: uppercase;
+  background: linear-gradient(90deg, #fff 0%, #e0e7ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* User Profile Section in Sidebar */
+.hrms-sidebar-profile {
+  margin: 0 12px 12px 12px;
+  padding: 16px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all var(--transition-base);
+}
+
+.hrms-sidebar-profile:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.hrms-sidebar-profile-collapsed {
+  padding: 12px 8px;
+  margin: 0 8px 12px 8px;
+}
+
+.hrms-sidebar-profile-avatar {
+  margin-bottom: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  transition: all var(--transition-base);
+}
+
+.hrms-sidebar-profile-avatar:hover {
+  transform: scale(1.05);
+  border-color: rgba(255, 255, 255, 0.8);
+}
+
+.hrms-sidebar-profile-name {
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hrms-sidebar-profile-role {
+  color: #a5b4fc;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Sidebar Menu Customization */
+.hrms-sidebar-menu.ant-menu-dark {
+  background: transparent;
+  padding: 0 8px;
+}
+
+.hrms-sidebar-menu .ant-menu-item,
+.hrms-sidebar-menu .ant-menu-submenu-title {
+  margin: 4px 0;
+  border-radius: 10px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  color: #e0e7ff !important;
+  /* Indigo-50 */
+}
+
+/* Hover State */
+.hrms-sidebar-menu .ant-menu-item:hover,
+.hrms-sidebar-menu .ant-menu-submenu-title:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+  transform: translateX(2px);
+}
+
+/* Selected State - GLASS effect */
+.hrms-sidebar-menu .ant-menu-item-selected {
+  background: linear-gradient(90deg, rgba(99, 102, 241, 0.4) 0%, rgba(67, 56, 202, 0.2) 100%) !important;
+  border-left: 3px solid #6366f1;
+  /* Indigo-500 accent */
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.hrms-sidebar-menu .ant-menu-item-icon,
+.hrms-sidebar-menu .ant-menu-submenu-arrow {
+  transition: all var(--transition-base);
+  opacity: 0.8;
+}
+
+.hrms-sidebar-menu .ant-menu-item-selected .ant-menu-item-icon {
+  opacity: 1;
+  color: #818cf8;
+  /* Indigo-400 */
+}
+
+.hrms-sidebar-menu .ant-menu-item:hover .ant-menu-item-icon {
+  transform: scale(1.1);
+  opacity: 1;
+}
+
+/* Submenu Styling */
+.ant-menu-inline,
+.ant-menu-vertical,
+.ant-menu-vertical-left {
+  background: transparent !important;
+  border-right: none !important;
+}
+
+.hrms-sidebar-menu .ant-menu-sub.ant-menu-inline {
+  background: rgba(0, 0, 0, 0.2) !important;
+  border-radius: 8px;
+  margin: 4px 0;
+}
+
+/* FIX: Popup Menu Visibility (Collapsed Sidebar Hover) */
+.ant-menu-submenu-popup {
+  background: transparent !important;
+  /* Remove ant-design default */
+}
+
+.ant-menu-submenu-popup .ant-menu-vertical.ant-menu-sub {
+  background: #1e1b4b !important;
+  /* Deep Indigo Background */
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  /* Strong shadow for visibility */
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  /* Subtle border definition */
+}
+
+.ant-menu-submenu-popup .ant-menu-item {
+  color: #e0e7ff !important;
+  margin: 4px 0;
+  border-radius: 6px;
+}
+
+.ant-menu-submenu-popup .ant-menu-item:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+}
+
+.ant-menu-submenu-popup .ant-menu-item-selected {
+  background: linear-gradient(90deg, rgba(99, 102, 241, 0.4) 0%, rgba(67, 56, 202, 0.2) 100%) !important;
+  color: white !important;
+}
+
+/* ========== Header Styles ========== */
+.hrms-layout-header {
+  padding: 0 24px !important;
+  /* Deep Indigo to match Sidebar */
+  background: linear-gradient(90deg, #1e1b4b 0%, #312e81 100%) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  transition: all var(--transition-base);
+}
+
+[data-theme="dark"] .hrms-layout-header {
+  background: linear-gradient(90deg, #0f172a 0%, #1e1b4b 100%) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.hrms-header-trigger {
+  font-size: 18px;
+  padding: 0 12px;
+  height: 48px;
+  width: 48px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  color: white !important;
+  /* White icon */
+}
+
+.hrms-header-trigger:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white !important;
+}
+
+.hrms-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.hrms-header-user-dropdown {
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  /* Subtle white border */
+  background: rgba(255, 255, 255, 0.05);
+  /* Glass effect */
+  transition: all var(--transition-base);
+}
+
+.hrms-header-user-dropdown:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* User Name Text - White */
+.hrms-header-user-name {
+  font-weight: 600;
+  font-size: 13px;
+  color: white;
+}
+
+/* User Role Text - Lighter Indigo */
+.hrms-header-user-role {
+  font-size: 11px;
+  color: #a5b4fc;
+  /* Indigo-300 */
+  margin-left: 4px;
+}
+
+/* Ensure Avatar borders are visible if needed */
+.hrms-header-user-dropdown .ant-avatar {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* ========== Breadcrumb Styles ========== */
+.hrms-breadcrumb-container {
+  padding: 12px 24px;
+  background: white;
+  /* Keep breadcrumb bar light for contrast content separation */
+  border-bottom: 1px solid #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all var(--transition-base);
+}
+
+.hrms-breadcrumb-container .ant-breadcrumb {
+  margin: 0;
+  font-weight: 500;
+}
+
+.hrms-breadcrumb-container .ant-breadcrumb-link:hover {
+  color: var(--primary-500);
+}
+
+/* ========== Content Area ========== */
+.hrms-layout-content {
+  margin: 0 24px 24px 24px;
+  padding: 24px;
+  min-height: 280px;
+  background: var(--bg-primary);
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all var(--transition-base);
+}
+
+/* Page transition animation - triggers on route change */
+.page-transition-enter {
+  animation: pageTransitionFadeIn 0.4s ease-out;
+}
+
+@keyframes pageTransitionFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hrms-layout-content-wrapper {
+  background: var(--bg-secondary);
+  min-height: calc(100vh - 64px);
+  transition: background-color var(--transition-base);
+}
+
+/* ========== Mobile Drawer ========== */
+.hrms-mobile-drawer .ant-drawer-body {
+  padding: 0;
+  background: linear-gradient(180deg, #312e81 0%, #1e1b4b 100%);
+}
+
+[data-theme="dark"] .hrms-mobile-drawer .ant-drawer-body {
+  background: linear-gradient(180deg, #1e1b4b 0%, #0f172a 100%);
+}
+
+/* ========== Responsive Adjustments ========== */
+@media (max-width: 992px) {
+  .hrms-layout-header {
+    padding: 0 16px !important;
+  }
+
+  .hrms-breadcrumb-container {
+    padding: 12px 16px;
+  }
+
+  .hrms-layout-content {
+    margin: 0 16px 16px 16px;
+    padding: 16px;
+  }
+
+  .hrms-header-user-name,
+  .hrms-header-user-role {
+    display: none;
+  }
+}
+
+@media (max-width: 576px) {
+  .hrms-header-trigger {
+    padding: 0 12px;
+  }
+
+  .hrms-breadcrumb-container {
+    padding: 8px 12px;
+  }
+
+  .hrms-layout-content {
+    margin: 0 12px 12px 12px;
+    padding: 12px;
+    border-radius: 12px;
+  }
+}
+
+/* ========== Loading State ========== */
+.hrms-layout-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: var(--bg-secondary);
+}
+
+.hrms-layout-loading .ant-spin {
+  color: var(--primary-500);
+}
+
+/* ========== Animations ========== */
+@keyframes slideInFromLeft {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.hrms-sidebar-profile,
+.hrms-sidebar-menu {
+  animation: slideInFromLeft 0.3s ease-out;
+}

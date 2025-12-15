@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Card, 
-  Row, 
-  Col, 
-  Button, 
-  Table, 
-  Tag, 
-  Typography, 
+import {
+  Card,
+  Row,
+  Col,
+  Button,
+  Table,
+  Tag,
+  Typography,
   Divider,
   Avatar,
   List,
@@ -16,9 +16,9 @@ import {
   Empty,
   Alert
 } from 'antd';
-import { 
-  UserOutlined, 
-  ClockCircleOutlined, 
+import {
+  UserOutlined,
+  ClockCircleOutlined,
   CheckCircleOutlined,
   LogoutOutlined,
   BellOutlined,
@@ -28,6 +28,7 @@ import {
   ExclamationCircleOutlined
 } from '@ant-design/icons';
 import { useDashboard } from '../hooks/useDashboard';
+import './Dashboard.css';
 
 const { Title, Text } = Typography;
 
@@ -35,7 +36,7 @@ const Dashboard = () => {
   const [isCheckedIn, setIsCheckedIn] = useState(false);
   const [checkInTime, setCheckInTime] = useState(null);
   const { dashboardData, loading, error } = useDashboard();
-  
+
   console.log(dashboardData, 'dashboardData');
 
   const handleCheckIn = () => {
@@ -60,25 +61,25 @@ const Dashboard = () => {
       title: 'TOTAL EMPLOYEE',
       value: dashboardData?.metrics?.total_employee || 0,
       icon: <TeamOutlined />,
-      color: '#1890ff'
+      className: 'stat-card-primary'
     },
     {
       title: 'DEPARTMENT',
       value: dashboardData?.metrics?.total_department || 0,
       icon: <UserOutlined />,
-      color: '#52c41a'
+      className: 'stat-card-success'
     },
     {
       title: 'PRESENT TODAY',
       value: dashboardData?.metrics?.present_today || 0,
       icon: <CheckCircleOutlined />,
-      color: '#52c41a'
+      className: 'stat-card-warning' // Changed to warning for visual variety as per plan
     },
     {
       title: 'ABSENT TODAY',
       value: dashboardData?.metrics?.absent_today || 0,
       icon: <ClockCircleOutlined />,
-      color: '#ff4d4f'
+      className: 'stat-card-danger'
     }
   ];
 
@@ -89,10 +90,10 @@ const Dashboard = () => {
       dataIndex: 'photo',
       key: 'photo',
       render: (photo, record) => (
-        <Avatar 
-          size="small" 
-          src={photo} 
-          icon={<UserOutlined />} 
+        <Avatar
+          size="small"
+          src={photo}
+          icon={<UserOutlined />}
         />
       ),
       width: 60,
@@ -123,7 +124,7 @@ const Dashboard = () => {
           'Absent': { color: 'red', text: 'Absent' },
           'Half Day': { color: 'blue', text: 'Half Day' }
         };
-        
+
         const config = statusConfig[status] || { color: 'default', text: status };
         return (
           <Tag color={config.color}>
@@ -139,13 +140,13 @@ const Dashboard = () => {
 
   // Loading Skeleton Components
   const StatSkeleton = () => (
-    <Card style={{ borderRadius: '8px' }} bodyStyle={{ padding: '16px' }}>
+    <Card style={{ borderRadius: '16px', border: 'none' }} bodyStyle={{ padding: '24px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ flex: 1 }}>
-          <Skeleton.Input active size="small" style={{ width: '80%', marginBottom: '8px' }} />
-          <Skeleton.Input active size="large" style={{ width: '60%' }} />
+          <Skeleton.Input active size="small" style={{ width: '80%', marginBottom: '12px' }} />
+          <Skeleton.Input active size="large" style={{ width: '60%', height: '40px' }} />
         </div>
-        <Skeleton.Avatar active size={32} />
+        <Skeleton.Avatar active size={48} shape="circle" />
       </div>
     </Card>
   );
@@ -153,10 +154,10 @@ const Dashboard = () => {
   const TableSkeleton = () => (
     <div>
       {[...Array(5)].map((_, index) => (
-        <div key={index} style={{ display: 'flex', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid #f0f0f0' }}>
-          <Skeleton.Avatar active size="small" style={{ marginRight: '12px' }} />
+        <div key={index} style={{ display: 'flex', alignItems: 'center', padding: '16px 0', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
+          <Skeleton.Avatar active size="small" style={{ marginRight: '16px' }} />
           <div style={{ flex: 1 }}>
-            <Skeleton.Input active size="small" style={{ width: '80%' }} />
+            <Skeleton.Input active size="small" style={{ width: '60%' }} />
           </div>
           <Skeleton.Input active size="small" style={{ width: '60px', marginRight: '12px' }} />
           <Skeleton.Input active size="small" style={{ width: '60px', marginRight: '12px' }} />
@@ -169,8 +170,8 @@ const Dashboard = () => {
   const NoticeSkeleton = () => (
     <div>
       {[...Array(2)].map((_, index) => (
-        <div key={index} style={{ marginBottom: '12px', padding: '12px', backgroundColor: '#fafafa', borderRadius: '4px' }}>
-          <Skeleton active paragraph={{ rows: 1 }} />
+        <div key={index} style={{ marginBottom: '16px', padding: '16px', background: 'rgba(0,0,0,0.02)', borderRadius: '8px' }}>
+          <Skeleton active paragraph={{ rows: 2 }} title={{ width: '70%' }} />
         </div>
       ))}
     </div>
@@ -190,68 +191,108 @@ const Dashboard = () => {
   }
 
   return (
-    <div style={{ padding: '24px', background: '#f0f2f5', minHeight: '100vh' }}>
-      <Title level={2} style={{ marginBottom: '24px' }}>Dashboard</Title>
+    <div className="dashboard-container" style={{ padding: '24px' }}>
+      <Title level={2} className="dashboard-title">Dashboard Overview</Title>
+
       
-      {/* Stats Section */}
-      <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
-        {statsData.map((stat, index) => (
-          <Col xs={24} sm={12} lg={6} key={index}>
-            {loading ? (
-              <StatSkeleton />
-            ) : (
-              <Card 
-                style={{ 
-                  borderLeft: `4px solid ${stat.color}`,
-                  borderRadius: '8px'
-                }}
-                bodyStyle={{ padding: '16px' }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div className="stat-cards-container">
+        <Row gutter={[24, 24]} style={{ marginBottom: '32px' }}>
+          
+          <Col xs={24} sm={12} lg={6}>
+            {loading ? <StatSkeleton /> : (
+              <Card className="stat-card card-purple" bodyStyle={{ padding: '24px' }}>
+                <div className="stat-card-content">
                   <div>
-                    <Text type="secondary" style={{ fontSize: '12px', fontWeight: '500' }}>
-                      {stat.title}
-                    </Text>
-                    <Title 
-                      level={2} 
-                      style={{ 
-                        margin: '8px 0 0 0', 
-                        color: stat.color,
-                        fontSize: '28px'
-                      }}
-                    >
-                      {stat.value}
-                    </Title>
+                    <span className="stat-card-label">Total Departments</span>
+                    <h3 className="stat-card-value">{dashboardData?.metrics?.total_department || 0}</h3>
+                    <div className="stat-card-footer">
+                       <span>Good Teamwork will give good results</span>
+                    </div>
                   </div>
-                  <div 
-                    style={{
-                      fontSize: '32px',
-                      color: stat.color,
-                      opacity: 0.8
-                    }}
-                  >
-                    {stat.icon}
+                  <div className="stat-icon-wrapper">
+                    <TeamOutlined className="stat-card-icon" />
                   </div>
                 </div>
               </Card>
             )}
           </Col>
-        ))}
-      </Row>
 
-      {/* Single Row for Notice Board, Check In/Out, and Today Attendance */}
-      <Row gutter={[16, 16]}>
-        {/* Notice Board - Left Side */}
-        <Col xs={24} lg={6}>
-          <Card 
+         
+          <Col xs={24} sm={12} lg={6}>
+            {loading ? <StatSkeleton /> : (
+              <Card className="stat-card card-pink" bodyStyle={{ padding: '24px' }}>
+                <div className="stat-card-content">
+                  <div>
+                    <span className="stat-card-label">Total Employees</span>
+                    <h3 className="stat-card-value">{dashboardData?.metrics?.total_employee || 0}</h3>
+                    <div className="stat-card-footer">
+                       <span>Employees are the soul of company</span>
+                    </div>
+                  </div>
+                  <div className="stat-icon-wrapper">
+                    <UserOutlined className="stat-card-icon" />
+                  </div>
+                </div>
+              </Card>
+            )}
+          </Col>
+
+          
+          <Col xs={24} sm={12} lg={6}>
+            {loading ? <StatSkeleton /> : (
+              <Card className="stat-card card-green" bodyStyle={{ padding: '24px' }}>
+                <div className="stat-card-content">
+                  <div>
+                    <span className="stat-card-label">Present Today</span>
+                    <h3 className="stat-card-value">{dashboardData?.metrics?.present_today || 0}</h3>
+                    <div className="stat-card-footer">
+                      <RiseOutlined /> <span>On time today</span>
+                    </div>
+                  </div>
+                  <div className="stat-icon-wrapper">
+                    <CheckCircleOutlined className="stat-card-icon" />
+                  </div>
+                </div>
+              </Card>
+            )}
+          </Col>
+
+          
+          <Col xs={24} sm={12} lg={6}>
+            {loading ? <StatSkeleton /> : (
+              <Card className="stat-card card-orange" bodyStyle={{ padding: '24px' }}>
+                <div className="stat-card-content">
+                  <div>
+                    <span className="stat-card-label">Absent Today</span>
+                    <h3 className="stat-card-value">{dashboardData?.metrics?.absent_today || 0}</h3>
+                    <div className="stat-card-footer">
+                      <ExclamationCircleOutlined /> <span>Needs attention</span>
+                    </div>
+                  </div>
+                  <div className="stat-icon-wrapper">
+                    <ClockCircleOutlined className="stat-card-icon" />
+                  </div>
+                </div>
+              </Card>
+            )}
+          </Col>
+        </Row>
+      </div>
+
+      
+      <Row gutter={[24, 24]}>
+        
+        <Col xs={24} lg={6} style={{ display: 'flex', flexDirection: 'column' }}>
+          <Card
+            className="notice-card"
             title={
-              <span style={{ fontWeight: '600', fontSize: '14px' }}>
-                <BellOutlined style={{ marginRight: '8px', color: '#1890ff' }} />
-                NOTICE BOARD
+              <span className="notice-card-title">
+                <BellOutlined className="notice-card-icon" />
+                ANNOUNCEMENTS
               </span>
             }
-            style={{ borderRadius: '8px', height: '100%' }}
-            bodyStyle={{ padding: '12px' }}
+            style={{ height: '100%', flex: 1 }}
+            bodyStyle={{ padding: '16px', height: 'calc(100% - 58px)', overflowY: 'auto' }}
           >
             {loading ? (
               <NoticeSkeleton />
@@ -259,128 +300,126 @@ const Dashboard = () => {
               <List
                 itemLayout="horizontal"
                 dataSource={noticeData}
-                size="small"
+                split={false}
                 renderItem={item => (
                   <List.Item
-                    style={{
-                      borderLeft: '3px solid #1890ff',
-                      paddingLeft: '8px',
-                      marginBottom: '8px',
-                      backgroundColor: '#fafafa',
-                      borderRadius: '4px',
-                      padding: '8px'
-                    }}
+                    className="notice-list-item"
+                    style={{ border: 'none' }}
                   >
-                    <List.Item.Meta
-                      title={
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <Text strong style={{ fontSize: '13px' }}>{item.title}</Text>
-                          <Text type="secondary" style={{ fontSize: '11px' }}>
-                            {item.date}
-                          </Text>
-                        </div>
-                      }
-                      description={
-                        <div>
-                          <div style={{ marginBottom: '2px' }}>
-                            <Text type="secondary" style={{ fontSize: '11px' }}>
-                              Published By: {item.publishedBy}
-                            </Text>
-                          </div>
-                          <Text style={{ fontSize: '12px' }}>
-                            {item.description}
-                          </Text>
-                        </div>
-                      }
-                    />
+                    <div style={{ width: '100%' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                        <Text strong className="notice-title">{item.title}</Text>
+                        <Text className="notice-date">
+                          {item.date}
+                        </Text>
+                      </div>
+                      <div style={{ marginBottom: '6px' }}>
+                        <Text type="secondary" style={{ fontSize: '11px', fontStyle: 'italic' }}>
+                          From: {item.publishedBy}
+                        </Text>
+                      </div>
+                      <Text className="notice-description">
+                        {item.description}
+                      </Text>
+                    </div>
                   </List.Item>
                 )}
               />
             ) : (
-              <Empty 
-                image={Empty.PRESENTED_IMAGE_SIMPLE}
-                description="No notices available"
-                imageStyle={{ height: 40 }}
-              />
+              <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Empty
+                  image={Empty.PRESENTED_IMAGE_SIMPLE}
+                  description={<span style={{ color: '#9ca3af' }}>No new announcements</span>}
+                />
+              </div>
             )}
           </Card>
         </Col>
 
-        {/* Check In/Out Card - Middle */}
-        <Col xs={24} lg={6}>
-          <Card 
-            style={{ borderRadius: '8px', height: '100%' }}
-            bodyStyle={{ padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}
+        
+        <Col xs={24} lg={6} style={{ display: 'flex', flexDirection: 'column' }}>
+          <Card
+            className="checkin-card"
+            bordered={false}
+            bodyStyle={{ padding: '0', height: '100%' }}
           >
-            <div style={{ textAlign: 'center' }}>
-              <Title level={4} style={{ marginBottom: '8px', color: '#1890ff', fontSize: '16px' }}>
-                CHECK IN/OUT
-              </Title>
-              <Text type="secondary" style={{ display: 'block', marginBottom: '12px', fontSize: '12px' }}>
-                Your IP is 49.3/24.192
-              </Text>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
-                {!isCheckedIn ? (
-                  <Button 
-                    type="primary" 
-                    icon={<CheckCircleOutlined />} 
-                    size="middle"
-                    onClick={handleCheckIn}
-                    style={{ minWidth: '100px' }}
-                  >
-                    Check In
-                  </Button>
-                ) : (
-                  <Button 
-                    danger
-                    icon={<LogoutOutlined />} 
-                    size="middle"
-                    onClick={handleCheckOut}
-                    style={{ minWidth: '100px' }}
-                  >
-                    Check Out
-                  </Button>
-                )}
-                {isCheckedIn && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <CheckCircleOutlined style={{ color: '#52c41a', fontSize: '14px' }} />
-                    <Text strong style={{ fontSize: '12px' }}>Checked In: {formatTime(checkInTime)}</Text>
-                  </div>
-                )}
+            <div className="checkin-card-body">
+              <div style={{ textAlign: 'center', position: 'relative', zIndex: 2 }}>
+                <Title level={4} className="checkin-title">
+                  ATTENDANCE
+                </Title>
+                <Text className="checkin-ip">
+                  IP: 49.3/24.192
+                </Text>
+                <div className="checkin-actions">
+                  {!isCheckedIn ? (
+                    <Button
+                      type="primary"
+                      icon={<CheckCircleOutlined />}
+                      size="large"
+                      onClick={handleCheckIn}
+                      className="checkin-button"
+                      style={{ background: 'white', color: '#6366f1' }}
+                    >
+                      Check In
+                    </Button>
+                  ) : (
+                    <Button
+                      danger
+                      icon={<LogoutOutlined />}
+                      size="large"
+                      onClick={handleCheckOut}
+                      className="checkin-button"
+                      style={{ background: 'white', color: '#ef4444', border: 'none' }}
+                    >
+                      Check Out
+                    </Button>
+                  )}
+                  {isCheckedIn && (
+                    <div className="checkin-status">
+                      <CheckCircleOutlined />
+                      <span>In: {formatTime(checkInTime)}</span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </Card>
         </Col>
 
-        {/* Today Attendance Table - Right Side */}
-        <Col xs={24} lg={12}>
-          <Card 
+        
+        <Col xs={24} lg={12} style={{ display: 'flex', flexDirection: 'column' }}>
+          <Card
+            className="attendance-card"
             title={
-              <span style={{ fontWeight: '600', fontSize: '14px' }}>
-                <ClockCircleOutlined style={{ marginRight: '8px', color: '#1890ff' }} />
-                TODAY ATTENDANCE
+              <span className="attendance-card-title">
+                <ClockCircleOutlined className="attendance-card-icon" />
+                TODAY'S ACTIVITY
               </span>
             }
-            style={{ borderRadius: '8px', height: '100%' }}
-            bodyStyle={{ padding: '12px' }}
+            style={{ height: '100%', flex: 1 }}
+            bodyStyle={{ padding: '0', overflow: 'hidden' }}
           >
             {loading ? (
-              <TableSkeleton />
+              <div style={{ padding: '16px' }}>
+                <TableSkeleton />
+              </div>
             ) : dashboardData?.today_attendance_list?.length > 0 ? (
-              <Table 
+              <Table
+                className="attendance-table"
                 columns={attendanceColumns}
                 dataSource={dashboardData.today_attendance_list}
                 pagination={false}
-                scroll={{ x: 400 }}
-                size="small"
-                style={{ fontSize: '12px' }}
+                scroll={{ x: 400, y: 280 }}
+                size="middle"
               />
             ) : (
-              <Empty 
-                image={Empty.PRESENTED_IMAGE_SIMPLE}
-                description="No attendance records for today"
-                imageStyle={{ height: 40 }}
-              />
+              <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '200px' }}>
+                <Empty
+                  image={Empty.PRESENTED_IMAGE_SIMPLE}
+                  description={<span style={{ color: '#9ca3af' }}>No activity today</span>}
+                />
+              </div>
             )}
           </Card>
         </Col>

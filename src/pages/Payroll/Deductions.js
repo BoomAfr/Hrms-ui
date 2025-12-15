@@ -1,4 +1,3 @@
-// src/pages/Payroll/Deductions.jsx
 import React, { useState } from "react";
 import { Table, Button, Space, Card, Row, Col, Select, Input } from "antd";
 import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
@@ -25,7 +24,6 @@ const Deductions = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [editingDeduction, setEditingDeduction] = useState(null);
-
   const [searchText, setSearchText] = useState("");
 
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -51,13 +49,12 @@ const Deductions = () => {
     try {
       if (editingDeduction) {
         await updateDeduction(editingDeduction.id, values);
-        Toast.success("Updated Succesfully")
+        Toast.success("Updated Succesfully");
       } else {
         await createDeduction(values);
-        Toast.success("Added Succesfully")
+        Toast.success("Added Succesfully");
       }
       setIsModalOpen(false);
-    } catch (err) {
     } finally {
       setSubmitting(false);
     }
@@ -77,9 +74,9 @@ const Deductions = () => {
     if (!selectedDeduction) return;
     try {
       await deleteDeduction(selectedDeduction.id);
-      Toast.success("Deduction Deleted Succesfully")
-    } catch (err) {
-      Toast.error("Failed")
+      Toast.success("Deduction Deleted Succesfully");
+    } catch {
+      Toast.error("Failed");
     } finally {
       setIsConfirmOpen(false);
       setSelectedDeduction(null);
@@ -98,70 +95,91 @@ const Deductions = () => {
   const columns = [
     {
       title: "S/L",
-      dataIndex: "sl",
-      key: "sl",
       width: 80,
       align: "center",
-      render: (_, __, index) => (pagination.current - 1) * pagination.pageSize + index + 1,
+      render: (_, __, index) =>
+        (pagination.current - 1) * pagination.pageSize + index + 1,
     },
     {
       title: "Deduction Name",
       dataIndex: "deduction_name",
-      key: "deduction_name",
       align: "left",
     },
     {
       title: "Deduction Type",
       dataIndex: "deduction_type_display",
-      key: "deduction_type_display",
       align: "left",
     },
     {
       title: "Percentage of Basic",
       dataIndex: "percentage_of_basic",
-      key: "percentage_of_basic",
       align: "left",
       render: (v) => (v == null ? "-" : String(v)),
     },
     {
       title: "Limit Per Month",
       dataIndex: "limit_per_month",
-      key: "limit_per_month",
       align: "left",
       render: (v) => (v == null ? "-" : String(v)),
     },
     {
       title: "Action",
-      key: "action",
       width: 120,
       align: "center",
       render: (_, record) => (
         <Space size="small">
-          <Button type="primary" icon={<EditOutlined />} size="small" onClick={() => openEditModal(record)} />
-          <Button danger type="primary" icon={<DeleteOutlined />} size="small" onClick={() => handleDeleteClick(record)} />
+          <Button
+            type="primary"
+            size="small"
+            icon={<EditOutlined />}
+            className="table-action-btn table-action-btn-edit"
+            onClick={() => openEditModal(record)}
+          />
+          <Button
+            type="primary"
+            danger
+            size="small"
+            icon={<DeleteOutlined />}
+            className="table-action-btn table-action-btn-delete"
+            onClick={() => handleDeleteClick(record)}
+          />
         </Space>
       ),
     },
   ];
 
   return (
-    <div style={{ padding: "24px" }}>
+    <div className="table-page-container">
       {contextHolder}
 
       <Card
         title="Deductions List"
+        className="table-page-card"
         extra={
-          <Button type="primary" icon={<PlusOutlined />} onClick={openAddModal}>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            className="table-page-add-btn"
+            onClick={openAddModal}
+          >
             Add New Deduction
           </Button>
         }
       >
-        <Row style={{ marginBottom: 16 }} align="middle" justify="space-between">
+        {/* FILTERS */}
+        <Row
+          className="table-page-filters"
+          align="middle"
+          justify="space-between"
+        >
           <Col>
             <span style={{ marginRight: 8 }}>Show</span>
             <Select
               value={pagination.pageSize}
-              onChange={(value) => setPagination((p) => ({ ...p, pageSize: value }))}
+              onChange={(value) =>
+                setPagination((p) => ({ ...p, pageSize: value }))
+              }
+              className="table-page-select"
               style={{ width: 80, marginRight: 8 }}
             >
               <Option value={10}>10</Option>
@@ -176,6 +194,7 @@ const Deductions = () => {
             <Input.Search
               placeholder="Search Deduction..."
               allowClear
+              className="table-page-search"
               style={{ width: 250 }}
               value={searchText}
               onChange={(e) => onSearchChange(e.target.value)}
@@ -183,25 +202,32 @@ const Deductions = () => {
           </Col>
         </Row>
 
-        <Table
-          columns={columns}
-          dataSource={(deductions || []).map((d) => ({ key: d.id, ...d }))}
-          loading={loading}
-          pagination={{
-            current: pagination.current,
-            pageSize: pagination.pageSize,
-            total: pagination.total,
-            showSizeChanger: true,
-            onChange: (page, size) => handleTableChange(page, size),
-            pageSizeOptions: ["10", "20", "50", "100"],
-            showQuickJumper: true,
-            showTotal: (t, range) => `Showing ${range[0]} to ${range[1]} of ${t} entries`,
-          }}
-          rowKey={(r) => r.id}
-          size="middle"
-          bordered
-          scroll={{ x: 800 }}
-        />
+        {/* TABLE */}
+        <div className="table-page-table">
+          <Table
+            columns={columns}
+            dataSource={(deductions || []).map((d) => ({
+              key: d.id,
+              ...d,
+            }))}
+            loading={loading}
+            bordered
+            size="middle"
+            scroll={{ x: 800 }}
+            rowKey={(r) => r.id}
+            pagination={{
+              current: pagination.current,
+              pageSize: pagination.pageSize,
+              total: pagination.total,
+              showSizeChanger: true,
+              onChange: handleTableChange,
+              pageSizeOptions: ["10", "20", "50", "100"],
+              showQuickJumper: true,
+              showTotal: (t, range) =>
+                `Showing ${range[0]} to ${range[1]} of ${t} entries`,
+            }}
+          />
+        </div>
       </Card>
 
       <DeductionModal

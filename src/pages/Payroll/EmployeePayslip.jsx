@@ -49,20 +49,20 @@ const EmployeePayslip = () => {
   };
 
   return (
-    <div style={{ padding: "24px" }} ref={componentRef}>
+    <div className="table-page-container" ref={componentRef}>
       <Card
+        className="table-page-card"
         title="Employee Payslip"
         extra={
           <Button
             type="primary"
             icon={<DownloadOutlined />}
             onClick={handleDownload}
-            style={{ backgroundColor: "#52c41a", borderColor: "#52c41a" }}
+            className="table-page-add-btn"
           >
             Download PDF
           </Button>
         }
-        headStyle={{ backgroundColor: "#1890ff", color: "white" }}
       >
         <div style={{ textAlign: "center", marginBottom: "24px" }}>
           <Title level={4} style={{ textTransform: "uppercase" }}>Salary Sheet/ Final Balance</Title>
@@ -72,7 +72,7 @@ const EmployeePayslip = () => {
           <Descriptions.Item label="Month">
             {dayjs(payslip.payment_month).format("MMMM YYYY")}
           </Descriptions.Item>
-          
+
           <Descriptions.Item label="Name">
             {payslip.employee_name}
           </Descriptions.Item>
@@ -90,12 +90,12 @@ const EmployeePayslip = () => {
             {payslip.total_days_in_month} Days
           </Descriptions.Item>
 
-          
+
           <Descriptions.Item label="Basic Salary">
             {payslip.basic_salary}
           </Descriptions.Item>
 
-          
+
           {payslip.allowance_breakdown && payslip.allowance_breakdown.length > 0 && (
             <Descriptions.Item label="Allowances">
               {payslip.allowance_breakdown.map((item, idx) => (

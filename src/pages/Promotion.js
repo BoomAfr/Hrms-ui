@@ -13,7 +13,7 @@ const Promotion = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { Toast, contextHolder } = useToast();
-  const[saveLoading,setSaveLoading] = useState(false)
+  const [saveLoading, setSaveLoading] = useState(false);
 
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [selectedPromotion, setSelectedPromotion] = useState(null);
@@ -39,7 +39,6 @@ const Promotion = () => {
 
   const loadPromotions = async (page = currentPage, size = pageSize, search = '') => {
     const data = await fetchPromotions(page, size, search);
-    // data may contain count & results
     if (data && data.count !== undefined) setTotal(data.count);
   };
 
@@ -52,26 +51,24 @@ const Promotion = () => {
     setCurrentPage(1);
   };
 
- const handleAddPromotion = async (values) => {
-  setSaveLoading(true);
-
-  try {
-    if (editingPromotion) {
-      await updatePromotion(editingPromotion.id, values);
-      Toast.success("Successfully Edited");
-    } else {
-      await addPromotion(values);
-      Toast.success("Successfully Added");
+  const handleAddPromotion = async (values) => {
+    setSaveLoading(true);
+    try {
+      if (editingPromotion) {
+        await updatePromotion(editingPromotion.id, values);
+        Toast.success('Successfully Edited');
+      } else {
+        await addPromotion(values);
+        Toast.success('Successfully Added');
+      }
+      setIsModalOpen(false);
+      setEditingPromotion(null);
+    } catch {
+      Toast.error('Something went wrong');
+    } finally {
+      setSaveLoading(false);
     }
-
-    setIsModalOpen(false);
-    setEditingPromotion(null);
-  } catch (err) {
-    Toast.error("Something went wrong");
-  } finally {
-    setSaveLoading(false);
-  }
-};
+  };
 
   const handleEdit = (record) => {
     setEditingPromotion(record);
@@ -87,10 +84,14 @@ const Promotion = () => {
     if (!selectedPromotion) return;
     try {
       await deletePromotion(selectedPromotion.id);
-      Toast.success(`Deleted: ${selectedPromotion.employee?.profile?.full_name ?? 'Promotion'}`);
+      Toast.success(
+        `Deleted: ${selectedPromotion.employee?.profile?.full_name ?? 'Promotion'}`
+      );
       const result = await fetchPromotions(currentPage, pageSize, searchText);
-      if (result?.results?.length === 0 && currentPage > 1) setCurrentPage(currentPage - 1);
-    } catch (err) {
+      if (result?.results?.length === 0 && currentPage > 1) {
+        setCurrentPage(currentPage - 1);
+      }
+    } catch {
       Toast.error('Failed to delete promotion');
     } finally {
       setIsConfirmOpen(false);
@@ -98,127 +99,106 @@ const Promotion = () => {
     }
   };
 
-  const handleCancelDelete = () => {
-    setIsConfirmOpen(false);
-    setSelectedPromotion(null);
-  };
-
-  const handleAddNew = () => {
-    setEditingPromotion(null);
-    setIsModalOpen(true);
-  };
-
   const columns = [
-  {
-    title: "S/L",
-    key: "sl",
-    width: 80,
-    align: "center",
-    render: (_, __, index) => (currentPage - 1) * pageSize + index + 1,
-  },
-  {
-    title: "Employee Name",
-    dataIndex: "employee_name",
-    key: "employee_name",
-  },
-  {
-    title: "Promotion Date",
-    dataIndex: "promotion_date",
-    key: "promotion_date",
-  },
-  {
-    title: "Promoted Department",
-    key: "promoted_department",
-    render: (_, record) =>
-      `${record.current_department_name ?? "-"} → ${record.promoted_department_name ?? "-"}`,
-  },
-  {
-    title: "Promoted Designation",
-    key: "promoted_designation",
-    render: (_, record) =>
-      `${record.current_designation_name ?? "-"} → ${record.promoted_designation_name ?? "-"}`,
-  },
-{
-  title: "Promoted Pay Grade",
-  key: "promoted_pay_grade",
-  render: (_, record) => {
-    const oldId = record.current_pay_grade ? Number(record.current_pay_grade) : null;
-    const newId = record.promoted_pay_grade ? Number(record.promoted_pay_grade) : null;
-
-    const oldPg = paygrades.find(p => Number(p.id) === oldId);
-    const newPg = paygrades.find(p => Number(p.id) === newId);
-
-    const oldName = oldPg?.grade_name || "-";
-    const newName = newPg?.grade_name || "-";
-
-    return `${oldName} → ${newName}`;
-  }
-},
-  {
-    title: "Promoted Salary",
-    key: "promoted_salary",
-    render: (_, record) =>
-      `${record.current_salary ?? "-"} → ${record.promoted_salary ?? "-"}`,
-  },
-  {
-    title: "Action",
-    key: "action",
-    width: 120,
-    align: "center",
-    render: (_, record) => (
-      <Space size="small">
-        <Button
-          type="primary"
-          icon={<EditOutlined />}
-          size="small"
-          onClick={() => handleEdit(record)}
-        />
-        <Button
-          type="primary"
-          danger
-          icon={<DeleteOutlined />}
-          size="small"
-          onClick={() => handleDelete(record)}
-        />
-      </Space>
-    ),
-  },
-];
-  const paginationProps = {
-    current: pagination.current,
-    pageSize: pagination.pageSize,
-    total: total,
-    showSizeChanger: true,
-    showQuickJumper: true,
-    showTotal: (total, range) => `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-    pageSizeOptions: ['10', '20', '50', '100'],
-    onChange: (page, size) => {
-      setCurrentPage(page);
-      setPageSize(size);
+    {
+      title: 'S/L',
+      key: 'sl',
+      width: 80,
+      align: 'center',
+      render: (_, __, index) => (currentPage - 1) * pageSize + index + 1,
     },
-  };
+    {
+      title: 'Employee Name',
+      dataIndex: 'employee_name',
+      key: 'employee_name',
+    },
+    {
+      title: 'Promotion Date',
+      dataIndex: 'promotion_date',
+      key: 'promotion_date',
+    },
+    {
+      title: 'Promoted Department',
+      key: 'promoted_department',
+      render: (_, record) =>
+        `${record.current_department_name ?? '-'} → ${record.promoted_department_name ?? '-'}`,
+    },
+    {
+      title: 'Promoted Designation',
+      key: 'promoted_designation',
+      render: (_, record) =>
+        `${record.current_designation_name ?? '-'} → ${record.promoted_designation_name ?? '-'}`,
+    },
+    {
+      title: 'Promoted Pay Grade',
+      key: 'promoted_pay_grade',
+      render: (_, record) => {
+        const oldPg = paygrades.find(p => Number(p.id) === Number(record.current_pay_grade));
+        const newPg = paygrades.find(p => Number(p.id) === Number(record.promoted_pay_grade));
+        return `${oldPg?.grade_name || '-'} → ${newPg?.grade_name || '-'}`;
+      },
+    },
+    {
+      title: 'Promoted Salary',
+      key: 'promoted_salary',
+      render: (_, record) =>
+        `${record.current_salary ?? '-'} → ${record.promoted_salary ?? '-'}`,
+    },
+    {
+      title: 'Action',
+      key: 'action',
+      width: 120,
+      align: 'center',
+      render: (_, record) => (
+        <Space size="small">
+          <Button
+            type="primary"
+            icon={<EditOutlined />}
+            size="small"
+            onClick={() => handleEdit(record)}
+            className="table-action-btn table-action-btn-edit"
+          />
+          <Button
+            type="primary"
+            danger
+            icon={<DeleteOutlined />}
+            size="small"
+            onClick={() => handleDelete(record)}
+            className="table-action-btn table-action-btn-delete"
+          />
+        </Space>
+      ),
+    },
+  ];
 
   return (
-    <div style={{ padding: '24px' }}>
+    <div className="table-page-container">
       {contextHolder}
+
       <Card
         title="Promotion List"
+        className="table-page-card"
         extra={
           <Button
             type="primary"
             icon={<PlusOutlined />}
-            onClick={handleAddNew}
+            onClick={() => {
+              setEditingPromotion(null);
+              setIsModalOpen(true);
+            }}
+            className="table-page-add-btn"
           >
             Add Promotion
           </Button>
         }
       >
-        <Row style={{ marginBottom: 16 }} align="middle" justify="space-between">
+        <Row className="table-page-filters" align="middle" justify="space-between">
           <Col>
             <span style={{ marginRight: 8 }}>Show</span>
             <Select
               value={pageSize}
               onChange={(value) => setPageSize(value)}
+              className="table-page-select"
               style={{ width: 80, marginRight: 8 }}
             >
               <Option value={10}>10</Option>
@@ -228,32 +208,50 @@ const Promotion = () => {
             </Select>
             <span>entries</span>
           </Col>
+
           <Col>
             <Input.Search
               placeholder="Search promotion..."
               allowClear
               onChange={(e) => handleSearch(e.target.value)}
+              className="table-page-search"
               style={{ width: 250 }}
             />
           </Col>
         </Row>
 
-        <Table
-          columns={columns}
-          dataSource={promotions
-            .filter((p) => (p.employee?.profile?.full_name ?? p.employee?.name ?? '').toLowerCase().includes(searchText))
-            .map((p, i) => ({
-              key: p.id || i,
-              id: p.id,
-              ...p,
-            }))
-          }
-          loading={loading}
-          pagination={paginationProps}
-          size="middle"
-          bordered
-          scroll={{ x: 1200 }}
-        />
+        <div className="table-page-table">
+          <Table
+            columns={columns}
+            dataSource={promotions
+              .filter((p) =>
+                (p.employee?.profile?.full_name ?? p.employee?.name ?? '')
+                  .toLowerCase()
+                  .includes(searchText)
+              )
+              .map((p, i) => ({
+                key: p.id || i,
+                ...p,
+              }))}
+            loading={loading}
+            pagination={{
+              current: pagination.current,
+              pageSize: pagination.pageSize,
+              total,
+              showSizeChanger: true,
+              showQuickJumper: true,
+              pageSizeOptions: ['10', '20', '50', '100'],
+              showTotal: (total, range) =>
+                `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+              onChange: (page, size) => {
+                setCurrentPage(page);
+                setPageSize(size);
+              },
+            }}
+            bordered
+            scroll={{ x: 1200 }}
+          />
+        </div>
       </Card>
 
       {isModalOpen && (
@@ -276,7 +274,7 @@ const Promotion = () => {
         title="Delete Promotion"
         message={`Are you sure you want to delete promotion for "${selectedPromotion?.employee?.profile?.full_name ?? selectedPromotion?.employee?.name}"?`}
         onOk={handleConfirmDelete}
-        onCancel={handleCancelDelete}
+        onCancel={() => setIsConfirmOpen(false)}
       />
     </div>
   );

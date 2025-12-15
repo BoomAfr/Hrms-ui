@@ -1,0 +1,313 @@
+/* ====================================
+   HRMS Design System - Foundation
+   Modern, Professional, Beautiful UI
+   ==================================== */
+
+:root {
+  /* ========== Primary Colors ========== */
+  --primary-50: #e6f7ff;
+  --primary-100: #bae7ff;
+  --primary-200: #91d5ff;
+  --primary-300: #69c0ff;
+  --primary-400: #40a9ff;
+  --primary-500: #1890ff;
+  --primary-600: #096dd9;
+  --primary-700: #0050b3;
+  --primary-800: #003a8c;
+  --primary-900: #002766;
+
+  /* ========== Success Colors ========== */
+  --success-50: #f6ffed;
+  --success-100: #d9f7be;
+  --success-200: #b7eb8f;
+  --success-300: #95de64;
+  --success-400: #73d13d;
+  --success-500: #52c41a;
+  --success-600: #389e0d;
+  --success-700: #237804;
+  --success-800: #135200;
+  --success-900: #092b00;
+
+  /* ========== Warning Colors ========== */
+  --warning-50: #fffbe6;
+  --warning-100: #fff1b8;
+  --warning-200: #ffe58f;
+  --warning-300: #ffd666;
+  --warning-400: #ffc53d;
+  --warning-500: #faad14;
+  --warning-600: #fa8c16;
+  --warning-700: #d46b08;
+  --warning-800: #ad4e00;
+  --warning-900: #873800;
+
+  /* ========== Danger Colors ========== */
+  --danger-50: #fff1f0;
+  --danger-100: #ffccc7;
+  --danger-200: #ffa39e;
+  --danger-300: #ff7875;
+  --danger-400: #ff4d4f;
+  --danger-500: #f5222d;
+  --danger-600: #cf1322;
+  --danger-700: #a8071a;
+  --danger-800: #820014;
+  --danger-900: #5c0011;
+
+  /* ========== Neutral Colors ========== */
+  --neutral-50: #fafafa;
+  --neutral-100: #f5f5f5;
+  --neutral-200: #f0f0f0;
+  --neutral-300: #d9d9d9;
+  --neutral-400: #bfbfbf;
+  --neutral-500: #8c8c8c;
+  --neutral-600: #595959;
+  --neutral-700: #434343;
+  --neutral-800: #262626;
+  --neutral-900: #1f1f1f;
+  --neutral-950: #141414;
+
+  /* ========== Gradients ========== */
+  --gradient-primary: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+  --gradient-success: linear-gradient(135deg, #52c41a 0%, #389e0d 100%);
+  --gradient-warning: linear-gradient(135deg, #faad14 0%, #fa8c16 100%);
+  --gradient-danger: linear-gradient(135deg, #ff4d4f 0%, #cf1322 100%);
+  --gradient-info: linear-gradient(135deg, #13c2c2 0%, #08979c 100%);
+  --gradient-purple: linear-gradient(135deg, #722ed1 0%, #531dab 100%);
+
+  /* Soft Gradients */
+  --gradient-primary-soft: linear-gradient(135deg, #e6f7ff 0%, #bae7ff 100%);
+  --gradient-success-soft: linear-gradient(135deg, #f6ffed 0%, #d9f7be 100%);
+  --gradient-warning-soft: linear-gradient(135deg, #fffbe6 0%, #fff1b8 100%);
+  --gradient-danger-soft: linear-gradient(135deg, #fff1f0 0%, #ffccc7 100%);
+
+  /* Radial Gradients */
+  --gradient-radial-primary: radial-gradient(circle at top right, #1890ff, #096dd9);
+  --gradient-radial-success: radial-gradient(circle at top right, #52c41a, #389e0d);
+
+  /* ========== Shadows ========== */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+
+  /* Colored Shadows */
+  --shadow-primary: 0 8px 16px rgba(24, 144, 255, 0.2);
+  --shadow-success: 0 8px 16px rgba(82, 196, 26, 0.2);
+  --shadow-warning: 0 8px 16px rgba(250, 173, 20, 0.2);
+  --shadow-danger: 0 8px 16px rgba(255, 77, 79, 0.2);
+
+  /* ========== Spacing ========== */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+  --spacing-3xl: 64px;
+
+  /* ========== Border Radius ========== */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+
+  /* ========== Typography ========== */
+  --font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-family-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+
+  --font-size-xs: 12px;
+  --font-size-sm: 14px;
+  --font-size-base: 16px;
+  --font-size-lg: 18px;
+  --font-size-xl: 20px;
+  --font-size-2xl: 24px;
+  --font-size-3xl: 30px;
+  --font-size-4xl: 36px;
+
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+
+  /* ========== Z-Index ========== */
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+
+  /* ========== Transitions ========== */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-smooth: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ========== Backdrop Blur ========== */
+  --backdrop-blur-sm: blur(4px);
+  --backdrop-blur-md: blur(8px);
+  --backdrop-blur-lg: blur(12px);
+  --backdrop-blur-xl: blur(16px);
+
+  /* ========== Background Colors ========== */
+  --bg-primary: #ffffff;
+  --bg-secondary: #fafafa;
+  --bg-tertiary: #f5f5f5;
+  --bg-overlay: rgba(0, 0, 0, 0.45);
+
+  /* ========== Text Colors ========== */
+  --text-primary: #262626;
+  --text-secondary: #595959;
+  --text-tertiary: #8c8c8c;
+  --text-disabled: #bfbfbf;
+  --text-inverse: #ffffff;
+
+  /* ========== Border Colors ========== */
+  --border-color: #d9d9d9;
+  --border-color-light: #f0f0f0;
+  --border-color-dark: #bfbfbf;
+}
+
+/* ========== Dark Theme ========== */
+[data-theme="dark"] {
+  /* Background Colors */
+  --bg-primary: #141414;
+  --bg-secondary: #1f1f1f;
+  --bg-tertiary: #262626;
+  --bg-overlay: rgba(0, 0, 0, 0.65);
+
+  /* Text Colors */
+  --text-primary: #ffffff;
+  --text-secondary: #bfbfbf;
+  --text-tertiary: #8c8c8c;
+  --text-disabled: #595959;
+  --text-inverse: #262626;
+
+  /* Border Colors */
+  --border-color: #434343;
+  --border-color-light: #262626;
+  --border-color-dark: #595959;
+
+  /* Shadows adjusted for dark mode */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+}
+
+/* ========== Utility Classes ========== */
+
+/* Gradients */
+.gradient-primary {
+  background: var(--gradient-primary);
+}
+
+.gradient-success {
+  background: var(--gradient-success);
+}
+
+.gradient-warning {
+  background: var(--gradient-warning);
+}
+
+.gradient-danger {
+  background: var(--gradient-danger);
+}
+
+.gradient-info {
+  background: var(--gradient-info);
+}
+
+.gradient-purple {
+  background: var(--gradient-purple);
+}
+
+/* Glassmorphism */
+.glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: var(--backdrop-blur-md);
+  -webkit-backdrop-filter: var(--backdrop-blur-md);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="dark"] .glass {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Shadows */
+.shadow-sm {
+  box-shadow: var(--shadow-sm);
+}
+
+.shadow-md {
+  box-shadow: var(--shadow-md);
+}
+
+.shadow-lg {
+  box-shadow: var(--shadow-lg);
+}
+
+.shadow-xl {
+  box-shadow: var(--shadow-xl);
+}
+
+.shadow-2xl {
+  box-shadow: var(--shadow-2xl);
+}
+
+.shadow-primary {
+  box-shadow: var(--shadow-primary);
+}
+
+.shadow-success {
+  box-shadow: var(--shadow-success);
+}
+
+.shadow-warning {
+  box-shadow: var(--shadow-warning);
+}
+
+.shadow-danger {
+  box-shadow: var(--shadow-danger);
+}
+
+/* Smooth Transitions */
+.transition-all {
+  transition: all var(--transition-base);
+}
+
+.transition-colors {
+  transition: color var(--transition-base), background-color var(--transition-base), border-color var(--transition-base);
+}
+
+.transition-transform {
+  transition: transform var(--transition-base);
+}
+
+/* Hover Effects */
+.hover-lift {
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.hover-scale:hover {
+  transform: scale(1.02);
+}
+
+.hover-glow:hover {
+  box-shadow: 0 0 20px rgba(24, 144, 255, 0.3);
+}

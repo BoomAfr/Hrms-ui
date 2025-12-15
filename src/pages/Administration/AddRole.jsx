@@ -1,123 +1,61 @@
-import React, { useState, useEffect } from 'react';
-import { Table, Button, Space, Card, Row, Col, Select, message, Input } from 'antd';
-import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
-import AddRoleModal from '../../components/common/SharedModal/AddRoleModal';
-import { useAddRoles } from '../../hooks/useAddRole';
-import ConfirmModal from '../../components/common/SharedModal/ConfirmModal';
-import { useToast } from '../../hooks/useToast';
+import React, { useState, useEffect } from "react";
+import { Card, Table, Row, Col, Select, Button, Input, Space } from "antd";
+import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
+import AddRoleModal from "../../components/common/SharedModal/AddRoleModal";
+import ConfirmModal from "../../components/common/SharedModal/ConfirmModal";
+import { useAddRoles } from "../../hooks/useAddRole";
+import { useToast } from "../../hooks/useToast";
+
 const { Option } = Select;
 
 const AddRole = () => {
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [searchText, setSearchText] = useState("");
+
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { Toast, contextHolder } = useToast();
+  const [editingRole, setEditingRole] = useState(null);
 
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [selectedRole, setSelectedRole] = useState(null);
 
-  // added editingDept state
-  const [editingRole, setEditingRole] = useState(null);
+  const { Toast, contextHolder } = useToast();
 
-  const [searchText, setSearchText] = useState('');
-
-
-
-  const { roles, loading, error, refetch, addRole, updateRole, deleteRole } = useAddRoles();
-
-
-  const handleAddRole = (values) => {
-    console.log(values, 'values');
-    if (editingRole) {
-      updateRole(editingRole.id, values, Toast);
-      Toast?.success('Role Updated Successfully');
-    }
-    else {
-      addRole(values);
-      Toast?.success('Role Added Successfully');
-    }
-    setEditingRole(null);
-  };
+  const { roles, loading, refetch, addRole, updateRole, deleteRole } = useAddRoles();
 
   const loadRoles = async (page = currentPage, size = pageSize, search = searchText) => {
     const data = await refetch(page, size, search);
     if (data && data.count !== undefined) setTotal(data.count);
   };
-  const [total, setTotal] = useState(0);
 
-  // Fetch when page, size, or search changes
   useEffect(() => {
-    loadRoles(currentPage, pageSize, searchText);
+    loadRoles();
   }, [currentPage, pageSize, searchText]);
 
-  const handleSearch = (value) => {
-    setSearchText(value.toLowerCase());
-    setCurrentPage(1); // reset to page 1
+  const handleAddNew = () => {
+    setEditingRole(null);
+    setIsModalOpen(true);
   };
 
-
-
-  const columns = [
-    {
-      title: 'S/L',
-      dataIndex: 'sl',
-      key: 'sl',
-      width: 80,
-      align: 'center',
-      render: (_, __, index) => index + 1, // ✅ auto index
-    },
-    {
-      title: 'Role',
-      dataIndex: 'name',
-      key: 'name',
-      align: 'left',
-    },
-    {
-      title: 'Action',
-      key: 'action',
-      width: 120,
-      align: 'center',
-      render: (_, record) => (
-        <Space size="small">
-          <Button
-            type="primary"
-            icon={<EditOutlined />}
-            size="small"
-            onClick={() => handleEdit(record)}
-          />
-          <Button
-            type="primary"
-            danger
-            icon={<DeleteOutlined />}
-            size="small"
-            onClick={() => handleDelete(record)}
-          />
-        </Space>
-      ),
-    },
-  ];
-
   const handleEdit = (record) => {
-    // record is table row. ensure it contains id & name
     setEditingRole({ id: record.id ?? record.key, name: record.name });
     setIsModalOpen(true);
   };
 
   const handleDelete = (record) => {
-    console.log("Delete clicked for:", record);
     setSelectedRole(record);
-    setIsConfirmOpen(true)
+    setIsConfirmOpen(true);
   };
+
   const handleConfirmDelete = async () => {
     if (!selectedRole) return;
     try {
       await deleteRole(selectedRole.id);
-      Toast.success(`Deleted: ${selectedRole.name}`)
-      message.success(`Deleted: ${selectedRole.name}`);
-      refetch();
+      Toast.success(`Deleted: ${selectedRole.name}`);
+      await loadRoles();
     } catch (error) {
-      Toast.error('Failed to delete department')
-      message.error('Failed to delete department');
+      Toast.error("Failed to delete role");
       console.error(error);
     } finally {
       setIsConfirmOpen(false);
@@ -130,42 +68,81 @@ const AddRole = () => {
     setSelectedRole(null);
   };
 
-
-  const handleAddNew = () => {
-    setEditingRole(null);
-    setIsModalOpen(true);
+  const handleModalSubmit = async (values) => {
+    try {
+      if (editingRole) {
+        await updateRole(editingRole.id, values);
+        Toast.success("Role updated successfully");
+      } else {
+        await addRole(values);
+        Toast.success("Role added successfully");
+      }
+      setIsModalOpen(false);
+      setEditingRole(null);
+      await loadRoles();
+    } catch (err) {
+      Toast.error("Operation failed");
+      console.error(err);
+    }
   };
+
+  const handleSearch = (value) => {
+    setSearchText(value.toLowerCase());
+    setCurrentPage(1);
+  };
+
+  const columns = [
+    {
+      title: "S/L",
+      dataIndex: "sl",
+      key: "sl",
+      width: 80,
+      align: "center",
+      render: (_, __, index) => (currentPage - 1) * pageSize + index + 1,
+    },
+    {
+      title: "Role",
+      dataIndex: "name",
+      key: "name",
+      align: "left",
+    },
+    {
+      title: "Action",
+      key: "action",
+      width: 140,
+      align: "center",
+      render: (_, record) => (
+        <Space>
+          <Button type="primary" icon={<EditOutlined />} size="small" onClick={() => handleEdit(record)} />
+          <Button type="primary" danger icon={<DeleteOutlined />} size="small" onClick={() => handleDelete(record)} />
+        </Space>
+      ),
+    },
+  ];
 
   const pagination = {
     current: currentPage,
-    pageSize: pageSize,
-    total: total,
+    pageSize,
+    total,
     showSizeChanger: true,
     showQuickJumper: true,
-    showTotal: (total, range) => `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-    pageSizeOptions: ['10', '20', '50', '100'],
+    pageSizeOptions: ["10", "20", "50", "100"],
     onChange: (page, size) => {
       setCurrentPage(page);
       setPageSize(size);
     },
+    showTotal: (total, range) => `Showing ${range[0]} to ${range[1]} of ${total} entries`,
   };
 
   return (
-    <div style={{ padding: '24px' }}>
+    <div className="table-page-container">
       {contextHolder}
       <Card
+        className="table-page-card"
         title="Role List"
-        extra={
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={handleAddNew}
-          >
-            Add New Role
-          </Button>
-        }
+        extra={<Button type="primary" icon={<PlusOutlined />} onClick={handleAddNew}>Add New Role</Button>}
       >
-        <Row style={{ marginBottom: 16 }} align="middle" justify="space-between">
+        <Row className="table-page-filters" gutter={16} align="middle" justify="space-between">
           <Col>
             <span style={{ marginRight: 8 }}>Show</span>
             <Select
@@ -184,47 +161,45 @@ const AddRole = () => {
             <Input.Search
               placeholder="Search role..."
               allowClear
-              onChange={(e) => handleSearch(e.target.value)}
+              onSearch={handleSearch}
+              onChange={(e) => setSearchText(e.target.value.toLowerCase())}
               style={{ width: 250 }}
             />
           </Col>
         </Row>
 
-        <Table
-          columns={columns}
-          dataSource={roles
-            .filter((d) => d.name.toLowerCase().includes(searchText))
-            .map((d, i) => ({
-              key: d.id || i,
-              id: d.id,
-              sl: i + 1,
-              name: d.name,
-            }))
-          }
-
-          loading={loading}
-          pagination={pagination}
-          size="middle"
-          bordered
-          scroll={{ x: 400 }}
-        />
+        <div className="table-page-table">
+          <Table
+            columns={columns}
+            dataSource={roles
+              .filter((d) => d.name.toLowerCase().includes(searchText))
+              .map((d, i) => ({ ...d, key: d.id || i }))}
+            loading={loading}
+            pagination={pagination}
+            size="middle"
+            bordered
+            scroll={{ x: 400 }}
+          />
+        </div>
       </Card>
+
       {isModalOpen && (
         <AddRoleModal
           isModalOpen={isModalOpen}
           setIsModalOpen={setIsModalOpen}
-          onSubmit={handleAddRole} //  pass the handler
-          editingRole={editingRole} // pass for prefill in modal
+          onSubmit={handleModalSubmit}
+          editingRole={editingRole}
           fieldLabel={[
             {
-              label: 'Role Name',
-              name: 'name',
+              label: "Role Name",
+              name: "name",
               isRequired: true,
               component: <Input placeholder="Enter Role Name" size="large" />,
             },
           ]}
         />
       )}
+
       <ConfirmModal
         isOpen={isConfirmOpen}
         title="Delete Role"
@@ -232,7 +207,6 @@ const AddRole = () => {
         onOk={handleConfirmDelete}
         onCancel={handleCancelDelete}
       />
-
     </div>
   );
 };

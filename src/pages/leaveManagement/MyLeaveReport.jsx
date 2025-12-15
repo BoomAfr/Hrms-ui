@@ -1,8 +1,8 @@
 import React from "react";
-import { Card, Select, DatePicker, Button, Table } from "antd";
+import { Card, Select, DatePicker, Button, Table, Row, Col } from "antd";
 import { useMyLeaveReport } from "../../hooks/useMyLeaveReport";
 import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";  
+import autoTable from "jspdf-autotable";
 
 const MyLeaveReport = () => {
   const {
@@ -20,18 +20,22 @@ const MyLeaveReport = () => {
   const columns = [
     {
       title: "S/L",
+      width: 70,
+      align: "center",
       render: (_, __, index) =>
         (pagination.current - 1) * pagination.pageSize + index + 1,
     },
-    { title: "Leave Type", dataIndex: "leave_type_name" },
-    { title: "Applied Date", dataIndex: "application_date" },
-    { title: "Request Duration", dataIndex: "request_duration" },
-    { title: "Approve BY", dataIndex: "approved_by_name" },
-    { title: "Approve Date", dataIndex: "approved_date" },
-    { title: "Purpose", dataIndex: "purpose" },
-    { title: "Number of Day", dataIndex: "number_of_days" },
+    { title: "Leave Type", dataIndex: "leave_type_name", align: "center" },
+    { title: "Applied Date", dataIndex: "application_date", align: "center" },
+    { title: "Request Duration", dataIndex: "request_duration", align: "center" },
+    { title: "Approve BY", dataIndex: "approved_by_name", align: "center" },
+    { title: "Approve Date", dataIndex: "approved_date", align: "center" },
+    { title: "Purpose", dataIndex: "purpose", align: "center" },
+    { title: "Number of Day", dataIndex: "number_of_days", align: "center" },
+    { title: "Status", dataIndex: "status", align: "center" },
   ];
 
+  // PDF DOWNLOAD (UNCHANGED)
   const handleDownloadPDF = () => {
     const doc = new jsPDF({ orientation: "portrait", unit: "pt", format: "A4" });
 
@@ -54,7 +58,17 @@ const MyLeaveReport = () => {
 
     autoTable(doc, {
       startY: 100,
-      head: [["S/L","Leave Type","Applied Date","Duration","Approved By","Approved Date","Purpose","Days"]],
+      head: [[
+        "S/L",
+        "Leave Type",
+        "Applied Date",
+        "Duration",
+        "Approved By",
+        "Approved Date",
+        "Purpose",
+        "Days",
+        "Status",
+      ]],
       body: reportData.map((item, index) => [
         (pagination.current - 1) * pagination.pageSize + index + 1,
         item.leave_type_name ?? "-",
@@ -64,10 +78,16 @@ const MyLeaveReport = () => {
         item.approved_date ?? "-",
         item.purpose ?? "-",
         item.number_of_days ?? "-",
+        item.status ?? "-",
       ]),
       theme: "grid",
       styles: { fontSize: 10, cellPadding: 4, valign: "middle" },
-      headStyles: { fillColor: [30, 144, 255], textColor: 255, fontSize: 11, fontStyle: "bold" },
+      headStyles: {
+        fillColor: [30, 144, 255],
+        textColor: 255,
+        fontSize: 11,
+        fontStyle: "bold",
+      },
       alternateRowStyles: { fillColor: [245, 245, 245] },
       margin: { left: 40, right: 40 },
     });
@@ -77,64 +97,104 @@ const MyLeaveReport = () => {
       doc.setPage(i);
       doc.setFontSize(10);
       doc.setTextColor(100);
-      doc.text(`Page ${i} of ${pageCount}`, doc.internal.pageSize.width - 70, doc.internal.pageSize.height - 20);
+      doc.text(
+        `Page ${i} of ${pageCount}`,
+        doc.internal.pageSize.width - 70,
+        doc.internal.pageSize.height - 20
+      );
     }
 
     doc.save("my_leave_report.pdf");
   };
 
-  const employeeOptions = savedUser ? [{ label: savedUser.name, value: savedUser.user_id }] : [];
+  const employeeOptions = savedUser
+    ? [{ label: savedUser.name, value: savedUser.user_id }]
+    : [];
 
   return (
-    <Card title="My Leave Report">
-      <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
-        <Select
-          placeholder="Employee Name"
-          style={{ width: 250 }}
-          value={filters.employee_id}
-          onChange={(value) => setFilters({ ...filters, employee_id: value })}
-          options={employeeOptions}
-          disabled={true}
-        />
+    <div className="table-page-container">
+      <Card title="My Leave Report" className="table-page-card">
+        {/* FILTERS */}
+        <Row gutter={12} className="table-page-filters">
+          <Col>
+            <Select
+              placeholder="Employee Name"
+              className="table-page-select"
+              value={filters.employee_id}
+              onChange={(value) =>
+                setFilters({ ...filters, employee_id: value })
+              }
+              options={employeeOptions}
+              disabled
+            />
+          </Col>
 
-        <DatePicker
-          placeholder="From Date"
-          onChange={(date, dateString) =>
-            setFilters({ ...filters, from_date: dateString })
-          }
-        />
+          <Col>
+            <DatePicker
+              placeholder="From Date"
+              className="table-page-date"
+              onChange={(date, dateString) =>
+                setFilters({ ...filters, from_date: dateString })
+              }
+            />
+          </Col>
 
-        <DatePicker
-          placeholder="To Date"
-          onChange={(date, dateString) =>
-            setFilters({ ...filters, to_date: dateString })
-          }
-        />
+          <Col>
+            <DatePicker
+              placeholder="To Date"
+              className="table-page-date"
+              onChange={(date, dateString) =>
+                setFilters({ ...filters, to_date: dateString })
+              }
+            />
+          </Col>
 
-        <Button type="primary" onClick={handleFilter}>Filter</Button>
+          <Col>
+            <Button
+              type="primary"
+              className="table-page-add-btn"
+              onClick={handleFilter}
+            >
+              Filter
+            </Button>
+          </Col>
 
-        <Button
-          style={{ marginLeft: "auto", background: "blue", color: "#ffffffff" }}
-          onClick={handleDownloadPDF}
-          disabled={!filterApplied || reportData.length === 0}
-        >
-          Download PDF
-        </Button>
-      </div>
+          <Col flex="auto" />
 
-      <Table
-        columns={columns}
-        dataSource={filterApplied ? reportData : []}
-        rowKey={(record) => record.id}
-        loading={loading}
-        pagination={filterApplied ? {
-          current: pagination.current,
-          pageSize: pagination.pageSize,
-          total: pagination.total,
-          onChange: handlePageChange,
-        } : false}
-      />
-    </Card>
+          <Col>
+            <Button
+              className="table-page-add-btn"
+              style={{ background: "blue", color: "#ffffffff" }}
+              onClick={handleDownloadPDF}
+              disabled={!filterApplied || reportData.length === 0}
+            >
+              Download PDF
+            </Button>
+          </Col>
+        </Row>
+
+        {/* TABLE */}
+        <div className="table-page-table">
+          <Table
+            columns={columns}
+            dataSource={filterApplied ? reportData : []}
+            rowKey={(record) => record.id}
+            loading={loading}
+            bordered
+            pagination={
+              filterApplied
+                ? {
+                    current: pagination.current,
+                    pageSize: pagination.pageSize,
+                    total: pagination.total,
+                    onChange: handlePageChange,
+                  }
+                : false
+            }
+          />
+        </div>
+      </Card>
+    </div>
   );
 };
 

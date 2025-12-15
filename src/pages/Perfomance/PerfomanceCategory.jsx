@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import { Table, Button, Space, Card, Row, Col, Select, message, Input } from 'antd';
-import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
-import PerformanceCategoryModal from '../../components/common/SharedModal/PerfomanceCategoryModal';
-import ConfirmModal from '../../components/common/SharedModal/ConfirmModal';
-import { usePerformanceCategories } from '../../hooks/usePerfomanceCategory';
-import {useToast} from "../../hooks/useToast"
+import React, { useState } from "react";
+import { Table, Button, Space, Card, Row, Col, Select, Input, message } from "antd";
+import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
+import PerformanceCategoryModal from "../../components/common/SharedModal/PerfomanceCategoryModal";
+import ConfirmModal from "../../components/common/SharedModal/ConfirmModal";
+import { usePerformanceCategories } from "../../hooks/usePerfomanceCategory";
+import { useToast } from "../../hooks/useToast";
 
 const { Option } = Select;
 
@@ -12,14 +12,13 @@ const PerformanceCategory = () => {
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState(null);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
-  const [editingCategory, setEditingCategory] = useState(null);
-  const [searchText, setSearchText] = useState('');
+  const [searchText, setSearchText] = useState("");
 
-  const{Toast,contextHolder} = useToast();
-
-  const { categories, loading, error, refetch, addCategory, updateCategory, deleteCategory } = usePerformanceCategories();
+  const { Toast, contextHolder } = useToast();
+  const { categories, loading, refetch, addCategory, updateCategory, deleteCategory } = usePerformanceCategories();
 
   const handleAddNew = () => {
     setEditingCategory(null);
@@ -40,12 +39,12 @@ const PerformanceCategory = () => {
     if (!selectedCategory) return;
     try {
       await deleteCategory(selectedCategory.id);
-      Toast.success('Deleted successfully')
-      message.success('Deleted successfully');
+      Toast.success("Deleted successfully");
+      message.success("Deleted successfully");
       refetch();
-    } catch (err) {
-      Toast.error('Delete failed')
-      message.error('Delete failed');
+    } catch {
+      Toast.error("Delete failed");
+      message.error("Delete failed");
     } finally {
       setIsConfirmOpen(false);
       setSelectedCategory(null);
@@ -56,62 +55,74 @@ const PerformanceCategory = () => {
     try {
       if (editingCategory) {
         await updateCategory(editingCategory.id, values);
-        Toast.success("Performance category updated successfully")
-        message.success('Performance category updated successfully');
+        Toast.success("Performance category updated successfully");
+        message.success("Performance category updated successfully");
       } else {
         await addCategory(values);
-        Toast.success("Performance category added successfully")
-        message.success('Performance category added successfully');
+        Toast.success("Performance category added successfully");
+        message.success("Performance category added successfully");
       }
       setIsModalOpen(false);
       setEditingCategory(null);
       refetch();
-    } catch (err) {
-      Toast.error("Operation failed")
-      message.error('Operation failed');
+    } catch {
+      Toast.error("Operation failed");
+      message.error("Operation failed");
     }
   };
 
+  const filteredData = categories
+    .filter((c) => (c.name ?? "").toLowerCase().includes(searchText.toLowerCase()))
+    .map((c, i) => ({ ...c, key: c.id ?? i, sl: i + 1 }));
+
   const columns = [
     {
-      title: 'S/L',
-      dataIndex: 'sl',
-      key: 'sl',
+      title: "S/L",
+      dataIndex: "sl",
+      key: "sl",
       width: 80,
-      align: 'center',
-      render: (_, __, index) => index + 1,
+      align: "center",
     },
     {
-      title: 'Performance Category',
-      dataIndex: 'category_name',
-      key: 'category_name',
-      align: 'left',
+      title: "Performance Category",
+      dataIndex: "category_name",
+      key: "category_name",
+      align: "left",
     },
     {
-      title: 'Action',
-      key: 'action',
+      title: "Action",
+      key: "action",
       width: 140,
-      align: 'center',
+      align: "center",
       render: (_, record) => (
         <Space size="small">
-          <Button type="primary" icon={<EditOutlined />} size="small" onClick={() => handleEdit(record)} />
-          <Button type="primary" danger icon={<DeleteOutlined />} size="small" onClick={() => handleDelete(record)} />
+          <Button
+            type="primary"
+            icon={<EditOutlined />}
+            size="small"
+            onClick={() => handleEdit(record)}
+            className="table-action-btn table-action-btn-edit"
+          />
+          <Button
+            danger
+            type="primary"
+            icon={<DeleteOutlined />}
+            size="small"
+            onClick={() => handleDelete(record)}
+            className="table-action-btn table-action-btn-delete"
+          />
         </Space>
       ),
     },
   ];
 
-  const filtered = categories
-    .filter((c) => (c.name ?? '').toString().toLowerCase().includes(searchText.toLowerCase()))
-    .map((c, i) => ({ ...c, key: c.id ?? i, sl: i + 1 }));
-
-  const pagination = {
+  const paginationConfig = {
     current: currentPage,
     pageSize,
-    total: filtered.length,
+    total: filteredData.length,
     showSizeChanger: true,
     showQuickJumper: true,
-    pageSizeOptions: ['10','20','50','100'],
+    pageSizeOptions: ["10", "20", "50", "100"],
     onChange: (page, size) => {
       setCurrentPage(page);
       setPageSize(size);
@@ -120,20 +131,32 @@ const PerformanceCategory = () => {
   };
 
   return (
-    <div style={{ padding: 24 }}>
-    {contextHolder}
+    <div className="table-page-container">
+      {contextHolder}
+
       <Card
+        className="table-page-card"
         title="Performance Category List"
         extra={
-          <Button type="primary" icon={<PlusOutlined />} onClick={handleAddNew}>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={handleAddNew}
+            className="table-page-add-btn"
+          >
             Add New Performance
           </Button>
         }
       >
-        <Row style={{ marginBottom: 16 }} align="middle" justify="space-between">
+        <Row className="table-page-filters" align="middle" justify="space-between">
           <Col>
             <span style={{ marginRight: 8 }}>Show</span>
-            <Select value={pageSize} onChange={(value) => setPageSize(value)} style={{ width: 80, marginRight: 8 }}>
+            <Select
+              value={pageSize}
+              onChange={(value) => setPageSize(value)}
+              className="table-page-select"
+              style={{ width: 80, marginRight: 8 }}
+            >
               <Option value={10}>10</Option>
               <Option value={20}>20</Option>
               <Option value={50}>50</Option>
@@ -141,20 +164,29 @@ const PerformanceCategory = () => {
             </Select>
             <span>entries</span>
           </Col>
+
           <Col>
-            <Input.Search placeholder="Search performance category..." allowClear onChange={(e) => setSearchText(e.target.value)} style={{ width: 250 }} />
+            <Input.Search
+              placeholder="Search performance category..."
+              allowClear
+              onChange={(e) => setSearchText(e.target.value)}
+              className="table-page-search"
+              style={{ width: 250 }}
+            />
           </Col>
         </Row>
 
-        <Table
-          columns={columns}
-          dataSource={filtered}
-          loading={loading}
-          pagination={pagination}
-          size="middle"
-          bordered
-          scroll={{ x: 600 }}
-        />
+        <div className="table-page-table">
+          <Table
+            columns={columns}
+            dataSource={filteredData}
+            loading={loading}
+            pagination={paginationConfig}
+            size="middle"
+            bordered
+            scroll={{ x: 600 }}
+          />
+        </div>
       </Card>
 
       {isModalOpen && (

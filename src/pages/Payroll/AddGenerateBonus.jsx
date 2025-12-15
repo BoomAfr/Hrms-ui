@@ -190,8 +190,8 @@ const AddGenerateBonus = () => {
   };
 
   return (
-    <div style={{ padding: '24px' }}>
-      <Card>
+    <div className="table-page-container">
+      <Card className="table-page-card">
         <Title level={3}>Generate Bonus</Title>
         <Divider />
 
@@ -239,6 +239,7 @@ const AddGenerateBonus = () => {
                 type="primary"
                 onClick={handleFilter}
                 loading={tableLoading}
+                className="table-page-add-btn"
               >
                 Filter
               </Button>

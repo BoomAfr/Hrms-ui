@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Space, Card, Row, Col, Select, Input, message } from 'antd';
+import { Table, Button, Space, Card, Row, Col, Select, Input } from 'antd';
 import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import TerminationModal from '../components/common/SharedModal/TerminationModal';
 import ConfirmModal from '../components/common/SharedModal/ConfirmModal';
@@ -17,7 +17,7 @@ const Termination = () => {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [selectedTermination, setSelectedTermination] = useState(null);
   const { Toast, contextHolder } = useToast();
-  const [submitLoading,setSubmitLoading] = useState(false)
+  const [submitLoading, setSubmitLoading] = useState(false);
 
   const {
     terminations,
@@ -28,7 +28,7 @@ const Termination = () => {
     fetchEmployees,
     addTermination,
     updateTermination,
-    deleteTermination
+    deleteTermination,
   } = useTerminations();
 
   useEffect(() => {
@@ -65,7 +65,7 @@ const Termination = () => {
       await deleteTermination(selectedTermination.id);
       Toast.success('Deleted successfully');
       fetchTerminations(currentPage, pageSize, searchText);
-    } catch (err) {
+    } catch {
       Toast.error('Delete failed');
     } finally {
       setIsConfirmOpen(false);
@@ -74,26 +74,25 @@ const Termination = () => {
   };
 
   const handleSubmit = async (values) => {
-  try {
-    setSubmitLoading(true);
+    try {
+      setSubmitLoading(true);
 
-    if (editingTermination) {
-      await updateTermination(editingTermination.id, values);
-      Toast.success("Termination updated successfully");
-    } else {
-      await addTermination(values);
-      Toast.success("Termination added successfully");
+      if (editingTermination) {
+        await updateTermination(editingTermination.id, values);
+        Toast.success('Termination updated successfully');
+      } else {
+        await addTermination(values);
+        Toast.success('Termination added successfully');
+      }
+
+      setIsModalOpen(false);
+      fetchTerminations(currentPage, pageSize, searchText);
+    } catch {
+      Toast.error('Something went wrong');
+    } finally {
+      setSubmitLoading(false);
     }
-
-    setIsModalOpen(false);
-    fetchTerminations(currentPage, pageSize, searchText);
-
-  } catch (error) {
-    Toast.error("Something went wrong");
-  } finally {
-    setSubmitLoading(false);
-  }
-};
+  };
 
   const columns = [
     {
@@ -143,38 +142,53 @@ const Termination = () => {
       align: 'center',
       render: (_, record) => (
         <Space size="small">
-          <Button type="primary" icon={<EditOutlined />} size="small" onClick={() => handleEdit(record)} />
-          <Button type="primary" danger icon={<DeleteOutlined />} size="small" onClick={() => handleDelete(record)} />
+          <Button
+            type="primary"
+            icon={<EditOutlined />}
+            size="small"
+            onClick={() => handleEdit(record)}
+            className="table-action-btn table-action-btn-edit"
+          />
+          <Button
+            type="primary"
+            danger
+            icon={<DeleteOutlined />}
+            size="small"
+            onClick={() => handleDelete(record)}
+            className="table-action-btn table-action-btn-delete"
+          />
         </Space>
       ),
     },
   ];
 
-  const paginationProps = {
-    current: currentPage,
-    pageSize: pageSize,
-    total: pagination.total,
-    showSizeChanger: true,
-    showQuickJumper: true,
-    showTotal: (total, range) => `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-    pageSizeOptions: ['10', '20', '50', '100'],
-    onChange: (page, size) => {
-      setCurrentPage(page);
-      setPageSize(size);
-    },
-  };
-
   return (
-    <div style={{ padding: '24px' }}>
+    <div className="table-page-container">
       {contextHolder}
+
       <Card
         title="Termination List"
-        extra={<Button type="primary" icon={<PlusOutlined />} onClick={handleAddNew}>Add New Termination</Button>}
+        className="table-page-card"
+        extra={
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={handleAddNew}
+            className="table-page-add-btn"
+          >
+            Add New Termination
+          </Button>
+        }
       >
-        <Row style={{ marginBottom: 16 }} align="middle" justify="space-between">
+        <Row className="table-page-filters" align="middle" justify="space-between">
           <Col>
             <span style={{ marginRight: 8 }}>Show</span>
-            <Select value={pageSize} onChange={(value) => setPageSize(value)} style={{ width: 80, marginRight: 8 }}>
+            <Select
+              value={pageSize}
+              onChange={(value) => setPageSize(value)}
+              className="table-page-select"
+              style={{ width: 80, marginRight: 8 }}
+            >
               <Option value={10}>10</Option>
               <Option value={20}>20</Option>
               <Option value={50}>50</Option>
@@ -182,35 +196,44 @@ const Termination = () => {
             </Select>
             <span>entries</span>
           </Col>
+
           <Col>
             <Input.Search
               placeholder="Search terminations..."
               allowClear
               onChange={(e) => handleSearch(e.target.value)}
+              className="table-page-search"
               style={{ width: 250 }}
             />
           </Col>
         </Row>
 
-        <Table
-  columns={columns}
-  dataSource={terminations.map(t => ({
-  key: t.id,
-  id: t.id,
-  employee_name: t.employee_name,        // ⬅ DIRECT FROM BACKEND
-  subject: t.subject,
-  termination_type: t.termination_type,
-  notice_date: t.notice_date,
-  termination_date: t.termination_date,
-  terminated_by_name: t.terminated_by_name, // ⬅ DIRECT FROM BACKEND
-  description: t.description,
-}))}
-  loading={loading}
-  pagination={paginationProps}
-  size="middle"
-  bordered
-  scroll={{ x: 1200 }}
-/>
+        <div className="table-page-table">
+          <Table
+            columns={columns}
+            dataSource={terminations.map((t) => ({
+              key: t.id,
+              ...t,
+            }))}
+            loading={loading}
+            pagination={{
+              current: currentPage,
+              pageSize,
+              total: pagination.total,
+              showSizeChanger: true,
+              showQuickJumper: true,
+              pageSizeOptions: ['10', '20', '50', '100'],
+              showTotal: (total, range) =>
+                `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+              onChange: (page, size) => {
+                setCurrentPage(page);
+                setPageSize(size);
+              },
+            }}
+            bordered
+            scroll={{ x: 1200 }}
+          />
+        </div>
       </Card>
 
       {isModalOpen && (

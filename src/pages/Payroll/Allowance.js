@@ -1,5 +1,15 @@
 import React, { useState } from "react";
-import { Table, Button, Space, Card, Row, Col, Select, Input, Modal, } from "antd";
+import {
+  Table,
+  Button,
+  Space,
+  Card,
+  Row,
+  Col,
+  Select,
+  Input,
+  Modal,
+} from "antd";
 import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import { useToast } from "../../hooks/useToast";
 import { useAllowances } from "../../hooks/payroll/useAllowance";
@@ -7,8 +17,16 @@ import AllowanceModal from "../../components/common/SharedModal/AllowanceModal";
 
 const Allowance = () => {
   const { Toast, contextHolder } = useToast();
-  const { allowances, loading, pagination, setPagination, handleSearch,
-    createAllowance, updateAllowance, deleteAllowance } = useAllowances();
+  const {
+    allowances,
+    loading,
+    pagination,
+    setPagination,
+    handleSearch,
+    createAllowance,
+    updateAllowance,
+    deleteAllowance,
+  } = useAllowances();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -37,16 +55,17 @@ const Allowance = () => {
     try {
       if (editingAllowance) {
         await updateAllowance(editingAllowance.id, values);
-        Toast.success("Succesfully Updated")
+        Toast.success("Succesfully Updated");
       } else {
         await createAllowance(values);
-        Toast.success("Succesfully Added")
+        Toast.success("Succesfully Added");
       }
       setIsModalOpen(false);
     } finally {
       setSubmitting(false);
     }
   };
+
   const handleDelete = (record) => {
     modal.confirm({
       title: "Delete Allowance",
@@ -57,9 +76,9 @@ const Allowance = () => {
       onOk: async () => {
         try {
           await deleteAllowance(record.id);
-          Toast.success("Deleted Succesfully")
-        } catch (err) {
-          Toast.error("Faied to Delete")
+          Toast.success("Deleted Succesfully");
+        } catch {
+          Toast.error("Faied to Delete");
         }
       },
     });
@@ -72,8 +91,6 @@ const Allowance = () => {
   const columns = [
     {
       title: "S/L",
-      dataIndex: "sl",
-      key: "sl",
       width: 80,
       align: "center",
       render: (_, __, index) =>
@@ -82,32 +99,27 @@ const Allowance = () => {
     {
       title: "Allowance Name",
       dataIndex: "allowance_name",
-      key: "allowance_name",
       align: "left",
     },
     {
       title: "Allowance Type",
       dataIndex: "allowance_type_display",
-      key: "allowance_type_display",
       align: "left",
     },
     {
       title: "Percentage of Basic",
       dataIndex: "percentage_of_basic",
-      key: "percentage_of_basic",
       align: "left",
       render: (v) => (v ?? "-"),
     },
     {
       title: "Limit Per Month",
       dataIndex: "limit_per_month",
-      key: "limit_per_month",
       align: "left",
       render: (v) => (v ?? "-"),
     },
     {
       title: "Action",
-      key: "action",
       width: 120,
       align: "center",
       render: (_, record) => (
@@ -116,6 +128,7 @@ const Allowance = () => {
             type="primary"
             icon={<EditOutlined />}
             size="small"
+            className="table-action-btn table-action-btn-edit"
             onClick={() => openEditModal(record)}
           />
           <Button
@@ -123,6 +136,7 @@ const Allowance = () => {
             danger
             icon={<DeleteOutlined />}
             size="small"
+            className="table-action-btn table-action-btn-delete"
             onClick={() => handleDelete(record)}
           />
         </Space>
@@ -131,20 +145,27 @@ const Allowance = () => {
   ];
 
   return (
-    <div style={{ padding: "24px" }}>
+    <div className="table-page-container">
       {contextHolder}
       {modalContextHolder}
 
       <Card
         title="Allowance List"
+        className="table-page-card"
         extra={
-          <Button type="primary" icon={<PlusOutlined />} onClick={openAddModal}>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            className="table-page-add-btn"
+            onClick={openAddModal}
+          >
             Add New Allowance
           </Button>
         }
       >
+        {/* FILTERS */}
         <Row
-          style={{ marginBottom: 16 }}
+          className="table-page-filters"
           align="middle"
           justify="space-between"
         >
@@ -152,7 +173,10 @@ const Allowance = () => {
             <span style={{ marginRight: 8 }}>Show</span>
             <Select
               value={pagination.pageSize}
-              onChange={(value) => setPagination((p) => ({ ...p, pageSize: value }))}
+              onChange={(value) =>
+                setPagination((p) => ({ ...p, pageSize: value }))
+              }
+              className="table-page-select"
               style={{ width: 80, marginRight: 8 }}
             >
               <Select.Option value={10}>10</Select.Option>
@@ -167,6 +191,7 @@ const Allowance = () => {
             <Input.Search
               placeholder="Search Allowance..."
               allowClear
+              className="table-page-search"
               style={{ width: 250 }}
               value={searchText}
               onChange={(e) => {
@@ -178,23 +203,27 @@ const Allowance = () => {
           </Col>
         </Row>
 
-        <Table
-          columns={columns}
-          dataSource={allowances.map((a) => ({ ...a, key: a.id })) || []}
-          loading={loading}
-          pagination={{
-            current: pagination.current,
-            pageSize: pagination.pageSize,
-            total: pagination.total,
-            showSizeChanger: true,
-            onChange: handleTableChange,
-            pageSizeOptions: ["10", "20", "50", "100"],
-            showTotal: (t, range) => `Showing ${range[0]} to ${range[1]} of ${t} entries`,
-          }}
-          bordered
-          size="middle"
-          scroll={{ x: 600 }}
-        />
+        {/* TABLE */}
+        <div className="table-page-table">
+          <Table
+            columns={columns}
+            dataSource={allowances.map((a) => ({ ...a, key: a.id })) || []}
+            loading={loading}
+            bordered
+            size="middle"
+            scroll={{ x: 600 }}
+            pagination={{
+              current: pagination.current,
+              pageSize: pagination.pageSize,
+              total: pagination.total,
+              showSizeChanger: true,
+              onChange: handleTableChange,
+              pageSizeOptions: ["10", "20", "50", "100"],
+              showTotal: (t, range) =>
+                `Showing ${range[0]} to ${range[1]} of ${t} entries`,
+            }}
+          />
+        </div>
       </Card>
 
       <AllowanceModal

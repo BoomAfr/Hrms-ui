@@ -1,14 +1,11 @@
 import React from "react";
 import { Table, Button, Card, Space, Input } from "antd";
 import useEarnLeave from "../../hooks/useEarnLeaveConfigure";
-import {useToast} from "../../hooks/useToast";
+import { useToast } from "../../hooks/useToast";
 
 const EarnLeaveConfigure = () => {
-  const {Toast,contextHolder} = useToast();
-  
+  const { Toast, contextHolder } = useToast();
   const { days, setDays, loading, success, handleUpdate } = useEarnLeave(Toast);
-  
-
 
   const columns = [
     {
@@ -29,7 +26,7 @@ const EarnLeaveConfigure = () => {
       dataIndex: "days",
       key: "days",
       align: "center",
-      render: (_, record) => (
+      render: () => (
         <Input
           type="number"
           value={days}
@@ -43,9 +40,14 @@ const EarnLeaveConfigure = () => {
       title: "Update",
       key: "update",
       align: "center",
-      render: (_, record) => (
+      render: () => (
         <Space>
-          <Button type="primary" onClick={handleUpdate} loading={loading}>
+          <Button
+            type="primary"
+            onClick={handleUpdate}
+            loading={loading}
+            className="table-page-add-btn"
+          >
             Update
           </Button>
           {success && <span style={{ color: "green" }}>Updated!</span>}
@@ -64,17 +66,20 @@ const EarnLeaveConfigure = () => {
   ];
 
   return (
-    <div style={{ padding: "24px" }}>
+    <div className="table-page-container">
       {contextHolder}
-      <Card title="Earn Leave Configure">
-        <Table
-          columns={columns}
-          dataSource={dataSource}
-          loading={loading}
-          size="middle"
-          bordered
-          pagination={false}
-        />
+
+      <Card title="Earn Leave Configure" className="table-page-card">
+        <div className="table-page-table">
+          <Table
+            columns={columns}
+            dataSource={dataSource}
+            loading={loading}
+            size="middle"
+            bordered
+            pagination={false}
+          />
+        </div>
       </Card>
     </div>
   );

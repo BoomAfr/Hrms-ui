@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Table, Button, Space, Card, Row, Col, Select, message, Input } from "antd";
+import { Table, Button, Space, Card, Row, Col, Select, Input } from "antd";
 import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import TrainingListModal from "../../components/common/SharedModal/TrainingListModal";
 import ConfirmModal from "../../components/common/SharedModal/ConfirmModal";
@@ -17,7 +17,7 @@ const TrainingList = () => {
   const [selectedTraining, setSelectedTraining] = useState(null);
   const [searchText, setSearchText] = useState("");
 
-  const {Toast,contextHolder} = useToast();
+  const { Toast, contextHolder } = useToast();
 
   const {
     trainings,
@@ -35,17 +35,10 @@ const TrainingList = () => {
     deleteTraining,
   } = useEmployeeTrainings({ initialPage: 1, initialPageSize: 10, initialSearch: "" });
 
-  useEffect(() => {
-    if (page) setCurrentPage(page);
-  }, [page]);
-
-  useEffect(() => {
-    if (hookPageSize) setPageSize(hookPageSize);
-  }, [hookPageSize]);
-
-  useEffect(() => {
-    if (error) message.error("Failed to load trainings");
-  }, [error]);
+  // sync hooks state with local state
+  useEffect(() => { if (page) setCurrentPage(page); }, [page]);
+  useEffect(() => { if (hookPageSize) setPageSize(hookPageSize); }, [hookPageSize]);
+  useEffect(() => { if (error) Toast.error("Failed to load trainings"); }, [error]);
 
   const handleAddNew = () => {
     setEditingTraining(null);
@@ -67,12 +60,9 @@ const TrainingList = () => {
     try {
       await deleteTraining(selectedTraining.id);
       Toast.success("Deleted successfully");
-      //message.success("Deleted successfully");
-      // refetch current page to get correct list
       refetch({ page: currentPage, page_size: pageSize, search: searchText });
-    } catch (err) {
+    } catch {
       Toast.error("Delete failed");
-      //message.error("Delete failed");
     } finally {
       setIsConfirmOpen(false);
       setSelectedTraining(null);
@@ -84,18 +74,15 @@ const TrainingList = () => {
       if (editingTraining) {
         await updateTraining(editingTraining.id, formData);
         Toast.success("Training updated successfully");
-        //message.success("Training updated successfully");
       } else {
         await addTraining(formData);
         Toast.success("Training added successfully");
-        //message.success("Training added successfully");
       }
       setIsModalOpen(false);
       setEditingTraining(null);
-      // refetch current page to refresh from server
       refetch({ page: currentPage, page_size: pageSize, search: searchText });
-    } catch (err) {
-      message.error("Operation failed");
+    } catch {
+      Toast.error("Operation failed");
     }
   };
 
@@ -104,57 +91,16 @@ const TrainingList = () => {
     const newSize = pagination.pageSize;
     setCurrentPage(newPage);
     setPageSize(newSize);
-    // trigger server fetch
     refetch({ page: newPage, page_size: newSize, search: searchText });
   };
 
   const columns = [
-    {
-      title: "S/L",
-      dataIndex: "sl",
-      key: "sl",
-      width: 80,
-      align: "center",
-      render: (_, __, index) => (currentPage - 1) * pageSize + index + 1,
-    },
-    {
-      title: "Employee Name",
-      dataIndex: "employee_name",
-      key: "employee_name",
-      render: (_, record) =>
-        record.employee_name ,
-    },
-    {
-      title: "Training Type",
-      dataIndex: "training_type_name",
-      key: "training_type_name",
-      render: (_, record) => record.training_type_name ?? record.training_type?.training_type_name ?? record.training_type?.name,
-    },
-    {
-      title: "Subject",
-      dataIndex: "subject",
-      key: "subject",
-    },
-    {
-      title: "Training Duration",
-      dataIndex: "duration",
-      key: "duration",
-      render: (_, record) => `${record.from_date ?? ""} to ${record.to_date ?? ""}`,
-    },
-    {
-      title: "Certificate",
-      dataIndex: "certificate_file",
-      key: "certificate_file",
-      width: 120,
-      render: (_, record) =>
-        record.certificate_file ? (
-          <a href={record.certificate_file} target="_blank" rel="noreferrer">
-            View
-          </a>
-        ) : (
-          "—"
-        ),
-    },
+    { title: "S/L", key: "sl", width: 80, align: "center", render: (_, __, index) => (currentPage - 1) * pageSize + index + 1 },
+    { title: "Employee Name", dataIndex: "employee_name", key: "employee_name" },
+    { title: "Training Type", dataIndex: "training_type_name", key: "training_type_name", render: (_, r) => r.training_type_name ?? r.training_type?.training_type_name ?? r.training_type?.name },
+    { title: "Subject", dataIndex: "subject", key: "subject" },
+    { title: "Training Duration", dataIndex: "duration", key: "duration", render: (_, r) => `${r.from_date ?? ""} to ${r.to_date ?? ""}` },
+    { title: "Certificate", dataIndex: "certificate_file", key: "certificate_file", width: 120, render: (_, r) => r.certificate_file ? <a href={r.certificate_file} target="_blank" rel="noreferrer">View</a> : "—" },
     {
       title: "Action",
       key: "action",
@@ -169,29 +115,17 @@ const TrainingList = () => {
     },
   ];
 
-  const filteredData = trainings; // server-side already filtered; keep as is
-
   return (
-    <div style={{ padding: 24 }}>
+    <div className="table-page-container">
       {contextHolder}
-      <Card
-        title="Training List"
-        extra={
-          <Button type="primary" icon={<PlusOutlined />} onClick={handleAddNew}>
-            Add Employee Training
-          </Button>
-        }
-      >
-        <Row style={{ marginBottom: 16 }} align="middle" justify="space-between">
+
+      <Card className="table-page-card" title="Training List" extra={<Button type="primary" icon={<PlusOutlined />} onClick={handleAddNew}>Add Employee Training</Button>}>
+        <Row className="table-page-filters" style={{ marginBottom: 16 }} align="middle" justify="space-between">
           <Col>
             <span style={{ marginRight: 8 }}>Show</span>
             <Select
               value={pageSize}
-              onChange={(value) => {
-                setPageSize(value);
-                setCurrentPage(1);
-                refetch({ page: 1, page_size: value, search: searchText });
-              }}
+              onChange={(value) => { setPageSize(value); setCurrentPage(1); refetch({ page: 1, page_size: value, search: searchText }); }}
               style={{ width: 80, marginRight: 8 }}
             >
               <Option value={10}>10</Option>
@@ -199,45 +133,40 @@ const TrainingList = () => {
               <Option value={50}>50</Option>
               <Option value={100}>100</Option>
             </Select>
-            <span>entries</span>
+            entries
           </Col>
+
           <Col>
             <Input.Search
               placeholder="Search training..."
               allowClear
-              onSearch={(val) => {
-                setSearchText(val);
-                setCurrentPage(1);
-                setSearch(val);
-                refetch({ page: 1, page_size: pageSize, search: val });
-              }}
-              onChange={(e) => {
-                // keep typing updates but don't refetch on every keystroke — user can press enter
-                setSearchText(e.target.value);
-              }}
+              onSearch={(val) => { setSearchText(val); setCurrentPage(1); setSearch(val); refetch({ page: 1, page_size: pageSize, search: val }); }}
+              onChange={(e) => setSearchText(e.target.value)}
               style={{ width: 300 }}
               enterButton
             />
           </Col>
         </Row>
 
-        <Table
-          columns={columns}
-          dataSource={filteredData.map((t, i) => ({ ...t, key: t.id ?? i }))}
-          loading={loading}
-          pagination={{
-            current: currentPage,
-            pageSize,
-            total: total,
-            showSizeChanger: false, // we handle page size via dropdown on top
-            showQuickJumper: true,
-            showTotal: (totalCount, range) => `Showing ${range[0]} to ${range[1]} of ${totalCount} entries`,
-          }}
-          onChange={handleTableChange}
-          size="middle"
-          bordered
-          scroll={{ x: 900 }}
-        />
+        <div className="table-page-table">
+          <Table
+            columns={columns}
+            dataSource={trainings.map((t, i) => ({ ...t, key: t.id ?? i }))}
+            loading={loading}
+            pagination={{
+              current: currentPage,
+              pageSize,
+              total,
+              showSizeChanger: false,
+              showQuickJumper: true,
+              showTotal: (totalCount, range) => `Showing ${range[0]} to ${range[1]} of ${totalCount} entries`,
+            }}
+            onChange={handleTableChange}
+            size="middle"
+            bordered
+            scroll={{ x: 900 }}
+          />
+        </div>
       </Card>
 
       {isModalOpen && (

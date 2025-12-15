@@ -139,6 +139,7 @@ const LateConfiguration = () => {
               icon={<EditOutlined />}
               size="small"
               onClick={() => handleEdit(record)}
+              className="table-page-edit-btn"
             >
               Edit
             </Button>
@@ -192,10 +193,11 @@ const LateConfiguration = () => {
   };
 
   return (
-    <div style={{ padding: 24 }}>
+    <div className="table-page-container">
       {contextHolder} {/* IMPORTANT for notifications */}
 
       <Card
+        className="table-page-card"
         title="Rules of Salary Deduction"
         extra={
           <Button
@@ -203,15 +205,17 @@ const LateConfiguration = () => {
             icon={<PlusOutlined />}
             disabled={editingId !== null}
             onClick={handleAdd}
+            className="table-page-add-btn"
           >
             Add New Rule
           </Button>
         }
       >
-        <Row justify="space-between" style={{ marginBottom: 12 }}>
+        <Row className="table-page-filters" justify="space-between">
           <Col>
             <Input.Search
               placeholder="Search..."
+              className="table-page-search"
               style={{ width: 300 }}
               allowClear
               value={searchText}
@@ -221,22 +225,26 @@ const LateConfiguration = () => {
         </Row>
 
         <Form form={form} component={false}>
-          <Table
-            columns={columns}
-            loading={loading}
-            dataSource={filteredData}
-            rowKey="id"
-            bordered
-            pagination={{
-              current: currentPage,
-              pageSize,
-              onChange: (page, size) => {
-                setCurrentPage(page);
-                setPageSize(size);
-              },
-              showSizeChanger: true,
-            }}
-          />
+          <div className="table-page-table">
+            <Table
+              columns={columns}
+              loading={loading}
+              dataSource={filteredData}
+              rowKey="id"
+              bordered
+              pagination={{
+                current: currentPage,
+                pageSize,
+                onChange: (page, size) => {
+                  setCurrentPage(page);
+                  setPageSize(size);
+                },
+                showSizeChanger: true,
+                pageSizeOptions: ['10', '20', '50', '100'],
+                showTotal: (total, range) => `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+              }}
+            />
+          </div>
         </Form>
       </Card>
     </div>

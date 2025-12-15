@@ -5,7 +5,8 @@ import PublicHolidayModal from '../../components/common/SharedModal/PublicHolida
 import ConfirmModal from '../../components/common/SharedModal/ConfirmModal';
 import { usePublicHoliday } from '../../hooks/usePublicHoliday';
 import { manageHolidayAPI } from '../../services/manageHolidayServices';
-import {useToast} from '../../hooks/useToast';
+import { useToast } from '../../hooks/useToast';
+
 const { Option } = Select;
 
 const PublicHoliday = () => {
@@ -17,10 +18,19 @@ const PublicHoliday = () => {
   const [editingPublicHoliday, setEditingPublicHoliday] = useState(null);
   const [searchText, setSearchText] = useState('');
   const [holidaysOptions, setHolidaysOptions] = useState([]);
+  const [total, setTotal] = useState(0);
 
-  const { publicHolidays, loading, error, refetch, addPublicHoliday, updatePublicHoliday, deletePublicHoliday } = usePublicHoliday();
+  const {
+    publicHolidays,
+    loading,
+    error,
+    refetch,
+    addPublicHoliday,
+    updatePublicHoliday,
+    deletePublicHoliday,
+  } = usePublicHoliday();
 
-  const {Toast,contextHolder}=useToast();
+  const { Toast, contextHolder } = useToast();
 
   useEffect(() => {
     const loadHolidays = async () => {
@@ -46,11 +56,9 @@ const PublicHoliday = () => {
       if (editingPublicHoliday) {
         await updatePublicHoliday(editingPublicHoliday.id, payload);
         Toast.success('Public holiday updated successfully');
-       
       } else {
         await addPublicHoliday(payload);
         Toast.success('Public holiday added successfully');
-    
       }
 
       refetch();
@@ -60,23 +68,22 @@ const PublicHoliday = () => {
       Toast.error(err.response?.data?.message || 'Operation failed');
     }
   };
+
   const loadDepartments = async (page = currentPage, size = pageSize, search = searchText) => {
     const data = await refetch(page, size, search);
     if (data && data.count !== undefined) setTotal(data.count);
   };
-  const [total, setTotal] = useState(0);
-  
+
   useEffect(() => {
     loadDepartments(currentPage, pageSize, searchText);
   }, [currentPage, pageSize, searchText]);
 
   const handleSearch = (value) => {
     setSearchText(value.toLowerCase());
-    setCurrentPage(1); // reset to page 1
+    setCurrentPage(1);
   };
 
   const handleEdit = (record) => {
-    // record may contain holiday as id or object; normalize for editing
     const holidayField =
       record.holiday && typeof record.holiday === 'object'
         ? record.holiday.id
@@ -101,12 +108,10 @@ const PublicHoliday = () => {
     if (!selectedPublicHoliday) return;
     try {
       await deletePublicHoliday(selectedPublicHoliday.id);
-      Toast.success(`Public holiday deleted successfully`);
-     // Toast.success(`Deleted: ${selectedPublicHoliday.id}`);
+      Toast.success('Public holiday deleted successfully');
       refetch();
     } catch (err) {
-      Toast.error('Failed to delete public holiday')
-     // message.error('Failed to delete public holiday');
+      Toast.error('Failed to delete public holiday');
     } finally {
       setIsConfirmOpen(false);
       setSelectedPublicHoliday(null);
@@ -125,8 +130,8 @@ const PublicHoliday = () => {
 
   const pagination = {
     current: currentPage,
-    pageSize: pageSize,
-    total: total,
+    pageSize,
+    total,
     showSizeChanger: true,
     showQuickJumper: true,
     showTotal: (total, range) =>
@@ -139,85 +144,90 @@ const PublicHoliday = () => {
   };
 
   const columns = [
-  {
-    title: 'S/L',
-    dataIndex: 'sl',
-    key: 'sl',
-    width: 80,
-    align: 'center',
-    render: (_, __, index) => index + 1,
-  },
-  {
-    title: 'Holiday Name',
-    dataIndex: 'holiday_name',
-    key: 'holiday_name',
-    align: 'left',
-  },
-  {
-    title: 'Start Date',
-    dataIndex: 'start_date',
-    key: 'start_date',
-    align: 'left',
-  },
-  {
-    title: 'End Date',
-    dataIndex: 'end_date',
-    key: 'end_date',
-    align: 'left',
-  },
-  {
-    title: 'Comment',
-    dataIndex: 'comment',
-    key: 'comment',
-    align: 'left',
-  },
-  {
-    title: 'Action',
-    key: 'action',
-    width: 120,
-    align: 'center',
-    render: (_, record) => (
-      <Space size="small">
-        <Button
-          type="primary"
-          icon={<EditOutlined />}
-          size="small"
-          onClick={() => handleEdit(record)}
-        />
-        <Button
-          type="primary"
-          danger
-          icon={<DeleteOutlined />}
-          size="small"
-          onClick={() => handleDelete(record)}
-        />
-      </Space>
-    ),
-  },
-];
-
+    {
+      title: 'S/L',
+      dataIndex: 'sl',
+      key: 'sl',
+      width: 80,
+      align: 'center',
+      render: (_, __, index) => index + 1,
+    },
+    {
+      title: 'Holiday Name',
+      dataIndex: 'holiday_name',
+      key: 'holiday_name',
+      align: 'left',
+    },
+    {
+      title: 'Start Date',
+      dataIndex: 'start_date',
+      key: 'start_date',
+      align: 'left',
+    },
+    {
+      title: 'End Date',
+      dataIndex: 'end_date',
+      key: 'end_date',
+      align: 'left',
+    },
+    {
+      title: 'Comment',
+      dataIndex: 'comment',
+      key: 'comment',
+      align: 'left',
+    },
+    {
+      title: 'Action',
+      key: 'action',
+      width: 120,
+      align: 'center',
+      render: (_, record) => (
+        <Space size="small">
+          <Button
+            type="primary"
+            icon={<EditOutlined />}
+            size="small"
+            onClick={() => handleEdit(record)}
+            className="table-action-btn table-action-btn-edit"
+          />
+          <Button
+            type="primary"
+            danger
+            icon={<DeleteOutlined />}
+            size="small"
+            onClick={() => handleDelete(record)}
+            className="table-action-btn table-action-btn-delete"
+          />
+        </Space>
+      ),
+    },
+  ];
 
   return (
-    <div style={{ padding: '24px' }}>
+    <div className="table-page-container">
       {contextHolder}
+
       <Card
+        className="table-page-card"
         title="Public Holiday List"
         extra={
           <Button
             type="primary"
             icon={<PlusOutlined />}
             onClick={handleAddNew}
+            className="table-page-add-btn"
           >
             Add New Public Holiday
           </Button>
         }
       >
-        <Row style={{ marginBottom: 16 }} align="middle" justify="space-between">
+        <Row className="table-page-filters" align="middle" justify="space-between">
           <Col>
             <span style={{ marginRight: 8 }}>Show</span>
             <Select
               value={pageSize}
               onChange={(value) => setPageSize(value)}
+              className="table-page-select"
               style={{ width: 80, marginRight: 8 }}
             >
               <Option value={10}>10</Option>
@@ -227,39 +237,41 @@ const PublicHoliday = () => {
             </Select>
             <span>entries</span>
           </Col>
+
           <Col>
             <Input.Search
               placeholder="Search public holiday..."
               allowClear
               onChange={(e) => handleSearch(e.target.value)}
+              className="table-page-search"
               style={{ width: 250 }}
             />
           </Col>
         </Row>
 
-        <Table
-           columns={columns}
-           dataSource={publicHolidays
-          .filter((p) =>
-            (p.name?.toLowerCase() + ' ' + (p.comment ?? '')).includes(searchText)
-            )
-            .map((p, i) => ({
-             key: p.id ?? i,
-             id: p.id,
-             sl: i + 1,
-             holiday_name: p.name,       // ✅ fixed: this is the name field
-             start_date: p.start_date ?? '',
-             end_date: p.end_date ?? '',
-             comment: p.comment ?? '',   // ✅ ensure comment column is included
-            }))
-            }
-
-          loading={loading}
-          pagination={pagination}
-          size="middle"
-          bordered
-          scroll={{ x: 700 }}
-        />
+        <div className="table-page-table">
+          <Table
+            columns={columns}
+            dataSource={publicHolidays
+              .filter((p) =>
+                (p.name?.toLowerCase() + ' ' + (p.comment ?? '')).includes(searchText)
+              )
+              .map((p, i) => ({
+                key: p.id ?? i,
+                id: p.id,
+                sl: i + 1,
+                holiday_name: p.name,
+                start_date: p.start_date ?? '',
+                end_date: p.end_date ?? '',
+                comment: p.comment ?? '',
+              }))}
+            loading={loading}
+            pagination={pagination}
+            size="middle"
+            bordered
+            scroll={{ x: 700 }}
+          />
+        </div>
       </Card>
 
       {isModalOpen && (
@@ -276,7 +288,7 @@ const PublicHoliday = () => {
       <ConfirmModal
         isOpen={isConfirmOpen}
         title="Delete Public Holiday"
-        message={`Are you sure you want to delete this public holiday?`}
+        message="Are you sure you want to delete this public holiday?"
         onOk={handleConfirmDelete}
         onCancel={handleCancelDelete}
       />

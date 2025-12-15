@@ -68,28 +68,17 @@ const MyAttendanceReport = () => {
 
     doc.text("Summary", 40, doc.lastAutoTable.finalY + 30);
 
-    /*const summaryRows = [
-      ["Total Working Days", summary.total_working_days],
-      ["Total Present", summary.total_present],
-      ["Total Absent", summary.total_absent],
-      ["Total Leave", summary.total_leave],
-      ["Total Late", summary.total_late],
-      ["Expected Working Hours", summary.expected_working_hours],
-      ["Actual Working Hours", summary.actual_working_hours],
-      ["Over Time", summary.over_time],
-      ["Deficiency", summary.deficiency],
-    ];*/
     const summaryRows = [
-  ["Total Working Days", summary["Total Working Days"]],
-  ["Total Present", summary["Total Present"]],
-  ["Total Absent", summary["Total Absence"]],
-  ["Total Leave", summary["Total Leave"]],
-  ["Total Late", summary["Total Late"]],
-  ["Expected Working Hours", summary["Expected Working Hour"]],
-  ["Actual Working Hours", summary["Actual Working Hour"]],
-  ["Over Time", summary["Over Time"]],
-  ["Deficiency", summary["Deficiency"]],
-];
+      ["Total Working Days", summary["Total Working Days"]],
+      ["Total Present", summary["Total Present"]],
+      ["Total Absent", summary["Total Absence"]],
+      ["Total Leave", summary["Total Leave"]],
+      ["Total Late", summary["Total Late"]],
+      ["Expected Working Hours", summary["Expected Working Hour"]],
+      ["Actual Working Hours", summary["Actual Working Hour"]],
+      ["Over Time", summary["Over Time"]],
+      ["Deficiency", summary["Deficiency"]],
+    ];
 
     autoTable(doc, {
       body: summaryRows,
@@ -101,116 +90,120 @@ const MyAttendanceReport = () => {
   };
 
   return (
-    <Card title="My Attendance Report">
-      {/* FILTER SECTION */}
-      <div
-        style={{
-          display: "flex",
-          gap: "15px",
-          marginBottom: "20px",
-          alignItems: "center",
-        }}
-      >
-        {/* EMPLOYEE NAME */}
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          <label><strong>Employee</strong></label>
-          <div
-            style={{
-              width: 200,
-              padding: "6px 10px",
-              border: "1px solid #d9d9d9",
-              borderRadius: 6,
-              background: "#fafafa",
-            }}
-          >
-            {user?.full_name || "N/A"}
-          </div>
-        </div>
-
-        {/* From Date */}
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          <label><strong>From Date</strong></label>
-          <DatePicker
-            style={{ width: 180 }}
-            value={filters.from_date ? dayjs(filters.from_date) : null}
-            onChange={(date, dateString) =>
-              setFilters({ ...filters, from_date: dateString })
-            }
-          />
-        </div>
-
-        {/* To Date */}
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          <label><strong>To Date</strong></label>
-          <DatePicker
-            style={{ width: 180 }}
-            value={filters.to_date ? dayjs(filters.to_date) : null}
-            onChange={(date, dateString) =>
-              setFilters({ ...filters, to_date: dateString })
-            }
-          />
-        </div>
-
-        {/* Filter Button */}
-        <Button type="primary" onClick={handleFilter} loading={loading}>
-          Filter
-        </Button>
-
-        {/* PDF Button */}
-        <Button
-          style={{ marginLeft: "auto", background: "green", color: "#acff1d" }}
-          onClick={downloadPDF}
-        >
-          Download PDF
-        </Button>
-      </div>
-
-      {/* TABLE */}
-      <Table
-        columns={columns}
-        dataSource={report.map((item) => ({
-          date: item["Date"],
-          in_time: item["In Time"],
-          out_time: item["Out Time"],
-          working_time: item["Working Time"],
-          late: item["Late"],
-          late_time: item["Late Time"],
-          over_time: item["Over Time"],
-          status: item["Status"],
-        }))}
-        loading={loading}
-        pagination={false}
-        rowKey={(record, index) => index}
-      />
-
-      {/* SUMMARY */}
-      {summary && (
+    <div className="table-page-container">
+      <Card className="table-page-card" title="My Attendance Report">
+        {/* FILTER SECTION */}
         <div
+          className="table-page-filters"
           style={{
-            marginTop: 25,
-            padding: 20,
-            background: "#f7f7f7",
-            borderRadius: 8,
-            border: "1px solid #ddd",
+            display: "flex",
+            gap: "15px",
+            alignItems: "center",
           }}
         >
-          <h3>Summary</h3>
-          <table style={{ width: "100%", lineHeight: "30px" }}>
-            <tbody>
-  <tr><td><strong>Total Working Days:</strong></td><td>{summary["Total Working Days"]} Days</td></tr>
-  <tr><td><strong>Total Present:</strong></td><td>{summary["Total Present"]} Days</td></tr>
-  <tr><td><strong>Total Absent:</strong></td><td>{summary["Total Absence"]} Days</td></tr>
-  <tr><td><strong>Total Leave:</strong></td><td>{summary["Total Leave"]} Days</td></tr>
-  <tr><td><strong>Total Late:</strong></td><td>{summary["Total Late"]} Days</td></tr>
-  <tr><td><strong>Expected Working Hours:</strong></td><td>{summary["Expected Working Hour"]} Hours</td></tr>
-  <tr><td><strong>Actual Working Hours:</strong></td><td>{summary["Actual Working Hour"]} Hours</td></tr>
-  <tr><td><strong>Over Time:</strong></td><td>{summary["Over Time"]} Hours</td></tr>
-  <tr><td><strong>Deficiency:</strong></td><td>{summary["Deficiency"]} Hours</td></tr>
-</tbody>
-          </table>
+          {/* EMPLOYEE NAME */}
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <label><strong>Employee</strong></label>
+            <div
+              style={{
+                width: 200,
+                padding: "6px 10px",
+                border: "1px solid #d9d9d9",
+                borderRadius: 6,
+                background: "#fafafa",
+              }}
+            >
+              {user?.full_name || "N/A"}
+            </div>
+          </div>
+
+          {/* From Date */}
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <label><strong>From Date</strong></label>
+            <DatePicker
+              style={{ width: 180 }}
+              value={filters.from_date ? dayjs(filters.from_date) : null}
+              onChange={(date, dateString) =>
+                setFilters({ ...filters, from_date: dateString })
+              }
+            />
+          </div>
+
+          {/* To Date */}
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <label><strong>To Date</strong></label>
+            <DatePicker
+              style={{ width: 180 }}
+              value={filters.to_date ? dayjs(filters.to_date) : null}
+              onChange={(date, dateString) =>
+                setFilters({ ...filters, to_date: dateString })
+              }
+            />
+          </div>
+
+          {/* Filter Button */}
+          <Button type="primary" onClick={handleFilter} loading={loading}>
+            Filter
+          </Button>
+
+          {/* PDF Button */}
+          <Button
+            style={{ marginLeft: "auto", background: "green", color: "#acff1d" }}
+            onClick={downloadPDF}
+          >
+            Download PDF
+          </Button>
         </div>
-      )}
-    </Card>
+
+        {/* TABLE */}
+        <div className="table-page-table">
+          <Table
+            columns={columns}
+            dataSource={report.map((item) => ({
+              date: item["Date"],
+              in_time: item["In Time"],
+              out_time: item["Out Time"],
+              working_time: item["Working Time"],
+              late: item["Late"],
+              late_time: item["Late Time"],
+              over_time: item["Over Time"],
+              status: item["Status"],
+            }))}
+            loading={loading}
+            pagination={false}
+            rowKey={(record, index) => index}
+          />
+        </div>
+
+        {/* SUMMARY */}
+        {summary && (
+          <div
+            style={{
+              marginTop: 25,
+              padding: 20,
+              background: "#f7f7f7",
+              borderRadius: 8,
+              border: "1px solid #ddd",
+            }}
+          >
+            <h3>Summary</h3>
+            <table style={{ width: "100%", lineHeight: "30px" }}>
+              <tbody>
+                <tr><td><strong>Total Working Days:</strong></td><td>{summary["Total Working Days"]} Days</td></tr>
+                <tr><td><strong>Total Present:</strong></td><td>{summary["Total Present"]} Days</td></tr>
+                <tr><td><strong>Total Absent:</strong></td><td>{summary["Total Absence"]} Days</td></tr>
+                <tr><td><strong>Total Leave:</strong></td><td>{summary["Total Leave"]} Days</td></tr>
+                <tr><td><strong>Total Late:</strong></td><td>{summary["Total Late"]} Days</td></tr>
+                <tr><td><strong>Expected Working Hours:</strong></td><td>{summary["Expected Working Hour"]} Hours</td></tr>
+                <tr><td><strong>Actual Working Hours:</strong></td><td>{summary["Actual Working Hour"]} Hours</td></tr>
+                <tr><td><strong>Over Time:</strong></td><td>{summary["Over Time"]} Hours</td></tr>
+                <tr><td><strong>Deficiency:</strong></td><td>{summary["Deficiency"]} Hours</td></tr>
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Card>
+    </div>
   );
 };
 

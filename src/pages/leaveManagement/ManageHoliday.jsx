@@ -4,7 +4,7 @@ import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import SharedModal from '../../components/common/SharedModal/ManageHolidayModal';
 import ConfirmModal from '../../components/common/SharedModal/ConfirmModal';
 import { useManageHoliday } from '../../hooks/useManageHoliday';
-import {useToast} from '../../hooks/useToast';
+import { useToast } from '../../hooks/useToast';
 
 const { Option } = Select;
 
@@ -16,6 +16,7 @@ const ManageHoliday = () => {
   const [selectedHoliday, setSelectedHoliday] = useState(null);
   const [editingHoliday, setEditingHoliday] = useState(null);
   const [searchText, setSearchText] = useState('');
+  const [total, setTotal] = useState(0);
 
   const {
     manageHoliday,
@@ -27,7 +28,7 @@ const ManageHoliday = () => {
     deleteManageHoliday,
   } = useManageHoliday();
 
-  const {Toast, contextHolder} = useToast();
+  const { Toast, contextHolder } = useToast();
 
   const handleAddManageHoliday = async (values) => {
     try {
@@ -35,18 +36,15 @@ const ManageHoliday = () => {
       if (editingHoliday) {
         await updateManageHoliday(editingHoliday.id, payload);
         Toast.success('Holiday updated successfully');
-       // message.success('Holiday updated successfully');
       } else {
         await addManageHoliday(payload);
         Toast.success('Holiday added successfully');
-        //message.success('Holiday added successfully');
       }
       refetch();
       setEditingHoliday(null);
       setIsModalOpen(false);
     } catch (err) {
       Toast.error(err.response?.data?.message || 'Operation failed');
-     // message.error(err.response?.data?.message || 'Operation failed');
     }
   };
 
@@ -54,16 +52,14 @@ const ManageHoliday = () => {
     const data = await refetch(page, size, search);
     if (data && data.count !== undefined) setTotal(data.count);
   };
-  const [total, setTotal] = useState(0);
-  
-  // Fetch when page, size, or search changes
+
   useEffect(() => {
     loadManagEmployee(currentPage, pageSize, searchText);
   }, [currentPage, pageSize, searchText]);
 
   const handleSearch = (value) => {
     setSearchText(value.toLowerCase());
-    setCurrentPage(1); // reset to page 1
+    setCurrentPage(1);
   };
 
   const handleEdit = (record) => {
@@ -81,11 +77,9 @@ const ManageHoliday = () => {
     try {
       await deleteManageHoliday(selectedHoliday.id);
       Toast.success(`Deleted: ${selectedHoliday.name}`);
-     // message.success(`Deleted: ${selectedHoliday.name}`);
       refetch();
     } catch (error) {
       Toast.error('Failed to delete holiday');
-     // message.error('Failed to delete holiday');
     } finally {
       setIsConfirmOpen(false);
       setSelectedHoliday(null);
@@ -104,8 +98,8 @@ const ManageHoliday = () => {
 
   const pagination = {
     current: currentPage,
-    pageSize: pageSize,
-    total: total,
+    pageSize,
+    total,
     showSizeChanger: true,
     showQuickJumper: true,
     showTotal: (total, range) =>
@@ -144,6 +138,7 @@ const ManageHoliday = () => {
             icon={<EditOutlined />}
             size="small"
             onClick={() => handleEdit(record)}
+            className="table-action-btn table-action-btn-edit"
           />
           <Button
             type="primary"
@@ -151,6 +146,7 @@ const ManageHoliday = () => {
             icon={<DeleteOutlined />}
             size="small"
             onClick={() => handleDelete(record)}
+            className="table-action-btn table-action-btn-delete"
           />
         </Space>
       ),
@@ -158,26 +154,30 @@ const ManageHoliday = () => {
   ];
 
   return (
-    <div style={{ padding: '24px' }}>
+    <div className="table-page-container">
       {contextHolder}
+
       <Card
+        className="table-page-card"
         title="Manage Holiday"
         extra={
           <Button
             type="primary"
             icon={<PlusOutlined />}
             onClick={handleAddNew}
+            className="table-page-add-btn"
           >
             Add New Holiday
           </Button>
         }
       >
-        <Row style={{ marginBottom: 16 }} align="middle" justify="space-between">
+        <Row className="table-page-filters" align="middle" justify="space-between">
           <Col>
             <span style={{ marginRight: 8 }}>Show</span>
             <Select
               value={pageSize}
               onChange={(value) => setPageSize(value)}
+              className="table-page-select"
               style={{ width: 80, marginRight: 8 }}
             >
               <Option value={10}>10</Option>
@@ -187,32 +187,36 @@ const ManageHoliday = () => {
             </Select>
             <span>entries</span>
           </Col>
+
           <Col>
             <Input.Search
               placeholder="Search holiday..."
               allowClear
               onChange={(e) => handleSearch(e.target.value)}
+              className="table-page-search"
               style={{ width: 250 }}
             />
           </Col>
         </Row>
 
-        <Table
-          columns={columns}
-          dataSource={manageHoliday
-            .filter((h) => h.name.toLowerCase().includes(searchText))
-            .map((h, i) => ({
-              key: h.id || i,
-              id: h.id,
-              sl: i + 1,
-              name: h.name,
-            }))}
-          loading={loading}
-          pagination={pagination}
-          size="middle"
-          bordered
-          scroll={{ x: 400 }}
-        />
+        <div className="table-page-table">
+          <Table
+            columns={columns}
+            dataSource={manageHoliday
+              .filter((h) => h.name.toLowerCase().includes(searchText))
+              .map((h, i) => ({
+                key: h.id || i,
+                id: h.id,
+                sl: i + 1,
+                name: h.name,
+              }))}
+            loading={loading}
+            pagination={pagination}
+            size="middle"
+            bordered
+            scroll={{ x: 400 }}
+          />
+        </div>
       </Card>
 
       {isModalOpen && (

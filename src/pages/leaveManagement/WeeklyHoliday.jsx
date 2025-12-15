@@ -4,7 +4,8 @@ import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import WeeklyHolidayModal from '../../components/common/SharedModal/WeeklyHolidayModal';
 import ConfirmModal from '../../components/common/SharedModal/ConfirmModal';
 import { useWeeklyHoliday } from '../../hooks/useWeeklyHoliday';
-import {useToast} from '../../hooks/useToast';
+import { useToast } from '../../hooks/useToast';
+
 const { Option } = Select;
 
 const WeeklyHoliday = () => {
@@ -15,21 +16,27 @@ const WeeklyHoliday = () => {
   const [selectedWeeklyHoliday, setSelectedWeeklyHoliday] = useState(null);
   const [editingWeeklyHoliday, setEditingWeeklyHoliday] = useState(null);
   const [searchText, setSearchText] = useState('');
+  const [total, setTotal] = useState(0);
 
-  const { weeklyHolidays, loading,  refetch, addWeeklyHoliday, updateWeeklyHoliday, deleteWeeklyHoliday } = useWeeklyHoliday();
+  const {
+    weeklyHolidays,
+    loading,
+    refetch,
+    addWeeklyHoliday,
+    updateWeeklyHoliday,
+    deleteWeeklyHoliday,
+  } = useWeeklyHoliday();
 
-  const {Toast,contextHolder} = useToast();
+  const { Toast, contextHolder } = useToast();
 
   const handleAddWeeklyHoliday = async (payload) => {
     try {
       if (editingWeeklyHoliday) {
         await updateWeeklyHoliday(editingWeeklyHoliday.id, payload);
         Toast.success('Weekly holiday updated successfully');
-       // message.success('Weekly holiday updated successfully');
       } else {
         await addWeeklyHoliday(payload);
         Toast.success('Weekly holiday added successfully');
-       // message.success('Weekly holiday added successfully');
       }
 
       refetch();
@@ -37,15 +44,14 @@ const WeeklyHoliday = () => {
       setIsModalOpen(false);
     } catch (err) {
       Toast.error(err.response?.data?.message || 'Operation failed');
-    //  message.error(err.response?.data?.message || 'Operation failed');
     }
   };
+
   const loadWeeklyHoliday = async (page = currentPage, size = pageSize, search = searchText) => {
     const data = await refetch(page, size, search);
     if (data && data.count !== undefined) setTotal(data.count);
   };
-  const [total, setTotal] = useState(0);
-  
+
   useEffect(() => {
     loadWeeklyHoliday(currentPage, pageSize, searchText);
   }, [currentPage, pageSize, searchText]);
@@ -53,6 +59,59 @@ const WeeklyHoliday = () => {
   const handleSearch = (value) => {
     setSearchText(value.toLowerCase());
     setCurrentPage(1);
+  };
+
+  const handleEdit = (record) => {
+    setEditingWeeklyHoliday({
+      id: record.id ?? record.key,
+      day: record.day,
+      is_active: record.is_active,
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = (record) => {
+    setSelectedWeeklyHoliday(record);
+    setIsConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!selectedWeeklyHoliday) return;
+    try {
+      await deleteWeeklyHoliday(selectedWeeklyHoliday.id);
+      Toast.success(`Deleted: ${selectedWeeklyHoliday.day}`);
+      refetch();
+    } catch (error) {
+      Toast.error('Failed to delete weekly holiday');
+    } finally {
+      setIsConfirmOpen(false);
+      setSelectedWeeklyHoliday(null);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setIsConfirmOpen(false);
+    setSelectedWeeklyHoliday(null);
+  };
+
+  const handleAddNew = () => {
+    setEditingWeeklyHoliday(null);
+    setIsModalOpen(true);
+  };
+
+  const pagination = {
+    current: currentPage,
+    pageSize,
+    total,
+    showSizeChanger: true,
+    showQuickJumper: true,
+    showTotal: (total, range) =>
+      `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+    pageSizeOptions: ['10', '20', '50', '100'],
+    onChange: (page, size) => {
+      setCurrentPage(page);
+      setPageSize(size);
+    },
   };
 
   const columns = [
@@ -89,6 +148,7 @@ const WeeklyHoliday = () => {
             icon={<EditOutlined />}
             size="small"
             onClick={() => handleEdit(record)}
+            className="table-action-btn table-action-btn-edit"
           />
           <Button
             type="primary"
@@ -96,88 +156,38 @@ const WeeklyHoliday = () => {
             icon={<DeleteOutlined />}
             size="small"
             onClick={() => handleDelete(record)}
+            className="table-action-btn table-action-btn-delete"
           />
         </Space>
       ),
     },
   ];
 
-  const handleEdit = (record) => {
-    setEditingWeeklyHoliday({
-      id: record.id ?? record.key,
-      day: record.day,
-      is_active: record.is_active,
-    });
-    setIsModalOpen(true);
-  };
-
-  const handleDelete = (record) => {
-    setSelectedWeeklyHoliday(record);
-    setIsConfirmOpen(true);
-  };
-
-  const handleConfirmDelete = async () => {
-    if (!selectedWeeklyHoliday) return;
-    try {
-      await deleteWeeklyHoliday(selectedWeeklyHoliday.id);
-      Toast.success(`Deleted: ${selectedWeeklyHoliday.day}`);
-     // message.success(`Deleted: ${selectedWeeklyHoliday.day}`);
-      refetch();
-    } catch (error) {
-      Toast.error('Failed to delete weekly holiday');
-     // message.error('Failed to delete weekly holiday');
-    } finally {
-      setIsConfirmOpen(false);
-      setSelectedWeeklyHoliday(null);
-    }
-  };
-
-  const handleCancelDelete = () => {
-    setIsConfirmOpen(false);
-    setSelectedWeeklyHoliday(null);
-  };
-
-  const handleAddNew = () => {
-    setEditingWeeklyHoliday(null);
-    setIsModalOpen(true);
-  };
-
-  const pagination = {
-    current: currentPage,
-    pageSize: pageSize,
-    total: total,
-    showSizeChanger: true,
-    showQuickJumper: true,
-    showTotal: (total, range) =>
-      `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-    pageSizeOptions: ['10', '20', '50', '100'],
-    onChange: (page, size) => {
-      setCurrentPage(page);
-      setPageSize(size);
-    },
-  };
-
   return (
-    <div style={{ padding: '24px' }}>
+    <div className="table-page-container">
       {contextHolder}
+
       <Card
+        className="table-page-card"
         title="Weekly Holiday List"
         extra={
           <Button
             type="primary"
             icon={<PlusOutlined />}
             onClick={handleAddNew}
+            className="table-page-add-btn"
           >
             Add New Weekly Holiday
           </Button>
         }
       >
-        <Row style={{ marginBottom: 16 }} align="middle" justify="space-between">
+        <Row className="table-page-filters" align="middle" justify="space-between">
           <Col>
             <span style={{ marginRight: 8 }}>Show</span>
             <Select
               value={pageSize}
               onChange={(value) => setPageSize(value)}
+              className="table-page-select"
               style={{ width: 80, marginRight: 8 }}
             >
               <Option value={10}>10</Option>
@@ -187,35 +197,43 @@ const WeeklyHoliday = () => {
             </Select>
             <span>entries</span>
           </Col>
+
           <Col>
             <Input.Search
               placeholder="Search weekly holiday..."
               allowClear
               onChange={(e) => handleSearch(e.target.value)}
+              className="table-page-search"
               style={{ width: 250 }}
             />
           </Col>
         </Row>
 
-        <Table
-          columns={columns}
-          dataSource={weeklyHolidays
-            .filter((d) =>
-              (String(d.day).toLowerCase() + ' ' + (d.is_active ? 'active' : 'non active')).includes(searchText)
-            )
-            .map((d, i) => ({
-              key: d.id ?? i,
-              id: d.id,
-              sl: i + 1,
-              day: d.day,
-              is_active: d.is_active,
-            }))}
-          loading={loading}
-          pagination={pagination}
-          size="middle"
-          bordered
-          scroll={{ x: 500 }}
-        />
+        <div className="table-page-table">
+          <Table
+            columns={columns}
+            dataSource={weeklyHolidays
+              .filter((d) =>
+                (
+                  String(d.day).toLowerCase() +
+                  ' ' +
+                  (d.is_active ? 'active' : 'non active')
+                ).includes(searchText)
+              )
+              .map((d, i) => ({
+                key: d.id ?? i,
+                id: d.id,
+                sl: i + 1,
+                day: d.day,
+                is_active: d.is_active,
+              }))}
+            loading={loading}
+            pagination={pagination}
+            size="middle"
+            bordered
+            scroll={{ x: 500 }}
+          />
+        </div>
       </Card>
 
       {isModalOpen && (
@@ -239,4 +257,3 @@ const WeeklyHoliday = () => {
 };
 
 export default WeeklyHoliday;
-

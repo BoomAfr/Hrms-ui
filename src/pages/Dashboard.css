@@ -1,0 +1,309 @@
+/* ====================================
+   Dashboard Component Styles
+   Refined to Match User Design (Solid Gradients)
+   ==================================== */
+
+/* ========== Dashboard Container ========== */
+.dashboard-container {
+  background: var(--bg-secondary);
+  /* Use existing variable or fallback */
+  background-color: #f3f4f6;
+  /* Fallback light grey */
+  min-height: calc(100vh - 100px);
+  padding-bottom: 40px;
+}
+
+/* ========== Page Title ========== */
+.dashboard-title {
+  margin-bottom: 24px !important;
+  color: #1f2937 !important;
+  font-weight: 700 !important;
+  font-size: 24px !important;
+}
+
+/* ========== Statistics Cards Base ========== */
+.stat-card {
+  border-radius: 16px;
+  border: none;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  position: relative;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  height: 100%;
+  /* Ensure text is white for these specific cards */
+  color: white !important;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+}
+
+.stat-card-body {
+  padding: 24px !important;
+  height: 100%;
+}
+
+.stat-card-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  height: 100%;
+}
+
+/* ========== Specific Gradient Cards ========== */
+
+/* Purple/Blue Card (e.g. Department) */
+.card-purple {
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+}
+
+/* Pink Card (e.g. Total Employee) */
+.card-pink {
+  background: linear-gradient(135deg, #f472b6 0%, #db2777 100%);
+}
+
+/* Green Card (e.g. Present) */
+.card-green {
+  background: linear-gradient(135deg, #34d399 0%, #059669 100%);
+}
+
+/* Orange Card (e.g. Absent) */
+.card-orange {
+  background: linear-gradient(135deg, #fb923c 0%, #ea580c 100%);
+}
+
+/* ========== Card Typography ========== */
+.stat-card-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 8px;
+  display: block;
+}
+
+.stat-card-value {
+  font-size: 36px !important;
+  font-weight: 700 !important;
+  margin: 0 !important;
+  line-height: 1.2 !important;
+  color: white !important;
+  margin-bottom: 8px !important;
+}
+
+.stat-card-footer {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.85);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.stat-card-footer .anticon {
+  font-size: 10px;
+}
+
+/* ========== Icon Wrapper ========== */
+.stat-icon-wrapper {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  backdrop-filter: blur(4px);
+}
+
+.stat-card-icon {
+  font-size: 24px;
+  color: white;
+}
+
+/* ========== Other Cards (Check-in, Notice, etc) ========== */
+/* Keeping these clean white for contrast against the colorful stats */
+.checkin-card,
+.notice-card,
+.attendance-card {
+  border-radius: 16px;
+  border: none;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  background: white;
+  transition: all 0.3s ease;
+}
+
+.checkin-card:hover,
+.notice-card:hover,
+.attendance-card:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.notice-card .ant-card-head,
+.attendance-card .ant-card-head {
+  border-bottom: 1px solid #f0f0f0;
+  padding: 0 24px;
+  min-height: 64px;
+}
+
+.notice-card-title,
+.attendance-card-title {
+  color: #111827;
+  font-weight: 700;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  letter-spacing: 0.5px;
+}
+
+.notice-card-icon,
+.attendance-card-icon {
+  font-size: 20px;
+  color: #4f46e5;
+  background: #eef2ff;
+  padding: 8px;
+  border-radius: 8px;
+}
+
+/* Checkin Specifics */
+.checkin-card-body {
+  padding: 32px 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+}
+
+.checkin-title {
+  color: #111827 !important;
+  font-size: 24px !important;
+  margin-bottom: 8px !important;
+}
+
+.checkin-ip {
+  color: #6b7280;
+  font-size: 13px;
+  background: #f3f4f6;
+  padding: 4px 12px;
+  border-radius: 20px;
+  display: inline-block;
+  margin-bottom: 24px;
+}
+
+.checkin-button {
+  height: 50px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+  transition: all 0.2s;
+}
+
+.checkin-button:hover {
+  transform: scale(1.02);
+  box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
+}
+
+.checkin-status {
+  margin-top: 24px;
+  padding: 12px;
+  background: #ecfdf5;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #059669;
+  font-weight: 600;
+}
+
+/* Notice List */
+.notice-list-item {
+  padding: 16px;
+  border: 1px solid #f3f4f6;
+  margin-bottom: 12px !important;
+  border-radius: 12px;
+  transition: all 0.2s;
+  background: #fff;
+}
+
+.notice-list-item:hover {
+  border-color: #e5e7eb;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  transform: translateX(4px);
+}
+
+.notice-title {
+  color: #1f2937;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.notice-date {
+  font-size: 12px;
+  color: #9ca3af;
+  background: #f9fafb;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+/* Attendance Table */
+.attendance-table .ant-table {
+  background: transparent;
+}
+
+.attendance-table .ant-table-thead>tr>th {
+  background: #f9fafb;
+  color: #6b7280;
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.attendance-table .ant-table-tbody>tr>td {
+  border-bottom: 1px solid #f3f4f6;
+  padding: 16px;
+  color: #374151;
+  font-weight: 500;
+}
+
+.attendance-table .ant-table-tbody>tr:hover>td {
+  background: #f9fafb !important;
+}
+
+.attendance-table .ant-avatar {
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.attendance-table .ant-tag {
+  border: none;
+  border-radius: 20px;
+  padding: 2px 10px;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+/* Custom Scrollbar for Notice Board */
+.notice-card .ant-card-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.notice-card .ant-card-body::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.notice-card .ant-card-body::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+}
+
+.notice-card .ant-card-body::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}

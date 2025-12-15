@@ -182,7 +182,7 @@ const GenerateSalarySheet = () => {
   ];
 
   return (
-    <div style={{ padding: "24px" }}>
+    <div className="table-page-container">
 
       {/* Top Buttons */}
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px', gap: '8px' }}>
@@ -200,7 +200,7 @@ const GenerateSalarySheet = () => {
         </Button>
         <Button
           type="primary"
-          style={{ backgroundColor: "#87d068", borderColor: "#87d068" }}
+          className="table-page-add-btn"
           onClick={() => navigate('/salary/generate-bulk')}
           icon={<PlusOutlined />}
         >
@@ -208,7 +208,7 @@ const GenerateSalarySheet = () => {
         </Button>
         <Button
           type="primary"
-          style={{ backgroundColor: "#87d068", borderColor: "#87d068" }}
+          className="table-page-add-btn"
           icon={<PlusOutlined />}
           onClick={() => navigate('/salary/generate')}
         >
@@ -217,11 +217,8 @@ const GenerateSalarySheet = () => {
       </div>
 
       <Card
-        title={
-          <span style={{ color: 'white' }}>Payment Info</span>
-        }
-        headStyle={{ backgroundColor: "#1890ff", border: "none" }}
-        bodyStyle={{ padding: "24px" }}
+        className="table-page-card"
+        title="Payment Info"
       >
         <Row gutter={24} style={{ marginBottom: "24px" }}>
           <Col span={8}>
@@ -250,17 +247,19 @@ const GenerateSalarySheet = () => {
           </Col>
         </Row>
 
-        <Table
-          columns={columns}
-          dataSource={data}
-          loading={loading}
-          rowKey={(record) => record.employee_id} // Unique key
-          pagination={{
-            ...pagination,
-            onChange: (page, pageSize) => fetchSalarySheets({ page, pageSize })
-          }}
-          bordered
-        />
+        <div className="table-page-table">
+          <Table
+            columns={columns}
+            dataSource={data}
+            loading={loading}
+            rowKey={(record) => record.employee_id} // Unique key
+            pagination={{
+              ...pagination,
+              onChange: (page, pageSize) => fetchSalarySheets({ page, pageSize })
+            }}
+            bordered
+          />
+        </div>
       </Card>
     </div>
   );
