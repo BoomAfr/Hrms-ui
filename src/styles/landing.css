@@ -1,0 +1,160 @@
+/* Merged Landing Page Styles */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+/* Scoping these styles to landing page wrapper if possible, or using specific classes */
+/* For now, adding them globally but using specific classes where possible */
+
+.landing-wrapper {
+  font-family: 'Poppins', Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .desktop-menu {
+    display: none !important;
+  }
+
+  .mobile-menu-btn {
+    display: flex !important;
+  }
+
+  /* Hero adjustments */
+  .hero-features {
+    justify-content: center !important;
+    text-align: center;
+  }
+
+  /* Showcase tabs */
+  .showcase-tabs .ant-tabs-nav {
+    margin-bottom: 16px !important;
+  }
+
+  .showcase-tabs .ant-tabs-tab {
+    font-size: 14px !important;
+    padding: 8px 12px !important;
+  }
+
+  .mobile-block-button {
+    width: 100% !important;
+  }
+}
+
+/* Sign In Page Responsive Styles */
+.mobile-logo {
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  .signin-branding {
+    display: none !important;
+  }
+
+  .mobile-logo {
+    display: block !important;
+  }
+
+  .signin-form-container {
+    padding: 24px !important;
+  }
+
+  /* Adjust showcase content order on tablet */
+  .showcase-content .ant-row {
+    flex-direction: column-reverse !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .signin-form-container {
+    padding: 20px !important;
+    border-radius: 24px !important;
+  }
+
+  /* Stack buttons vertically on very small screens */
+  .ant-space-horizontal.ant-space-middle {
+    flex-wrap: wrap;
+  }
+}
+
+/* Premium Design Utilities */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #1677ff 0%, #722ed1 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-image-container {
+  position: relative;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 20px 50px -12px rgba(22, 119, 255, 0.25);
+  border: 8px solid rgba(255, 255, 255, 0.5);
+  animation: float 6s ease-in-out infinite;
+}
+
+@media (max-width: 768px) {
+  .hero-image-container {
+    border: 4px solid rgba(255, 255, 255, 0.5);
+    animation: none;
+  }
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-20px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.feature-card {
+  transition: all 0.3s ease;
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
+}
+
+.feature-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.1) !important;
+  border-color: #1677ff !important;
+}
+
+@media (max-width: 768px) {
+  .feature-card:hover {
+    transform: translateY(-5px);
+  }
+}
+
+/* Pricing Card Styles */
+.pricing-card {
+  transition: all 0.3s ease;
+}
+
+.pricing-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.15) !important;
+}
+
+@media (max-width: 768px) {
+  .pricing-card:hover {
+    transform: translateY(-5px);
+  }
+}

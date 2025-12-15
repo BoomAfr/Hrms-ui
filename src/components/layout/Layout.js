@@ -84,7 +84,19 @@ const MainLayout = () => {
   }, [role]);
 
   const handleMenuClick = ({ key }) => {
-    navigate(key);
+    // If key is exactly '/', navigate to '/app' (Dashboard)
+    if (key === '/') {
+      navigate('/app');
+      return;
+    }
+
+    // If key has a leading slash but no /app prefix, prepend /app
+    // This handles routes like /employee-management -> /app/employee-management
+    const targetPath = (key.startsWith('/') && !key.startsWith('/app'))
+      ? `/app${key}`
+      : key;
+
+    navigate(targetPath);
     // Close drawer on mobile when menu item is clicked
     if (!screens.lg) {
       setCollapsed(true);
@@ -202,11 +214,11 @@ const MainLayout = () => {
     >
       <Breadcrumb
         items={[
-          { title: <HomeOutlined />, href: '/' },
+          { title: <HomeOutlined />, href: '/app' },
           ...breadcrumbItems
         ]}
       />
-      {location.pathname !== '/' && <BackButton />}
+      {location.pathname !== '/app' && <BackButton />}
     </div>
   );
 
@@ -333,11 +345,11 @@ const MainLayout = () => {
         <div className="hrms-breadcrumb-container">
           <Breadcrumb
             items={[
-              { title: <HomeOutlined />, href: '/' },
+              { title: <HomeOutlined />, href: '/app' },
               ...breadcrumbItems
             ]}
           />
-          {location.pathname !== '/' && <BackButton />}
+          {location.pathname !== '/app' && <BackButton />}
         </div>
         <Content className="hrms-layout-content">
           <ErrorBoundary>

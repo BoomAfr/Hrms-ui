@@ -55,24 +55,24 @@ const EmployeePerformanceList = () => {
       render: (val) => <div style={{ whiteSpace: "pre-wrap" }}>{val}</div>,
     },
     {
-  title: "Star Rating",
-  dataIndex: "overall_rating",
-  render: (val) => {
-    if (val == null) return "-";
-    let rating = Number(val);
-    if (isNaN(rating)) rating = 0;
-    rating = Math.max(0, Math.min(5, Math.round(rating))); // clamp 0-5
-    return "★".repeat(rating) + "☆".repeat(5 - rating);
-  },
-  width: 140,
-},
+      title: "Star Rating",
+      dataIndex: "overall_rating",
+      render: (val) => {
+        if (val == null) return "-";
+        let rating = Number(val);
+        if (isNaN(rating)) rating = 0;
+        rating = Math.max(0, Math.min(5, Math.round(rating))); // clamp 0-5
+        return "★".repeat(rating) + "☆".repeat(5 - rating);
+      },
+      width: 140,
+    },
     {
       title: "Action",
       width: 140,
       render: (record) => (
         <Space>
-          <Button onClick={() => navigate(`/employee-performance/view/${record.id}`)} shape="circle" size="small">🔍</Button>
-          <Button type="primary" onClick={() => navigate(`/employee-performance/edit/${record.id}`)} shape="circle" size="small">✎</Button>
+          <Button onClick={() => navigate(`/app/employee-performance/view/${record.id}`)} shape="circle" size="small">🔍</Button>
+          <Button type="primary" onClick={() => navigate(`/app/employee-performance/edit/${record.id}`)} shape="circle" size="small">✎</Button>
           <Popconfirm title="Delete?" onConfirm={() => removePerformance(record.id)}>
             <Button danger shape="circle" size="small">🗑</Button>
           </Popconfirm>
@@ -99,7 +99,7 @@ const EmployeePerformanceList = () => {
               }}
               style={{ width: 220 }}
             />
-            <Button type="primary" onClick={() => navigate("/add-employee-perfomance")} icon = {<PlusOutlined/>} >
+            <Button type="primary" onClick={() => navigate("/app/add-employee-perfomance")} icon={<PlusOutlined />} >
               Add Employee Performance
             </Button>
           </Space>

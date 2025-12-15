@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Table, Button, Input, Select, Space, message, Tag } from "antd";
+import { Table, Button, Input, Select, Space, message, Tag, Modal, Form, DatePicker, Row, Col, Checkbox } from "antd";
 import { useNavigate } from "react-router-dom";
-import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
-import { useEmployeeBonuses } from "../../hooks/useBonus";
+import { PlusOutlined, SearchOutlined, DollarOutlined, PayCircleOutlined } from "@ant-design/icons";
+import { useEmployeeBonuses, useMarkBonusPaid } from "../../hooks/useBonus";
 import dayjs from "dayjs";
 
 const { Option } = Select;
@@ -13,8 +13,16 @@ const GenerateBonus = () => {
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState({});
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+
+  // Payment Modal State
+  const [isPaymentModalVisible, setIsPaymentModalVisible] = useState(false);
+  const [paymentForm] = Form.useForm();
+  const [paymentType, setPaymentType] = useState(null); // 'single' or 'bulk'
+  const [currentItemId, setCurrentItemId] = useState(null); // ID for single payment
 
   const { bonuses, pagination, loading, refetch } = useEmployeeBonuses(filters);
+  const { markPaid, loading: paymentLoading } = useMarkBonusPaid();
 
   useEffect(() => {
     refetch({ page: currentPage, pageSize });
@@ -34,8 +42,53 @@ const GenerateBonus = () => {
   const handleTableChange = (paginationConfig) => {
     setCurrentPage(paginationConfig.current);
   };
+
   const handleAddBonus = () => {
     navigate('/payroll/add-generate-bonus');
+  };
+
+  // Payment Handlers
+  const showPaymentModal = (type, id = null) => {
+    setPaymentType(type);
+    setCurrentItemId(id);
+    paymentForm.resetFields();
+    paymentForm.setFieldsValue({ payment_date: dayjs() });
+    setIsPaymentModalVisible(true);
+  };
+
+  const handlePaymentSubmit = async (values) => {
+    try {
+      let itemIds = [];
+      if (paymentType === 'single' && currentItemId) {
+        itemIds = [currentItemId];
+      } else if (paymentType === 'bulk') {
+        itemIds = selectedRowKeys;
+      }
+
+      const payload = {
+        payment_type: 'bonus',
+        item_ids: itemIds,
+        payment_method: values.payment_method,
+        payment_reference: values.payment_reference || '',
+        payment_date: values.payment_date.format('YYYY-MM-DD')
+      };
+
+      await markPaid(payload, values.download_csv);
+      message.success('Payment marked successfully');
+      setIsPaymentModalVisible(false);
+      setSelectedRowKeys([]);
+      refetch({ page: currentPage, pageSize });
+    } catch (error) {
+      // Error is handled by hook/toast usually, but we can show message here if needed
+    }
+  };
+
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (keys) => setSelectedRowKeys(keys),
+    getCheckboxProps: (record) => ({
+      disabled: record.status === 'Paid', // Disable selection for already paid rows
+    }),
   };
 
   const columns = [
@@ -68,24 +121,6 @@ const GenerateBonus = () => {
       key: "festival_name",
     },
     {
-      title: "Gross Salary",
-      dataIndex: "gross_salary",
-      key: "gross_salary",
-      render: (value) => `₹${parseFloat(value || 0).toFixed(2)}`,
-    },
-    {
-      title: "Basic Salary",
-      dataIndex: "basic_salary",
-      key: "basic_salary",
-      render: (value) => `₹${parseFloat(value || 0).toFixed(2)}`,
-    },
-    {
-      title: "Percentage",
-      dataIndex: "percentage",
-      key: "percentage",
-      render: (value, record) => `${value}% of ${record.calculated_on}`,
-    },
-    {
       title: "Bonus Amount",
       dataIndex: "bonus_amount",
       key: "bonus_amount",
@@ -99,6 +134,25 @@ const GenerateBonus = () => {
         <Tag color={status === 'Paid' ? 'green' : 'orange'}>
           {status}
         </Tag>
+      ),
+    },
+    {
+      title: "Action",
+      key: "action",
+      render: (_, record) => (
+        <Button
+          type="primary"
+          size="small"
+          icon={<DollarOutlined />}
+          disabled={record.status === 'Paid'}
+          onClick={() => showPaymentModal('single', record.id)}
+          style={{
+            backgroundColor: record.status === 'Paid' ? '#d9d9d9' : '#52c41a',
+            borderColor: record.status === 'Paid' ? '#d9d9d9' : '#52c41a'
+          }}
+        >
+          {record.status === 'Paid' ? 'Paid' : 'Pay'}
+        </Button>
       ),
     },
   ];
@@ -139,6 +193,16 @@ const GenerateBonus = () => {
             style={{ width: 250 }}
             allowClear
           />
+          {selectedRowKeys.length > 0 && (
+            <Button
+              type="primary"
+              onClick={() => showPaymentModal('bulk')}
+              style={{ backgroundColor: '#faad14', borderColor: '#faad14' }}
+              icon={<PayCircleOutlined />}
+            >
+              Bulk Pay ({selectedRowKeys.length})
+            </Button>
+          )}
           <Button
             type="primary"
             icon={<PlusOutlined />}
@@ -151,6 +215,7 @@ const GenerateBonus = () => {
 
 
       <Table
+        rowSelection={rowSelection}
         bordered
         dataSource={bonuses}
         columns={columns}
@@ -166,6 +231,67 @@ const GenerateBonus = () => {
         onChange={handleTableChange}
         scroll={{ x: 1200 }}
       />
+
+      {/* Payment Modal */}
+      <Modal
+        title="Mark Bonus as Paid"
+        open={isPaymentModalVisible}
+        onCancel={() => setIsPaymentModalVisible(false)}
+        footer={null}
+      >
+        <Form
+          form={paymentForm}
+          layout="vertical"
+          onFinish={handlePaymentSubmit}
+        >
+          <Row gutter={16}>
+            <Col span={24}>
+              <Form.Item
+                name="payment_method"
+                label="Payment Method"
+                rules={[{ required: true, message: 'Please select payment method' }]}
+              >
+                <Select placeholder="Select Method">
+                  <Option value="Manual">Manual</Option>
+                  <Option value="Cash">Cash</Option>
+                  <Option value="Bank Transfer">Bank Transfer</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={24}>
+              <Form.Item
+                name="payment_date"
+                label="Payment Date"
+                rules={[{ required: true, message: 'Please select date' }]}
+              >
+                <DatePicker style={{ width: '100%' }} />
+              </Form.Item>
+            </Col>
+            <Col span={24}>
+              <Form.Item
+                name="payment_reference"
+                label="Reference / Transaction ID"
+              >
+                <Input placeholder="Optional reference number" />
+              </Form.Item>
+            </Col>
+            <Col span={24}>
+              <Form.Item
+                name="download_csv"
+                valuePropName="checked"
+              >
+                <Checkbox>Download Payment CSV Receipt</Checkbox>
+              </Form.Item>
+            </Col>
+          </Row>
+          <Space style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
+            <Button onClick={() => setIsPaymentModalVisible(false)}>Cancel</Button>
+            <Button type="primary" htmlType="submit" loading={paymentLoading}>
+              Confirm Payment
+            </Button>
+          </Space>
+        </Form>
+      </Modal>
     </div>
   );
 };

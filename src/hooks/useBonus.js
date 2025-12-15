@@ -15,11 +15,11 @@ export const useBonusSettings = () => {
     setError(null);
     try {
       const data = await getBonusSettings();
-    
+
       setBonusSettings(data.results || data || []);
     } catch (err) {
       setError(err.message || 'Failed to fetch bonus settings');
-      setBonusSettings([]); 
+      setBonusSettings([]);
     } finally {
       setLoading(false);
     }
@@ -102,4 +102,49 @@ export const useGenerateBonus = () => {
   };
 
   return { generate, loading, error, result };
+};
+
+export const useMarkBonusPaid = () => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const markPaid = async (data, exportCSV = false) => {
+    setLoading(true);
+    setError(null);
+    try {
+      // data should contain { payment_type: 'bonus', item_ids: [...], payment_method: '...', ... }
+      const response = await import('../services/bonusService').then(module => module.markBonusPaid(data, exportCSV));
+
+      if (exportCSV) {
+        // Handle file download
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+
+        // Try to extract filename from headers
+        const contentDisposition = response.headers['content-disposition'];
+        let fileName = `bonus_payments_${new Date().toISOString().split('T')[0]}.csv`;
+        if (contentDisposition) {
+          const fileNameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+          if (fileNameMatch && fileNameMatch.length === 2)
+            fileName = fileNameMatch[1];
+        }
+
+        link.setAttribute('download', fileName);
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode.removeChild(link);
+      }
+
+      return response;
+    } catch (err) {
+      const errorMsg = err.response?.data?.error || (err.message && err.message !== 'canceled' ? err.message : 'Failed to payment');
+      setError(errorMsg);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { markPaid, loading, error };
 };

@@ -24,9 +24,15 @@ export const getPayslip = async (id) => {
 };
 
 // Mark payment as paid (optional, based on your backend view but not explicitly requested for these pages yet)
-export const markPaymentPaid = async (data) => {
-  const response = await api.post('/company/payments/mark-paid/', data);
-  return response.data;
+export const markPaymentPaid = async (data, exportCSV = false) => {
+  const config = {};
+  if (exportCSV) {
+    config.params = { export: 'csv' };
+    config.responseType = 'blob'; // Important for file download
+  }
+  const response = await api.post('/company/payments/mark-paid/', data, config);
+  // Return the entire response if it's a blob, otherwise return data
+  return exportCSV ? response : response.data;
 };
 
 export default {

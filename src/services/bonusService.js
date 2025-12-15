@@ -15,8 +15,20 @@ export const getEmployeeBonuses = async (params = {}) => {
   return response.data;
 };
 
+export const markBonusPaid = async (data, exportCSV = false) => {
+  const config = {};
+  if (exportCSV) {
+    config.params = { export: 'csv' };
+    config.responseType = 'blob'; // Important for file download
+  }
+  const response = await api.post('/company/payments/mark-paid/', data, config);
+  // Return the entire response if it's a blob, otherwise return data
+  return exportCSV ? response : response.data;
+};
+
 export default {
   getBonusSettings,
   generateBonus,
   getEmployeeBonuses,
+  markBonusPaid,
 };

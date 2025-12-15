@@ -72,7 +72,7 @@ const GenerateBulkSalarySheet = () => {
         message.warning(`${result.failed} falied. Check console/logs.`);
       }
       // Navigate to List page after success?
-      setTimeout(() => navigate('/payroll/generate-salary-sheet'), 1500);
+      setTimeout(() => navigate('/app/payroll/generate-salary-sheet'), 1500);
     } catch (error) {
       message.error(error);
     }
@@ -85,7 +85,7 @@ const GenerateBulkSalarySheet = () => {
         <Button
           type="primary"
           className="table-page-add-btn"
-          onClick={() => navigate('/payroll/generate-salary-sheet')}
+          onClick={() => navigate('/app/payroll/generate-salary-sheet')}
         >
           Generate Payslip
         </Button>

@@ -62,9 +62,9 @@ const AddSalarySheet = () => {
       message.success(result.message || "Payslip generated successfully!");
 
       if (result.payslip_id) {
-        navigate(`/payroll/salary/payslip/${result.payslip_id}`);
+        navigate(`/app/payroll/salary/payslip/${result.payslip_id}`);
       } else {
-        navigate('/payroll/generate-salary-sheet');
+        navigate('/app/payroll/generate-salary-sheet');
       }
     } catch (error) {
       message.error(typeof error === 'string' ? error : "Failed to generate salary.");
@@ -78,7 +78,7 @@ const AddSalarySheet = () => {
         <Button
           type="primary"
           className="table-page-add-btn"
-          onClick={() => navigate('/payroll/generate-salary-sheet')}
+          onClick={() => navigate('/app/payroll/generate-salary-sheet')}
         >
           Generate Payslip
         </Button>

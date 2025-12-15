@@ -30,9 +30,9 @@ export const useSalarySheets = (initialFilters = {}) => {
         page_size: params.pageSize || pagination.pageSize,
       };
 
-      
+
       if (!queryParams.month && !initialFilters.month) {
-        
+
       }
 
       const response = await getSalarySheets(queryParams);
@@ -141,4 +141,51 @@ export const usePayslip = (id) => {
   }, [fetchPayslip]);
 
   return { payslip, loading, error, refetch: fetchPayslip };
+};
+
+/**
+ * Hook to mark salary as paid
+ */
+export const useMarkSalaryPaid = () => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const markPaid = async (data, exportCSV = false) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await import('../services/salaryService').then(module => module.markPaymentPaid(data, exportCSV));
+
+      if (exportCSV) {
+        // Handle file download
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+
+        // Try to extract filename from headers
+        const contentDisposition = response.headers['content-disposition'];
+        let fileName = `salary_payments_${new Date().toISOString().split('T')[0]}.csv`;
+        if (contentDisposition) {
+          const fileNameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+          if (fileNameMatch && fileNameMatch.length === 2)
+            fileName = fileNameMatch[1];
+        }
+
+        link.setAttribute('download', fileName);
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode.removeChild(link);
+      }
+
+      return response;
+    } catch (err) {
+      const errorMsg = err.response?.data?.error || (err.message && err.message !== 'canceled' ? err.message : 'Failed to payment');
+      setError(errorMsg);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { markPaid, loading, error };
 };

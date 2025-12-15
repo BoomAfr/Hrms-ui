@@ -12,13 +12,15 @@ import {
   Space,
   Tag,
   Avatar,
-  message
+  message,
+  Modal,
+  Form,
+  Checkbox
 } from "antd";
-import { UserOutlined, PlusOutlined } from "@ant-design/icons";
+import { UserOutlined, PlusOutlined, PayCircleOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
-import { useSalarySheets } from "../../hooks/useSalary";
-import { markPaymentPaid } from "../../services/salaryService";
+import { useSalarySheets, useMarkSalaryPaid } from "../../hooks/useSalary";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -31,8 +33,16 @@ const GenerateSalarySheet = () => {
     month: dayjs().format('YYYY-MM'),
     status: null
   });
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+
+  // Payment Modal State
+  const [isPaymentModalVisible, setIsPaymentModalVisible] = useState(false);
+  const [paymentForm] = Form.useForm();
+  const [paymentType, setPaymentType] = useState(null); // 'single' or 'bulk'
+  const [currentItemId, setCurrentItemId] = useState(null); // ID for single payment
 
   const { data, pagination, loading, fetchSalarySheets } = useSalarySheets(filters);
+  const { markPaid, loading: paymentLoading } = useMarkSalaryPaid();
 
   useEffect(() => {
     fetchSalarySheets({ page: 1 });
@@ -51,30 +61,54 @@ const GenerateSalarySheet = () => {
   const handleAction = (record) => {
     if (record.payslip_id) {
       // View Payslip
-      navigate(`/payroll/salary/payslip/${record.payslip_id}`);
+      navigate(`/app/payroll/salary/payslip/${record.payslip_id}`);
     } else {
-      navigate('/payroll/salary/generate', { state: { employeeId: record.employee_id, month: filters.month } });
+      navigate('/app/salary/generate', { state: { employeeId: record.employee_id, month: filters.month } });
     }
   };
 
-  const handleMakePayment = async (payslipIds) => {
-    const ids = Array.isArray(payslipIds) ? payslipIds : [payslipIds];
+  // Payment Handlers
+  const showPaymentModal = (type, id = null) => {
+    setPaymentType(type);
+    setCurrentItemId(id);
+    paymentForm.resetFields();
+    paymentForm.setFieldsValue({ payment_date: dayjs() });
+    setIsPaymentModalVisible(true);
+  };
+
+  const handlePaymentSubmit = async (values) => {
     try {
+      let itemIds = [];
+      if (paymentType === 'single' && currentItemId) {
+        itemIds = [currentItemId];
+      } else if (paymentType === 'bulk') {
+        itemIds = selectedRowKeys;
+      }
+
       const payload = {
         payment_type: 'salary',
-        item_ids: ids,
-        payment_method: 'Bank Transfer',
-        payment_date: new Date().toISOString().split('T')[0]
+        item_ids: itemIds, // Assuming item_ids expects logic for salary too
+        payment_method: values.payment_method,
+        payment_reference: values.payment_reference || '',
+        payment_date: values.payment_date.format('YYYY-MM-DD')
       };
 
-      await markPaymentPaid(payload);
+      await markPaid(payload, values.download_csv);
       message.success('Payment marked successfully');
-
-      // Refresh the list
+      setIsPaymentModalVisible(false);
+      setSelectedRowKeys([]);
       fetchSalarySheets({ ...filters, page: pagination.current });
     } catch (error) {
-      message.error(error.response?.data?.error || 'Failed to mark payment');
+      // Error is handled by hook
     }
+  };
+
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (keys) => setSelectedRowKeys(keys),
+    getCheckboxProps: (record) => ({
+      disabled: record.status === 'Paid' || record.status === 'Pending', // Disable if paid or pending
+    }),
   };
 
   const columns = [
@@ -151,7 +185,7 @@ const GenerateSalarySheet = () => {
                 type="primary"
                 size="small"
                 style={{ backgroundColor: "#52c41a", borderColor: "#52c41a" }}
-                onClick={() => handleMakePayment(record.payslip_id)}
+                onClick={() => showPaymentModal('single', record.payslip_id)}
               >
                 Make Payment
               </Button>
@@ -184,24 +218,28 @@ const GenerateSalarySheet = () => {
   return (
     <div className="table-page-container">
 
-      {/* Top Buttons */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px', gap: '8px' }}>
-        <Button
-          type="primary"
-          style={{ backgroundColor: "#eafff5ff", borderColor: "#000000ff", color: "#000000ff" }}
-          onClick={() => {
-            const calculatedRecords = data.filter(r => r.status === 'Calculated' && r.payslip_id);
-            const ids = calculatedRecords.map(r => r.payslip_id);
-            if (ids.length > 0) handleMakePayment(ids);
-          }}
-          disabled={!data.some(r => r.status === 'Calculated')}
-        >
-          Make Bulk Payment
-        </Button>
+      {/* Top Buttons - Responsive Wrapper */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'flex-end',
+        marginBottom: '16px',
+        gap: '8px',
+        flexWrap: 'wrap' // Allow wrapping on small screens
+      }}>
+        {selectedRowKeys.length > 0 && (
+          <Button
+            type="primary"
+            style={{ backgroundColor: "#faad14", borderColor: "#faad14", color: "white" }}
+            onClick={() => showPaymentModal('bulk')}
+            icon={<PayCircleOutlined />}
+          >
+            Bulk Pay ({selectedRowKeys.length})
+          </Button>
+        )}
         <Button
           type="primary"
           className="table-page-add-btn"
-          onClick={() => navigate('/salary/generate-bulk')}
+          onClick={() => navigate('/app/salary/generate-bulk')}
           icon={<PlusOutlined />}
         >
           Generate Bulk Salary Sheet
@@ -210,7 +248,7 @@ const GenerateSalarySheet = () => {
           type="primary"
           className="table-page-add-btn"
           icon={<PlusOutlined />}
-          onClick={() => navigate('/salary/generate')}
+          onClick={() => navigate('/app/salary/generate')}
         >
           Generate Single Salary Sheet
         </Button>
@@ -220,8 +258,8 @@ const GenerateSalarySheet = () => {
         className="table-page-card"
         title="Payment Info"
       >
-        <Row gutter={24} style={{ marginBottom: "24px" }}>
-          <Col span={8}>
+        <Row gutter={[16, 16]} style={{ marginBottom: "24px" }}>
+          <Col xs={24} sm={12} md={8}>
             <Title level={5}>Month</Title>
             <DatePicker
               picker="month"
@@ -232,7 +270,7 @@ const GenerateSalarySheet = () => {
               style={{ width: "100%" }}
             />
           </Col>
-          <Col span={8}>
+          <Col xs={24} sm={12} md={8}>
             <Title level={5}>Status</Title>
             <Select
               placeholder="---- Please Select ----"
@@ -249,18 +287,82 @@ const GenerateSalarySheet = () => {
 
         <div className="table-page-table">
           <Table
+            rowSelection={rowSelection}
             columns={columns}
             dataSource={data}
             loading={loading}
-            rowKey={(record) => record.employee_id} // Unique key
+            rowKey={(record) => record.payslip_id || record.employee_id} // Pref payslip_id for payment, fallback for unique key
             pagination={{
               ...pagination,
               onChange: (page, pageSize) => fetchSalarySheets({ page, pageSize })
             }}
             bordered
+            scroll={{ x: 1000 }} // Enable horizontal scroll for table
           />
         </div>
       </Card>
+
+      {/* Payment Modal */}
+      <Modal
+        title="Mark Salary as Paid"
+        open={isPaymentModalVisible}
+        onCancel={() => setIsPaymentModalVisible(false)}
+        footer={null}
+      >
+        <Form
+          form={paymentForm}
+          layout="vertical"
+          onFinish={handlePaymentSubmit}
+          initialValues={{ download_csv: false }}
+        >
+          <Row gutter={16}>
+            <Col span={24}>
+              <Form.Item
+                name="payment_method"
+                label="Payment Method"
+                rules={[{ required: true, message: 'Please select payment method' }]}
+              >
+                <Select placeholder="Select Method">
+                  <Option value="Manual">Manual</Option>
+                  <Option value="Cash">Cash</Option>
+                  <Option value="Bank Transfer">Bank Transfer</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={24}>
+              <Form.Item
+                name="payment_date"
+                label="Payment Date"
+                rules={[{ required: true, message: 'Please select date' }]}
+              >
+                <DatePicker style={{ width: '100%' }} />
+              </Form.Item>
+            </Col>
+            <Col span={24}>
+              <Form.Item
+                name="payment_reference"
+                label="Reference / Transaction ID"
+              >
+                <Input placeholder="Optional reference number" />
+              </Form.Item>
+            </Col>
+            <Col span={24}>
+              <Form.Item
+                name="download_csv"
+                valuePropName="checked"
+              >
+                <Checkbox>Download Payment CSV Receipt</Checkbox>
+              </Form.Item>
+            </Col>
+          </Row>
+          <Space style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
+            <Button onClick={() => setIsPaymentModalVisible(false)}>Cancel</Button>
+            <Button type="primary" htmlType="submit" loading={paymentLoading}>
+              Confirm Payment
+            </Button>
+          </Space>
+        </Form>
+      </Modal>
     </div>
   );
 };

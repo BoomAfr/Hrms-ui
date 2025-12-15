@@ -1,10 +1,17 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { ConfigProvider } from 'antd';
+import { ConfigProvider, Layout as AntLayout } from 'antd';
 import { ThemeProvider } from './context/ThemeProvider';
 
 
-import Layout from './components/layout/Layout';
+import MainLayout from './components/layout/Layout';
+import LandingPage from './pages/landing/LandingPage';
+import Pricing from './pages/landing/Pricing';
+import Support from './pages/landing/Support';
+import JobRequirements from './pages/landing/JobRequirements';
+import LandingNavbar from './components/landing/Navbar';
+import LandingFooter from './components/landing/Footer';
+import { theme as landingTheme } from './pages/landing/theme';
 import Login from './pages/Login';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import Dashboard from './pages/Dashboard';
@@ -145,10 +152,51 @@ function App() {
       >
         <Router>
           <Routes>
-            <Route path="/login" element={<Login />} />
+            {/* Landing Page Routes (Public) */}
             <Route path="/" element={
+              <ConfigProvider theme={landingTheme}>
+                <AntLayout style={{ minHeight: '100vh', background: '#fff' }}>
+                  <LandingNavbar />
+                  <AntLayout.Content>
+                    <LandingPage />
+                  </AntLayout.Content>
+                  <LandingFooter />
+                </AntLayout>
+              </ConfigProvider>
+            } />
+            <Route path="/pricing" element={
+              <ConfigProvider theme={landingTheme}>
+                <AntLayout style={{ minHeight: '100vh', background: '#fff' }}>
+                  <LandingNavbar />
+                  <AntLayout.Content>
+                    <Pricing />
+                  </AntLayout.Content>
+                  <LandingFooter />
+                </AntLayout>
+              </ConfigProvider>
+            } />
+            <Route path="/support" element={
+              <ConfigProvider theme={landingTheme}>
+                <AntLayout style={{ minHeight: '100vh', background: '#fff' }}>
+                  <LandingNavbar />
+                  <AntLayout.Content>
+                    <Support />
+                  </AntLayout.Content>
+                  <LandingFooter />
+                </AntLayout>
+              </ConfigProvider>
+            } />
+            <Route path="/job-requirements" element={
+              <ConfigProvider theme={landingTheme}>
+                <JobRequirements />
+              </ConfigProvider>
+            } />
+
+            {/* App Routes (Protected) */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/app" element={
               <ProtectedRoute>
-                <Layout />
+                <MainLayout />
               </ProtectedRoute>
             }>
               <Route index element={<Dashboard />} />
