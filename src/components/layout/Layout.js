@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
   Layout,
@@ -18,6 +18,7 @@ import {
   LogoutOutlined,
   UserOutlined,
   HomeOutlined,
+  RocketOutlined,
 } from '@ant-design/icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../store/slices/authSlice';
@@ -26,6 +27,7 @@ import ThemeToggle from '../common/ThemeToggle/ThemeToggle';
 import { useToast } from '../../hooks/useToast';
 import ErrorBoundary from 'antd/es/alert/ErrorBoundary';
 import { getIconComponent } from '../../constants/menuItem';
+import PlanPurchasePopup from '../popupmessage/PlanPurchasePopup';
 import './Layout.css';
 
 const { Header, Sider, Content } = Layout;
@@ -54,6 +56,14 @@ const MainLayout = () => {
   const location = useLocation();
   const screens = useBreakpoint();
   const { Toast, contextHolder } = useToast();
+  const [selectedPlanId, setSelectedPlanId] = useState(null);
+
+  useEffect(() => {
+    const planId = localStorage.getItem('selected_plan_id');
+    if (planId) {
+      setSelectedPlanId(planId);
+    }
+  }, []);
 
   const user = useSelector((state) => state.user);
   const profile = user?.profile?.profile;
@@ -185,10 +195,10 @@ const MainLayout = () => {
       icon: <UserOutlined />,
       label: 'Profile',
       onClick: () => {
-        const userId = user?.profile?.user_id || user?.profile?.profile?.user_id || user?.profile?.id;
-        navigate(`/employee-management/manage-employee/profile/${userId}`);
+        navigate(`/app/my-profile`);
       },
     },
+
     {
       key: 'logout',
       icon: <LogoutOutlined />,
@@ -286,6 +296,7 @@ const MainLayout = () => {
   return (
     <Layout style={{ minHeight: '100vh' }}>
       {contextHolder}
+      <PlanPurchasePopup planId={selectedPlanId} onClose={() => setSelectedPlanId(null)} />
 
       {/* Mobile Drawer */}
       {!screens.lg && (
@@ -328,6 +339,13 @@ const MainLayout = () => {
           />
 
           <div className="hrms-header-actions">
+            <Button
+              type="text"
+              icon={<RocketOutlined style={{ color: '#fa8c16' }} />}
+              onClick={() => navigate('/pricing')}
+              style={{ fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              title="Upgrade Plan"
+            />
             <ThemeToggle />
             <Dropdown
               menu={{ items: userMenuItems }}

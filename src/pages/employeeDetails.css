@@ -1,0 +1,175 @@
+/* ====================================
+   Employee Details Modern Styles
+   ==================================== */
+
+.profile-container {
+  padding: var(--spacing-lg);
+  animation: fadeIn 0.4s ease-out;
+  background: var(--bg-secondary);
+  min-height: calc(100vh - 64px);
+}
+
+/* ========== Profile Header ========== */
+.profile-header-card {
+  border: none;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-xl);
+  margin-bottom: var(--spacing-xl);
+  background: var(--bg-primary);
+  position: relative;
+}
+
+.profile-header-banner {
+  height: 120px;
+  background: var(--gradient-primary);
+  position: relative;
+}
+
+.profile-header-content {
+  padding: 0 var(--spacing-xl) var(--spacing-xl);
+  margin-top: -60px;
+  display: flex;
+  align-items: flex-end;
+  gap: var(--spacing-xl);
+}
+
+.profile-avatar-wrapper {
+  padding: 4px;
+  background: var(--bg-primary);
+  border-radius: 50%;
+  box-shadow: var(--shadow-lg);
+  display: inline-flex;
+}
+
+.profile-main-info {
+  flex: 1;
+  padding-bottom: var(--spacing-sm);
+}
+
+.profile-name {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.profile-quick-stats {
+  display: flex;
+  gap: var(--spacing-lg);
+  margin-top: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.stat-icon {
+  color: var(--primary-500);
+}
+
+/* ========== Section Cards ========== */
+.detail-section-card {
+  margin-bottom: var(--spacing-xl);
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--primary-600);
+}
+
+/* ========== Personal Info Grid ========== */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--spacing-lg);
+}
+
+.info-item {
+  padding: var(--spacing-md);
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color-light);
+  transition: all var(--transition-base);
+}
+
+.info-item:hover {
+  background: var(--bg-primary);
+  border-color: var(--primary-200);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.info-label {
+  display: block;
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.info-value {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+}
+
+/* ========== Back Button ========== */
+.back-btn {
+  margin-bottom: var(--spacing-lg);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-secondary);
+  transition: all var(--transition-base);
+  cursor: pointer;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-md);
+}
+
+.back-btn:hover {
+  color: var(--primary-500);
+  background: var(--primary-50);
+  transform: translateX(-4px);
+}
+
+/* ========== Responsive ========== */
+@media (max-width: 768px) {
+  .profile-header-content {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-top: -50px;
+  }
+
+  .profile-quick-stats {
+    justify-content: center;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

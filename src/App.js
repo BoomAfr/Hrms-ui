@@ -76,6 +76,7 @@ import ViewEmployeePerformance from './pages/Perfomance/ViewEmployeePerfomance';
 import AddGenerateBonus from './pages/Payroll/AddGenerateBonus';
 import EmployeePayslip from './pages/Payroll/EmployeePayslip';
 import Setting from './pages/Settings';
+import ViewUserProfile from './pages/ViewUserProfile';
 
 function App() {
   return (
@@ -202,6 +203,7 @@ function App() {
               </ProtectedRoute>
             }>
               <Route index element={<Dashboard />} />
+              <Route path='my-profile' element={<ViewUserProfile />} />
               <Route path='administration'>
                 <Route path='manage-role' >
                   <Route path='add-role' element={<AddRole />} />

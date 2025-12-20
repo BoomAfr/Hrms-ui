@@ -1,10 +1,10 @@
 
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Form, Input, Button, Card, message, Typography, Image } from 'antd';
 import { UserOutlined, LockOutlined, HomeOutlined } from '@ant-design/icons';
-import { login, clearError } from '../store/slices/authSlice';
+import { login, clearError, logout } from '../store/slices/authSlice';
 import { authAPI } from '../services/authServices';
 import logo from '../assets/images/logo.svg';
 import { useToast } from '../hooks/useToast';
@@ -17,6 +17,17 @@ const Login = () => {
   const { loading, error, isAuthenticated } = useSelector((state) => state.auth);
   const { Toast, contextHolder } = useToast();
 
+
+  const location = useLocation();
+  const logoutTriggered = new URLSearchParams(location.search).get('logout') === 'true';
+
+  useEffect(() => {
+    if (logoutTriggered) {
+      dispatch(logout());
+      // Optional: Clean up URL after logout
+      navigate('/login', { replace: true });
+    }
+  }, [logoutTriggered, dispatch, navigate]);
 
   useEffect(() => {
     // Navigation is now handled in onFinish after role check

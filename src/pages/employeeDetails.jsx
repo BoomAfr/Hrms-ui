@@ -1,14 +1,33 @@
 import React, { useEffect } from 'react';
-import { Card, Descriptions, Table, Divider, Tag, Avatar, Row, Col, Skeleton, Button } from 'antd';
-import { UserOutlined, MailOutlined, PhoneOutlined, EnvironmentOutlined, CalendarOutlined, ArrowLeftOutlined } from '@ant-design/icons';
-import { useParams } from 'react-router-dom';
+import { Card, Table, Tag, Avatar, Row, Col, Skeleton, Button, Tooltip } from 'antd';
+import {
+  UserOutlined,
+  MailOutlined,
+  PhoneOutlined,
+  EnvironmentOutlined,
+  CalendarOutlined,
+  ArrowLeftOutlined,
+  BankOutlined,
+  BookOutlined,
+  GlobalOutlined,
+  WomanOutlined,
+  ManOutlined,
+  ShoppingOutlined
+} from '@ant-design/icons';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useManageEmployee } from '../hooks/useManageEmployee';
 import { useEducational } from '../hooks/useEducational';
 import { useExperiences } from '../hooks/useExperiences';
 import { useAccounts } from '../hooks/useAccounts';
 
+// Import local styles
+import '../styles/design-system.css';
+import '../styles/table-pages.css';
+import './employeeDetails.css';
+
 const Profile = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { fetchEmployeeById, loading, profile } = useManageEmployee();
   const { educationals, refetch } = useEducational();
   const { experiences, fetchExperience } = useExperiences();
@@ -17,75 +36,65 @@ const Profile = () => {
   useEffect(() => {
     if (id) {
       fetchEmployeeById(id);
-      fetchExperience(id)
+      fetchExperience(id);
       fetchAccounts(id);
-      refetch(id)
+      refetch(id);
     }
-
-  }, [id])
-
-
-
+  }, [id]);
 
   const educationColumns = [
     {
       title: 'Institute',
       dataIndex: 'institute',
       key: 'institute',
-      render: (text) => text || '--',
+      render: (text) => <span style={{ fontWeight: 500 }}>{text || '--'}</span>,
     },
     {
       title: 'Degree',
       dataIndex: 'degree',
       key: 'degree',
-      render: (text) => text || '--',
+      render: (text) => <Tag color="blue">{text || '--'}</Tag>,
     },
     {
       title: 'Board / University',
       dataIndex: 'board',
       key: 'board',
-      render: (text) => text || '--',
     },
     {
       title: 'Result',
       dataIndex: 'result',
       key: 'result',
-      render: (text) => text || '--',
     },
     {
       title: 'GPA / CGPA',
       dataIndex: 'gpa',
       key: 'gpa',
-      render: (text) => text || '--',
+      render: (text) => <Tag color="cyan">{text || '--'}</Tag>,
     },
     {
       title: 'Passing Year',
       dataIndex: 'passing_year',
       key: 'passing_year',
-      render: (text) => text || '--',
     },
   ];
 
-
-  // Professional Experience Data
   const experienceColumns = [
     {
       title: 'Organization',
       dataIndex: 'organization',
       key: 'organization',
-      render: (text) => text || '--',
+      render: (text) => <span style={{ fontWeight: 500 }}>{text || '--'}</span>,
     },
     {
       title: 'Designation',
       dataIndex: 'designation',
       key: 'designation',
-      render: (text) => text || '--',
+      render: (text) => <Tag color="gold">{text || '--'}</Tag>,
     },
     {
       title: 'Duration',
       dataIndex: 'duration',
       key: 'duration',
-      render: (text) => text || '--',
     },
     {
       title: 'Skill',
@@ -93,9 +102,9 @@ const Profile = () => {
       key: 'skills',
       render: (skills) => (
         skills && skills.length > 0 ? (
-          <div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
             {skills.map((skill, index) => (
-              <Tag key={index} color="blue" style={{ margin: '2px' }}>
+              <Tag key={index} color="geekblue" style={{ borderRadius: '4px' }}>
                 {skill}
               </Tag>
             ))}
@@ -107,258 +116,189 @@ const Profile = () => {
       title: 'Responsibility',
       dataIndex: 'responsibility',
       key: 'responsibility',
-      render: (text) => text || '--',
+      ellipsis: true,
     },
   ];
 
   const accountColumns = [
     {
-      title: 'Account Holder Name',
+      title: 'Account Holder',
       dataIndex: 'account_holder_name',
       key: 'account_holder_name',
-      render: (text) => text || '--',
+      render: (text) => <span style={{ fontWeight: 500 }}>{text || '--'}</span>,
     },
     {
       title: 'Bank Name',
       dataIndex: 'bank_name',
       key: 'bank_name',
-      render: (text) => text || '--',
+      render: (text) => (
+        <span>
+          <BankOutlined style={{ marginRight: 8, color: '#1890ff' }} />
+          {text || '--'}
+        </span>
+      ),
     },
     {
       title: 'Account Number',
       dataIndex: 'account_number',
       key: 'account_number',
-      render: (text) => text || '--',
+      render: (text) => <code style={{ color: '#c41d7f' }}>{text || '--'}</code>,
     },
     {
       title: 'IFSC Code',
       dataIndex: 'ifsc_code',
       key: 'ifsc_code',
-      render: (text) => text || '--',
-    },
-    {
-      title: 'Branch Name',
-      dataIndex: 'branch_name',
-      key: 'branch_name',
-      render: (text) => text || '--',
-    },
-    {
-      title: 'Account Type',
-      dataIndex: 'account_type',
-      key: 'account_type',
-      render: (text) => text || '--',
     },
     {
       title: 'Primary',
       dataIndex: 'is_primary',
       key: 'is_primary',
       render: (is_primary) => (
-        is_primary ? <Tag color="green">Yes</Tag> : <Tag color="orange">No</Tag>
+        is_primary ?
+          <Tag color="success" style={{ borderRadius: '12px' }}>Primary</Tag> :
+          <Tag color="default" style={{ borderRadius: '12px' }}>Secondary</Tag>
       ),
     },
   ];
 
+  const InfoItem = ({ label, value, icon }) => (
+    <div className="info-item">
+      <span className="info-label">{label}</span>
+      <div className="info-value">
+        {icon && <span className="stat-icon">{icon}</span>}
+        {value || '--'}
+      </div>
+    </div>
+  );
+
   return (
-    <div style={{ padding: '24px' }}>
+    <div className="profile-container">
+      
       {/* Profile Header */}
-      <Card style={{ marginBottom: '24px' }}>
-        <Row gutter={16} align="middle">
-          <Col>
+      <div className="profile-header-card">
+        <div className="profile-header-banner"></div>
+        <div className="profile-header-content">
+          <div className="profile-avatar-wrapper">
             {loading ? (
-              <Skeleton.Avatar
-                active
-                size={80}
-                shape="circle"
-              />
+              <Skeleton.Avatar active size={120} shape="circle" />
             ) : (
               <Avatar
-                size={80}
+                size={120}
                 icon={<UserOutlined />}
-                style={{ backgroundColor: '#1890ff' }}
+                style={{ backgroundColor: 'var(--primary-500)', border: '4px solid white' }}
               />
             )}
-          </Col>
-          <Col flex={1}>
+          </div>
+          <div className="profile-main-info">
             {loading ? (
-              <>
-                <Skeleton
-                  active
-                  title={{ width: '200px' }}
-                  paragraph={false}
-                  style={{ marginBottom: '16px' }}
-                />
-                <Skeleton
-                  active
-                  title={false}
-                  paragraph={{ rows: 3, width: ['100%', '100%', '80%'] }}
-                />
-              </>
+              <Skeleton active paragraph={{ rows: 2 }} />
             ) : (
               <>
-                <h2 style={{ margin: 0, marginBottom: '8px' }}>
-                  {profile?.first_name || '--'}{' '}{profile?.last_name || '--'}
-                </h2>
-                <div style={{ color: '#666' }}>
-                  <div>
-                    <MailOutlined style={{ marginRight: '8px' }} />
-                    Email: {profile?.email || '--'}
+                <h1 className="profile-name">
+                  {profile?.first_name} {profile?.last_name}
+                </h1>
+                <div className="profile-quick-stats">
+                  <div className="stat-item">
+                    <MailOutlined className="stat-icon" /> {profile?.email}
                   </div>
-                  <div>
-                    <EnvironmentOutlined style={{ marginRight: '8px' }} />
-                    Address: {profile?.address || '--'}
+                  <div className="stat-item">
+                    <PhoneOutlined className="stat-icon" /> {profile?.phone}
                   </div>
-                  <div>
-                    <PhoneOutlined style={{ marginRight: '8px' }} />
-                    Phone: {profile?.phone || '--'}
+                  <div className="stat-item">
+                    <EnvironmentOutlined className="stat-icon" /> {profile?.address}
                   </div>
                 </div>
               </>
             )}
-          </Col>
-        </Row>
-      </Card>
+          </div>
+        </div>
+      </div>
 
-      <Divider />
+      <Row gutter={[24, 24]}>
+        {/* Main Content Area */}
+        <Col xs={24} lg={16}>
+          {/* Educational Qualification Section */}
+          <Card
+            title={<div className="section-title"><BookOutlined /> EDUCATIONAL QUALIFICATION</div>}
+            className="table-page-card detail-section-card"
+          >
+            {loading ? (
+              <Skeleton active paragraph={{ rows: 5 }} />
+            ) : (
+              <Table
+                columns={educationColumns}
+                dataSource={profile?.education}
+                pagination={false}
+                className="table-page-table"
+                locale={{ emptyText: 'No educational data available' }}
+                size="middle"
+              />
+            )}
+          </Card>
 
-      {/* Educational Qualification Section */}
-      <Card
-        title="EDUCATIONAL QUALIFICATION"
-        style={{ marginBottom: '24px' }}
-      >
-        {loading ? (
-          <>
-            <Skeleton
-              active
-              title={false}
-              paragraph={{ rows: 1, width: '150px' }}
-              style={{ marginBottom: '16px' }}
-            />
-            <Skeleton
-              active
-              title={false}
-              paragraph={{ rows: 5, width: '100%' }}
-            />
-          </>
-        ) : (
-          <Table
-            columns={educationColumns}
-            dataSource={profile?.education}
-            pagination={false}
-            bordered
-            size="middle"
-            locale={{ emptyText: 'No educational data available' }}
-          />
-        )}
-      </Card>
+          {/* Professional Experience Section */}
+          <Card
+            title={<div className="section-title"><ShoppingOutlined /> PROFESSIONAL EXPERIENCE</div>}
+            className="table-page-card detail-section-card"
+          >
+            {loading ? (
+              <Skeleton active paragraph={{ rows: 5 }} />
+            ) : (
+              <Table
+                columns={experienceColumns}
+                dataSource={profile?.experience}
+                pagination={false}
+                className="table-page-table"
+                locale={{ emptyText: 'No experience data available' }}
+                size="middle"
+              />
+            )}
+          </Card>
 
-      <Divider />
+          {/* Account Details Section */}
+          <Card
+            title={<div className="section-title"><BankOutlined /> ACCOUNT DETAILS</div>}
+            className="table-page-card detail-section-card"
+          >
+            {loading ? (
+              <Skeleton active paragraph={{ rows: 5 }} />
+            ) : (
+              <Table
+                columns={accountColumns}
+                dataSource={accounts}
+                pagination={false}
+                className="table-page-table"
+                locale={{ emptyText: 'No account details available' }}
+                size="middle"
+              />
+            )}
+          </Card>
+        </Col>
 
-      {/* Professional Experience Section */}
-      <Card
-        title="PROFESSIONAL EXPERIENCE"
-        style={{ marginBottom: '24px' }}
-      >
-        {loading ? (
-          <>
-            <Skeleton
-              active
-              title={false}
-              paragraph={{ rows: 1, width: '150px' }}
-              style={{ marginBottom: '16px' }}
-            />
-            <Skeleton
-              active
-              title={false}
-              paragraph={{ rows: 5, width: '100%' }}
-            />
-          </>
-        ) : (
-          <Table
-            columns={experienceColumns}
-            dataSource={profile?.experience}
-            pagination={false}
-            bordered
-            size="middle"
-            locale={{ emptyText: 'No experience data available' }}
-          />
-        )}
-      </Card>
-
-      <Divider />
-
-      {/* Account Details Section */}
-      <Card
-        title="ACCOUNT DETAILS"
-        style={{ marginBottom: '24px' }}
-      >
-        {loading ? (
-          <>
-            <Skeleton
-              active
-              title={false}
-              paragraph={{ rows: 1, width: '150px' }}
-              style={{ marginBottom: '16px' }}
-            />
-            <Skeleton
-              active
-              title={false}
-              paragraph={{ rows: 5, width: '100%' }}
-            />
-          </>
-        ) : (
-          <Table
-            columns={accountColumns}
-            dataSource={accounts}
-            pagination={false}
-            bordered
-            size="middle"
-            locale={{ emptyText: 'No account details available' }}
-          />
-        )}
-      </Card>
-
-      <Divider />
-
-      {/* Personal Information Section */}
-      <Card title="PERSONAL INFORMATION">
-        {loading ? (
-          <Skeleton
-            active
-            title={false}
-            paragraph={{ rows: 8, width: '100%' }}
-          />
-        ) : (
-          <Descriptions bordered column={1}>
-            <Descriptions.Item label="Name">
-              {profile?.first_name || '--'}{' '}{profile?.last_name || '--'}
-
-            </Descriptions.Item>
-            <Descriptions.Item label="Email">
-              {profile?.email || '--'}
-            </Descriptions.Item>
-            <Descriptions.Item label="Address">
-              {profile?.address || '--'}
-            </Descriptions.Item>
-            <Descriptions.Item label="Phone">
-              {profile?.phone || '--'}
-            </Descriptions.Item>
-            <Descriptions.Item label="Date of Joining">
-              <CalendarOutlined style={{ marginRight: '8px' }} />
-              {profile?.date_of_joining || '--'}
-            </Descriptions.Item>
-            <Descriptions.Item label="Date of Birth">
-              <CalendarOutlined style={{ marginRight: '8px' }} />
-              {profile?.date_of_birth || '--'}
-            </Descriptions.Item>
-            <Descriptions.Item label="Gender">
-              {profile?.gender || '--'}
-            </Descriptions.Item>
-            <Descriptions.Item label="Religion">
-              {profile?.religion || '--'}
-            </Descriptions.Item>
-          </Descriptions>
-        )}
-      </Card>
+        {/* Sidebar Space */}
+        <Col xs={24} lg={8}>
+          <Card
+            title={<div className="section-title"><UserOutlined /> PERSONAL INFORMATION</div>}
+            className="table-page-card"
+          >
+            {loading ? (
+              <Skeleton active paragraph={{ rows: 10 }} />
+            ) : (
+              <div className="info-grid" style={{ gridTemplateColumns: '1fr' }}>
+                <InfoItem
+                  label="Gender"
+                  value={profile?.gender}
+                  icon={profile?.gender?.toLowerCase() === 'female' ? <WomanOutlined /> : <ManOutlined />}
+                />
+                <InfoItem label="Date of Birth" value={profile?.date_of_birth} icon={<CalendarOutlined />} />
+                <InfoItem label="Date of Joining" value={profile?.date_of_joining} icon={<CalendarOutlined />} />
+                <InfoItem label="Religion" value={profile?.religion} icon={<GlobalOutlined />} />
+                <InfoItem label="Address" value={profile?.address} icon={<EnvironmentOutlined />} />
+              </div>
+            )}
+          </Card>
+        </Col>
+      </Row>
     </div>
   );
 };

@@ -2,6 +2,7 @@ import React from 'react';
 import { Typography, Card, Row, Col, Button, Tag, Spin, Empty, Alert } from 'antd';
 import { CheckCircleFilled, ArrowRightOutlined, CrownOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { usePlans } from '../../hooks/usePlans';
 
 const { Title, Paragraph, Text } = Typography;
@@ -10,6 +11,16 @@ const { Title, Paragraph, Text } = Typography;
 const Pricing = () => {
   const navigate = useNavigate();
   const { plans, loading, error } = usePlans();
+  const { isAuthenticated } = useSelector((state) => state.auth);
+
+  const handlePlanSelect = (plan) => {
+    localStorage.setItem('selected_plan_id', plan.id);
+    if (isAuthenticated) {
+      navigate('/app');
+    } else {
+      navigate('/signup');
+    }
+  };
 
   const getPlanColor = (planName) => {
     const colors = {
@@ -172,7 +183,7 @@ const Pricing = () => {
                       background: plan.popular ? getPlanColor(plan.plan_name) : undefined,
                       borderColor: plan.popular ? getPlanColor(plan.plan_name) : undefined,
                     }}
-                    onClick={() => navigate('/login')}
+                    onClick={() => handlePlanSelect(plan)}
                   >
                     {parseFloat(plan.price) === 0 ? 'Start Free' : 'Get Started'}
                   </Button>
@@ -182,7 +193,7 @@ const Pricing = () => {
           </Row>
         )}
 
-        
+
         <div style={{ textAlign: 'center', marginTop: '80px' }}>
           <Title level={3} style={{ marginBottom: '16px' }}>Need a custom plan?</Title>
           <Paragraph style={{ fontSize: '1.1rem', color: '#64748b', marginBottom: '24px' }}>

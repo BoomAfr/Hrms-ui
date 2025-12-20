@@ -1,0 +1,168 @@
+/* ====================================
+   Self Profile Modern Styles
+   ==================================== */
+
+.self-profile-container {
+  padding: var(--spacing-lg);
+  animation: fadeIn 0.4s ease-out;
+  background: var(--bg-secondary);
+  min-height: calc(100vh - 64px);
+}
+
+/* ========== Profile Header ========== */
+.self-profile-header-card {
+  border: none;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-xl);
+  margin-bottom: var(--spacing-xl);
+  background: var(--bg-primary);
+  position: relative;
+}
+
+.self-profile-header-banner {
+  height: 160px;
+  background: var(--gradient-purple);
+  /* Different color for self-profile */
+  position: relative;
+}
+
+.self-profile-header-content {
+  padding: 0 var(--spacing-xl) var(--spacing-xl);
+  margin-top: -80px;
+  display: flex;
+  align-items: flex-end;
+  gap: var(--spacing-xl);
+  position: relative;
+  z-index: 1;
+}
+
+.self-profile-avatar-wrapper {
+  padding: 6px;
+  background: var(--bg-primary);
+  border-radius: 50%;
+  box-shadow: var(--shadow-lg);
+  display: inline-flex;
+}
+
+.self-profile-main-info {
+  flex: 1;
+  padding-bottom: var(--spacing-sm);
+}
+
+.self-profile-name {
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  margin: 0;
+  letter-spacing: -1px;
+}
+
+.self-profile-role-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  background: var(--primary-50);
+  color: var(--primary-600);
+  border-radius: var(--radius-full);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+  margin-top: var(--spacing-xs);
+  border: 1px solid var(--primary-100);
+}
+
+.self-profile-quick-stats {
+  display: flex;
+  gap: var(--spacing-xl);
+  margin-top: var(--spacing-lg);
+  flex-wrap: wrap;
+}
+
+.self-stat-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  color: var(--text-secondary);
+  font-size: var(--font-size-base);
+}
+
+/* ========== Section Cards ========== */
+.self-detail-section-card {
+  margin-bottom: var(--spacing-xl);
+  border: none !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+.self-section-title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--primary-600);
+}
+
+/* ========== Info Grid ========== */
+.self-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--spacing-lg);
+}
+
+.self-info-item {
+  padding: var(--spacing-md);
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color-light);
+  transition: all var(--transition-base);
+}
+
+.self-info-item:hover {
+  background: var(--bg-primary);
+  border-color: var(--primary-200);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.self-info-label {
+  display: block;
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.self-info-value {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+}
+
+/* ========== Responsive ========== */
+@media (max-width: 992px) {
+  .self-profile-header-content {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-top: -70px;
+  }
+
+  .self-profile-quick-stats {
+    justify-content: center;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
